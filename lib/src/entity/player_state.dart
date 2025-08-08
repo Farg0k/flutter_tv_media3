@@ -1,0 +1,244 @@
+import '../../flutter_tv_media3.dart';
+
+/// Represents the complete current state of the player.
+///
+/// This class is the main internal data model for the UI, aggregating all
+/// state information received directly from the native Media3 player.
+/// It includes playback state, playlist information, errors,
+/// available tracks, and settings.
+///
+/// Since this data reflects the player's state in real-time, it can be
+/// used to implement external control (e.g., via IP) or other integrations,
+/// allowing remote systems to track the full state of the player.
+class PlayerState {
+  PlayerState({
+    this.activityReady = false,
+    this.stateValue = StateValue.initial,
+    this.playlist = const [],
+    this.playIndex = -1,
+    this.lastError,
+    this.errorCode,
+    this.isLive = false,
+    this.isSeekable = false,
+    this.loadingStatus,
+    this.loadingProgress,
+    this.videoTracks = const [],
+    this.audioTracks = const [],
+    this.subtitleTracks = const [],
+    this.zoom = PlayerZoom.fit,
+    this.speed = 1.0,
+    this.repeatMode = RepeatMode.repeatModeOff,
+    this.isShuffleModeEnabled = false,
+    SubtitleStyle? subtitleStyle,
+    ClockSettings? clockSettings,
+    PlayerSettings? playerSettings,
+    this.customInfoText,
+  })  : subtitleStyle = subtitleStyle ?? SubtitleStyle(),
+        clockSettings = clockSettings ?? ClockSettings(),
+        playerSettings = playerSettings ?? PlayerSettings();
+
+  /// A flag indicating whether the native player Activity is ready.
+  final bool activityReady;
+
+  /// The main playback state (playing, paused, buffering, etc.).
+  final StateValue stateValue;
+
+  /// The current playlist.
+  final List<PlaylistMediaItem> playlist;
+
+  /// The index of the currently playing item in the playlist.
+  final int playIndex;
+
+  /// The text of the last error, if one occurred.
+  final String? lastError;
+
+  /// The code of the last error.
+  final String? errorCode;
+
+  /// A flag indicating whether the current stream is live.
+  final bool isLive;
+
+  /// A flag indicating whether seeking is possible in the current media.
+  final bool isSeekable;
+
+  /// The status of loading media information (e.g., getting a direct link).
+  final String? loadingStatus;
+
+  /// The progress of loading media information (from 0.0 to 1.0).
+  final double? loadingProgress;
+
+  /// The list of available video tracks.
+  final List<VideoTrack> videoTracks;
+
+  /// The list of available audio tracks.
+  final List<AudioTrack> audioTracks;
+
+  /// The list of available subtitle tracks.
+  final List<SubtitleTrack> subtitleTracks;
+
+  /// The current video zoom mode.
+  final PlayerZoom zoom;
+
+  /// The current playback speed.
+  final double speed;
+
+  /// The current repeat mode (off, one, all).
+  final RepeatMode repeatMode;
+
+  /// A flag indicating whether shuffle mode is enabled.
+  final bool isShuffleModeEnabled;
+
+  /// The current subtitle style settings.
+  final SubtitleStyle subtitleStyle;
+
+  /// The current clock settings.
+  final ClockSettings clockSettings;
+
+  /// The current player settings (quality, languages).
+  final PlayerSettings playerSettings;
+
+  /// A custom string to be displayed in the info panel.
+  final String? customInfoText;
+
+  PlayerState copyWith({
+    bool? activityReady,
+    StateValue? stateValue,
+    List<PlaylistMediaItem>? playlist,
+    int? playIndex,
+    String? lastError,
+    String? errorCode,
+    bool? isLive,
+    bool? isSeekable,
+    String? loadingStatus,
+    double? loadingProgress,
+    final List<VideoTrack>? videoTracks,
+    final List<AudioTrack>? audioTracks,
+    final List<SubtitleTrack>? subtitleTracks,
+    PlayerZoom? zoom,
+    double? speed,
+    RepeatMode? repeatMode,
+    bool? isShuffleModeEnabled,
+    SubtitleStyle? subtitleStyle,
+    ClockSettings? clockSettings,
+    PlayerSettings? playerSettings,
+    bool? resetError,
+    String? customInfoText,
+  }) {
+    return PlayerState(
+      activityReady: activityReady ?? this.activityReady,
+      stateValue: stateValue ?? this.stateValue,
+      playlist: playlist ?? this.playlist,
+      playIndex: playIndex ?? this.playIndex,
+      lastError: resetError != null ? null : lastError ?? this.lastError,
+      errorCode: resetError != null ? null : errorCode ?? this.errorCode,
+      isLive: isLive ?? this.isLive,
+      isSeekable: isSeekable ?? this.isSeekable,
+      loadingStatus: loadingStatus ?? this.loadingStatus,
+      loadingProgress: loadingProgress ?? this.loadingProgress,
+      videoTracks: videoTracks ?? this.videoTracks,
+      audioTracks: audioTracks ?? this.audioTracks,
+      subtitleTracks: subtitleTracks ?? this.subtitleTracks,
+      zoom: zoom ?? this.zoom,
+      speed: speed ?? this.speed,
+      repeatMode: repeatMode ?? this.repeatMode,
+      isShuffleModeEnabled: isShuffleModeEnabled ?? this.isShuffleModeEnabled,
+      subtitleStyle: subtitleStyle ?? this.subtitleStyle,
+      clockSettings: clockSettings ?? this.clockSettings,
+      playerSettings: playerSettings ?? this.playerSettings,
+      customInfoText: customInfoText ?? this.customInfoText,
+    );
+  }
+}
+
+/// Defines the main states of the player lifecycle.
+enum StateValue {
+  initial,
+  idle,
+  buffering,
+  playing,
+  paused,
+  ended,
+  error,
+  unknown;
+
+  static StateValue fromString(String? s) {
+    switch (s?.toLowerCase()) {
+      case 'idle':
+        return StateValue.idle;
+      case 'buffering':
+        return StateValue.buffering;
+      case 'playing':
+        return StateValue.playing;
+      case 'paused':
+        return StateValue.paused;
+      case 'ended':
+        return StateValue.ended;
+      case 'error':
+        return StateValue.error;
+      default:
+        return StateValue.unknown;
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// Defines the video scaling modes.
+enum PlayerZoom {
+  /// Fit the video to the screen while maintaining aspect ratio.
+  fit('FIT'),
+
+  /// Stretch the video to the full screen without maintaining aspect ratio.
+  fill('FILL'),
+
+  /// Fill the screen while maintaining aspect ratio (cropping may occur).
+  zoom('ZOOM'),
+
+  /// Fix the width.
+  fixedWidth('FIXED_WIDTH'),
+
+  /// Fix the height.
+  fixedHeight('FIXED_HEIGHT'),
+
+  /// Custom scaling.
+  scale('SCALE');
+
+  final String nativeValue;
+  const PlayerZoom(this.nativeValue);
+
+  static PlayerZoom? fromString(String? name) {
+    if (name == null) return null;
+    for (PlayerZoom enumVariant in PlayerZoom.values) {
+      if (enumVariant.nativeValue == name) return enumVariant;
+    }
+    return null;
+  }
+}
+
+/// Defines the playlist repeat modes.
+enum RepeatMode {
+  /// Do not repeat.
+  repeatModeOff('REPEAT_MODE_OFF'),
+
+  /// Repeat the current track.
+  repeatModeOne('REPEAT_MODE_ONE'),
+
+  /// Repeat the entire playlist.
+  repeatModeAll('REPEAT_MODE_ALL');
+
+  final String nativeValue;
+  const RepeatMode(this.nativeValue);
+
+  static RepeatMode? fromString(String? name) {
+    if (name == null) return null;
+    for (RepeatMode enumVariant in RepeatMode.values) {
+      if (enumVariant.nativeValue == name) return enumVariant;
+    }
+    return null;
+  }
+
+  static RepeatMode nextValue(int index) {
+    index = index + 1 == RepeatMode.values.length ? 0 : index + 1;
+    return RepeatMode.values[index];
+  }
+}
