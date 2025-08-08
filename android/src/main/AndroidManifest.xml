@@ -7,9 +7,10 @@
     <application>
         <activity
             android:name=".PlayerActivity"
+            android:screenOrientation="sensorLandscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.Plugin.Fullscreen"
             android:exported="false" />
     </application>
 </manifest>
