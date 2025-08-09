@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../flutter_tv_media3.dart';
@@ -29,6 +30,10 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
     _controller = widget.controller;
     _controller.playerStateStream.listen((e) async {
       if (e.activityReady == true && mounted == true && isClose == false) {
@@ -46,6 +51,17 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    super.dispose();
   }
 
   void _showErrorSnackBar(BuildContext context, String message) {
