@@ -16,6 +16,7 @@ class OverlayUiState extends Equatable {
     this.isChangePlayerSettings,
     required this.clockPosition,
     this.customInfoText,
+    this.isScreenLocked = false,
   });
 
   /// The index of the current item in the playlist.
@@ -57,6 +58,9 @@ class OverlayUiState extends Equatable {
   /// A custom string to be displayed in the info panel.
   final String? customInfoText;
 
+  /// A flag indicating if the touch controls are locked.
+  final bool isScreenLocked;
+
   @override
   List<Object?> get props => [
         playIndex,
@@ -70,6 +74,7 @@ class OverlayUiState extends Equatable {
         clockSettings,
         clockPosition,
         customInfoText,
+        isScreenLocked,
       ];
 
   OverlayUiState copyWith({
@@ -86,6 +91,7 @@ class OverlayUiState extends Equatable {
     bool? isChangePlayerSettings,
     ClockPosition? clockPosition,
     String? customInfoText,
+    bool? isScreenLocked,
   }) {
     return OverlayUiState(
       playIndex: playIndex ?? this.playIndex,
@@ -101,6 +107,7 @@ class OverlayUiState extends Equatable {
       isChangePlayerSettings: isChangePlayerSettings ?? this.isChangePlayerSettings,
       clockPosition: clockPosition ?? this.clockPosition,
       customInfoText: customInfoText ?? this.customInfoText,
+      isScreenLocked: isScreenLocked ?? this.isScreenLocked,
     );
   }
 }
@@ -129,5 +136,8 @@ enum PlayerPanel {
   error,
 
   /// Electronic Program Guide (EPG) screen.
-  epg
+  epg,
+
+  /// A panel with touch-friendly controls.
+  touchOverlay
 }

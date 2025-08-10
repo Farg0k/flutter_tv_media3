@@ -132,3 +132,11 @@ class SetClockPosition extends OverlayUiEvent {
   @override
   List<Object?> get props => [];
 }
+
+/// Toggles the screen lock state.
+class ToggleScreenLock extends OverlayUiEvent {
+  const ToggleScreenLock();
+
+  @override
+  List<Object?> get props => [];
+}
