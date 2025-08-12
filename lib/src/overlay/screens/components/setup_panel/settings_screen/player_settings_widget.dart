@@ -14,7 +14,8 @@ import 'string_settings_widget.dart';
 class PlayerSettingsWidget extends StatelessWidget {
   final Media3UiController controller;
   final OverlayUiBloc bloc;
-  const PlayerSettingsWidget({super.key, required this.controller, required this.bloc});
+  final bool isTouch;
+  const PlayerSettingsWidget({super.key, required this.controller, required this.bloc, required this.isTouch});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,18 @@ class PlayerSettingsWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ListTile(
-              leading: const Icon(Icons.settings_applications_outlined),
+              leading:
+              isTouch
+                  ? IconButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
+                },
+                icon: Icon(Icons.arrow_back),
+              )
+                  : const Icon(Icons.settings_applications_outlined),
+              trailing:
+              isTouch ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close)) : null,
               title: Text(OverlayLocalizations.get('playerSettings')),
               titleTextStyle: Theme.of(context).textTheme.headlineMedium,
             ),
@@ -51,6 +63,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                     children: [
                       StringSettingsWidget(
                         autofocus: true,
+                        isTouch: isTouch,
                         leftCallback: () async => await _setVideoQuality(action: -1, playerSettings: playerSettings),
                         rightCallback: () async => await _setVideoQuality(action: 1, playerSettings: playerSettings),
                         enterCallback:
@@ -61,6 +74,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                         title: OverlayLocalizations.get('videoQuality'),
                       ),
                       StringSettingsWidget(
+                        isTouch: isTouch,
                         leftCallback:
                             () async => await controller.savePlayerSettings(
                               playerSettings: playerSettings.copyWith(isAfrEnabled: !playerSettings.isAfrEnabled),
@@ -101,6 +115,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                         },
                       ),
                       StringSettingsWidget(
+                        isTouch: isTouch,
                         leftCallback:
                             () async => await controller.savePlayerSettings(
                               playerSettings: playerSettings.copyWith(
@@ -133,6 +148,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                             bloc: bloc,
                             widthFactor: 0.35,
                             body: MultiLanguageSelector(
+                              isTouch: isTouch,
                               title: OverlayLocalizations.get('preferredAudioLanguages'),
                               initiallySelected: playerSettings.preferredAudioLanguages ?? [],
                               onChanged: (List<String> selectedCodes) async {
@@ -157,6 +173,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                             bloc: bloc,
                             widthFactor: 0.35,
                             body: MultiLanguageSelector(
+                              isTouch: isTouch,
                               title: OverlayLocalizations.get('preferredSubtitleLanguages'),
                               initiallySelected: playerSettings.preferredTextLanguages ?? [],
                               onChanged: (List<String> selectedCodes) async {

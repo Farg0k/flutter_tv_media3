@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
+import '../../../app_theme/app_theme.dart';
 import '../../bloc/overlay_ui_bloc.dart';
 import '../../media_ui_service/media3_ui_controller.dart';
 import 'time_line_panel.dart';
@@ -42,7 +43,6 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
         setState(() {
           _opacity = 0;
         });
-        ;
       }
     });
   }
@@ -64,12 +64,22 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
     _startHideTimer();
   }
 
+  Widget _buildPanelButton({required OverlayUiBloc bloc, required IconData icon, required PlayerPanel panel}) {
+    return IconButton(
+      icon: Icon(icon, color: Colors.white, size: 32),
+      onPressed: () {
+        _startHideTimer();
+        bloc.add(SetActivePanel(playerPanel: panel));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<OverlayUiBloc>();
 
     return AnimatedOpacity(
-      duration: Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 400),
       onEnd: _closePanel,
       opacity: _opacity,
       child: GestureDetector(
@@ -93,146 +103,156 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                   final playerState = playerStateSnapshot.data ?? widget.controller.playerState;
                   final isPlaying = playerState.stateValue == StateValue.playing;
                   final hasMultipleItems = playerState.playlist.length > 1;
-
-                  return Stack(
-                    children: [
-                      Visibility(
-                        visible: !isLocked,
-                        child: Positioned.fill(
-                          child: GestureDetector(
-                            onTap:
-                                () => setState(() {
-                                  _opacity = 0;
-                                }),
-                            child: Container(color: Colors.black.withValues(alpha: 0.5)),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        right: 16,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return GestureDetector(
+                    onTap:
+                        () => setState(() {
+                          _opacity = 0;
+                        }),
+                    child: Container(
+                      color: isLocked ? null : AppTheme.backgroundColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
                           children: [
-                            Visibility(
-                              visible: !isLocked,
-                              child: IconButton(
-                                icon: const Icon(Icons.settings, color: Colors.white, size: 32),
-                                onPressed: () {
-                                  _startHideTimer();
-                                  bloc.add(const SetActivePanel(playerPanel: PlayerPanel.setup));
-                                },
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          isLocked ? Icons.lock : Icons.lock_open,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                        onPressed: () => bloc.add(const ToggleScreenLock()),
+                                      ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Visibility(
+                                      visible: !isLocked,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.info_outline, color: Colors.white, size: 32),
+                                            onPressed: () {
+                                              _startHideTimer();
+                                              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.info));
+                                            },
+                                          ),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              if (hasMultipleItems)
+                                                IconButton(
+                                                  icon: const Icon(Icons.skip_previous, color: Colors.white, size: 48),
+                                                  onPressed: () {
+                                                    _startHideTimer();
+                                                    widget.controller.playPrevious();
+                                                  },
+                                                ),
+                                              const SizedBox(width: 24),
+                                              IconButton(
+                                                icon: const Icon(Icons.replay_10, color: Colors.white, size: 48),
+                                                onPressed: () => _seek(-10),
+                                              ),
+                                              const SizedBox(width: 24),
+                                              IconButton(
+                                                icon: Icon(
+                                                  isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                                                  color: Colors.white,
+                                                  size: 80,
+                                                ),
+                                                onPressed: () {
+                                                  _startHideTimer();
+                                                  widget.controller.playPause();
+                                                },
+                                              ),
+                                              const SizedBox(width: 24),
+                                              IconButton(
+                                                icon: const Icon(Icons.forward_10, color: Colors.white, size: 48),
+                                                onPressed: () => _seek(10),
+                                              ),
+                                              const SizedBox(width: 24),
+                                              if (hasMultipleItems)
+                                                IconButton(
+                                                  icon: const Icon(Icons.skip_next, color: Colors.white, size: 48),
+                                                  onPressed: () {
+                                                    _startHideTimer();
+                                                    widget.controller.playNext();
+                                                  },
+                                                ),
+                                            ],
+                                          ),
+                                          SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: List.generate(10, (index) {
+                                                final percentage = index / 10.0;
+                                                return Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: OutlinedButton(
+                                                    onPressed: () => _goToVideoPercentage(percentage),
+                                                    style: OutlinedButton.styleFrom(
+                                                      foregroundColor: Colors.white30,
+                                                      side: const BorderSide(color: Colors.white30, width: 1.5),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                    ),
+                                                    child: Text(
+                                                      '${index * 10}%',
+                                                      style: const TextStyle(color: Colors.white30, fontSize: 16),
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: !isLocked,
+                                    child: Column(
+                                      children: [
+                                        _buildPanelButton(bloc: bloc, icon: Icons.settings, panel: PlayerPanel.settings),
+                                        const SizedBox(height: 16),
+                                        _buildPanelButton(
+                                          bloc: bloc,
+                                          icon: Icons.playlist_play,
+                                          panel: PlayerPanel.playlist,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildPanelButton(
+                                          bloc: bloc,
+                                          icon: Icons.video_settings,
+                                          panel: PlayerPanel.video,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildPanelButton(bloc: bloc, icon: Icons.audiotrack, panel: PlayerPanel.audio),
+                                        const SizedBox(height: 16),
+                                        _buildPanelButton(
+                                          bloc: bloc,
+                                          icon: Icons.subtitles,
+                                          panel: PlayerPanel.subtitle,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Visibility(
-                              visible: !isLocked,
-                              child: IconButton(
-                                icon: const Icon(Icons.info_outline, color: Colors.white, size: 32),
-                                onPressed: () {
-                                  _startHideTimer();
-                                  bloc.add(const SetActivePanel(playerPanel: PlayerPanel.info));
-                                },
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(isLocked ? Icons.lock : Icons.lock_open, color: Colors.white, size: 32),
-                              onPressed: () => bloc.add(const ToggleScreenLock()),
-                            ),
+                            Visibility(visible: !isLocked, child: TimeLinePanel(controller: widget.controller)),
                           ],
                         ),
                       ),
-                      Visibility(
-                        visible: !isLocked,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (hasMultipleItems)
-                                      IconButton(
-                                        icon: const Icon(Icons.skip_previous, color: Colors.white, size: 48),
-                                        onPressed: () {
-                                          _startHideTimer();
-                                          widget.controller.playPrevious();
-                                        },
-                                      ),
-                                    const SizedBox(width: 24),
-                                    IconButton(
-                                      icon: const Icon(Icons.replay_10, color: Colors.white, size: 48),
-                                      onPressed: () => _seek(-10),
-                                    ),
-                                    const SizedBox(width: 24),
-                                    IconButton(
-                                      icon: Icon(
-                                        isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                                        color: Colors.white,
-                                        size: 80,
-                                      ),
-                                      onPressed: () {
-                                        _startHideTimer();
-                                        widget.controller.playPause();
-                                      },
-                                    ),
-                                    const SizedBox(width: 24),
-                                    IconButton(
-                                      icon: const Icon(Icons.forward_10, color: Colors.white, size: 48),
-                                      onPressed: () => _seek(10),
-                                    ),
-                                    const SizedBox(width: 24),
-                                    if (hasMultipleItems)
-                                      IconButton(
-                                        icon: const Icon(Icons.skip_next, color: Colors.white, size: 48),
-                                        onPressed: () {
-                                          _startHideTimer();
-                                          widget.controller.playNext();
-                                        },
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 28),
-                                // New row with percentage seek buttons
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(10, (index) {
-                                      final percentage = index / 10.0;
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                        child: OutlinedButton(
-                                          onPressed: () => _goToVideoPercentage(percentage),
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.white30,
-                                            side: const BorderSide(color: Colors.white30, width: 1.5),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          ),
-                                          child: Text(
-                                            '${index * 10}%',
-                                            style: const TextStyle(color: Colors.white30, fontSize: 16),
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: TimeLinePanel(controller: widget.controller),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   );
                 },
               ),

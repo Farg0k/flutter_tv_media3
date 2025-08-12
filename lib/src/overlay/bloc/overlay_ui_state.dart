@@ -123,8 +123,23 @@ enum PlayerPanel {
   /// Simple panel with a progress bar.
   simple,
 
-  /// Settings panel.
+  /// General setup panel (fallback).
   setup,
+
+  /// Playlist panel.
+  playlist,
+
+  /// Video settings panel.
+  video,
+
+  /// Audio settings panel.
+  audio,
+
+  /// Subtitle settings panel.
+  subtitle,
+
+  /// Main settings panel.
+  settings,
 
   /// Sleep timer panel.
   sleep,

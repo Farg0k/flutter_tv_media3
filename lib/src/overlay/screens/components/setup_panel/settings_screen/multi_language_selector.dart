@@ -16,7 +16,7 @@ class MultiLanguageSelector extends StatefulWidget {
   final void Function(List<String> selectedCodes) onChanged;
   final Media3UiController controller;
   final OverlayUiBloc bloc;
-
+  final bool isTouch;
   const MultiLanguageSelector({
     super.key,
     required this.initiallySelected,
@@ -24,6 +24,7 @@ class MultiLanguageSelector extends StatefulWidget {
     required this.title,
     required this.bloc,
     required this.controller,
+    required this.isTouch,
   });
 
   @override
@@ -34,17 +35,17 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _listFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-  
+
   String _searchString = '';
   late Set<String> _selectedCodes;
   int _selectedIndex = 0;
-  static const double _itemExtent = 70.0; 
+  static const double _itemExtent = AppTheme.customListItemExtent;
 
   @override
   void initState() {
     super.initState();
     _selectedCodes = widget.initiallySelected.toSet();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _listFocusNode.requestFocus();
@@ -60,7 +61,7 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _searchFocusNode.dispose();
@@ -86,7 +87,7 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
       widget.onChanged([]);
     });
   }
-  
+
   void _scrollToIndex(int index) {
     if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
 
@@ -101,16 +102,19 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredLanguageList = _searchString.isEmpty
-        ? languageList
-        : Map.fromEntries(languageList.entries.where((entry) {
-            final name = entry.value['name']?.toLowerCase() ?? '';
-            final native = entry.value['nativeName']?.toLowerCase() ?? '';
-            final code = entry.key.toLowerCase();
-            return name.contains(_searchString.toLowerCase()) ||
-                native.contains(_searchString.toLowerCase()) ||
-                code.contains(_searchString.toLowerCase());
-          }));
+    final filteredLanguageList =
+        _searchString.isEmpty
+            ? languageList
+            : Map.fromEntries(
+              languageList.entries.where((entry) {
+                final name = entry.value['name']?.toLowerCase() ?? '';
+                final native = entry.value['nativeName']?.toLowerCase() ?? '';
+                final code = entry.key.toLowerCase();
+                return name.contains(_searchString.toLowerCase()) ||
+                    native.contains(_searchString.toLowerCase()) ||
+                    code.contains(_searchString.toLowerCase());
+              }),
+            );
 
     final filteredKeys = filteredLanguageList.keys.toList();
 
@@ -122,28 +126,32 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
     }
 
     final listShortcuts = {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => handleListKeyEvent(() {
-        if (_selectedIndex > 0) {
-          _selectedIndex--;
-          _scrollToIndex(_selectedIndex);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => handleListKeyEvent(() {
-        if (_selectedIndex < filteredKeys.length - 1) {
-          _selectedIndex++;
-          _scrollToIndex(_selectedIndex);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => handleListKeyEvent(() {
-        if (_selectedIndex < filteredKeys.length) {
-          _toggleSelection(filteredKeys[_selectedIndex]);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.select): () => handleListKeyEvent(() {
-        if (_selectedIndex < filteredKeys.length) {
-          _toggleSelection(filteredKeys[_selectedIndex]);
-        }
-      }),
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => handleListKeyEvent(() {
+            if (_selectedIndex > 0) {
+              _selectedIndex--;
+              _scrollToIndex(_selectedIndex);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => handleListKeyEvent(() {
+            if (_selectedIndex < filteredKeys.length - 1) {
+              _selectedIndex++;
+              _scrollToIndex(_selectedIndex);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => handleListKeyEvent(() {
+            if (_selectedIndex < filteredKeys.length) {
+              _toggleSelection(filteredKeys[_selectedIndex]);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => handleListKeyEvent(() {
+            if (_selectedIndex < filteredKeys.length) {
+              _toggleSelection(filteredKeys[_selectedIndex]);
+            }
+          }),
     };
 
     return Material(
@@ -156,7 +164,7 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
               context: context,
               bloc: widget.bloc,
               widthFactor: 0.35,
-              body: PlayerSettingsWidget(controller: widget.controller, bloc: widget.bloc),
+              body: PlayerSettingsWidget(controller: widget.controller, bloc: widget.bloc, isTouch: widget.isTouch),
             );
           },
           const SingleActivator(LogicalKeyboardKey.arrowRight): () {
@@ -234,9 +242,10 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
                             child: ListTile(
                               title: Text(displayName.toString()),
                               subtitle: Text(name),
-                              trailing: isSelected
-                                  ? Icon(Icons.check_circle, color: AppTheme.fullFocusColor)
-                                  : Text(code, style: Theme.of(context).textTheme.titleMedium),
+                              trailing:
+                                  isSelected
+                                      ? Icon(Icons.check_circle, color: AppTheme.fullFocusColor)
+                                      : Text(code, style: Theme.of(context).textTheme.titleMedium),
                               selected: isSelected,
                               selectedTileColor: AppTheme.fullFocusColor.withValues(alpha: 0.3),
                               onTap: () => _toggleSelection(code),

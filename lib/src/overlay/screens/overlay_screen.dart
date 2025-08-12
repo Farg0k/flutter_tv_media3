@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
+import 'package:flutter_tv_media3/src/app_theme/app_theme.dart';
 import '../../utils/debouncer_throttler.dart';
 import '../bloc/overlay_ui_bloc.dart';
 import '../media_ui_service/media3_ui_controller.dart';
@@ -11,7 +12,12 @@ import 'components/epg_screen/epg_screen.dart';
 import 'components/info_panel.dart';
 import 'components/placeholder_widget.dart';
 import 'components/setup_panel.dart';
+import 'components/setup_panel/audio_widget/audio_widget.dart';
+import 'components/setup_panel/playlist_widget/playlist_widget.dart';
+import 'components/setup_panel/settings_screen/settings_screen.dart';
 import 'components/setup_panel/settings_screen/sleep_timer_widget.dart';
+import 'components/setup_panel/subtitle_widget/subtitle_widget.dart';
+import 'components/setup_panel/video_widget/video_widget.dart';
 import 'components/simple_panel.dart';
 import 'components/touch_controls_overlay.dart';
 import 'components/widgets/player_error_widget.dart';
@@ -106,7 +112,11 @@ class _OverlayScreenState extends State<OverlayScreen> {
           listener: (BuildContext context, OverlayUiState state) {
             if (state.playerPanel == PlayerPanel.sleep) {
               _openPanel(playerPanel: PlayerPanel.none);
-              showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc, isAuto: true));
+              showSideSheet(
+                context: context,
+                bloc: bloc,
+                body: SleepTimerWidget(bloc: bloc, isAuto: true, isTouch: false),
+              );
             }
             if (state.playerPanel == PlayerPanel.epg) {
               _openPanel(playerPanel: PlayerPanel.none);
@@ -156,6 +166,51 @@ class _OverlayScreenState extends State<OverlayScreen> {
             }
             if (state.playerPanel == PlayerPanel.touchOverlay) {
               return TouchControlsOverlay(controller: widget.controller);
+            }
+            if (state.playerPanel == PlayerPanel.settings) {
+              return Container(
+                color: AppTheme.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SettingsScreen(controller: widget.controller, isTouch: true),
+                ),
+              );
+            }
+            if (state.playerPanel == PlayerPanel.playlist) {
+              return Container(
+                color: AppTheme.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: PlaylistWidget(controller: widget.controller),
+                ),
+              );
+            }
+            if (state.playerPanel == PlayerPanel.audio) {
+              return Container(
+                color: AppTheme.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: AudioWidget(controller: widget.controller),
+                ),
+              );
+            }
+            if (state.playerPanel == PlayerPanel.video) {
+              return Container(
+                color: AppTheme.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: VideoWidget(controller: widget.controller),
+                ),
+              );
+            }
+            if (state.playerPanel == PlayerPanel.subtitle) {
+              return Container(
+                color: AppTheme.backgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SubtitleWidget(controller: widget.controller),
+                ),
+              );
             }
             if (widget.controller.playerState.videoTracks.isEmpty) {
               return CallbackShortcuts(

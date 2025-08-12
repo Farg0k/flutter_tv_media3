@@ -119,45 +119,48 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OverlayUiBloc, OverlayUiState>(
-      buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
-      builder: (context, state) {
-        return CallbackShortcuts(
-          bindings: _getShortcuts(),
-          child: Focus(
-            focusNode: _focusNode,
-            autofocus: true,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 7),
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                trackVisibility: true,
-                radius: const Radius.circular(50),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: widget.controller.playerState.playlist.length,
-                    itemExtent: _itemExtent,
-                    itemBuilder: (BuildContext context, int index) {
-                      final item = widget.controller.playerState.playlist[index];
-                      final playlistItemWidget = PlaylistItemWidget(
-                        controller: widget.controller,
-                        item: item,
-                        index: index,
-                        autofocus: index == _selectedIndex,
-                        isActive: index == state.playIndex,
-                      );
-                      return playlistItemWidget;
-                    },
+    return Material(
+      color: Colors.transparent,
+      child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
+        buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
+        builder: (context, state) {
+          return CallbackShortcuts(
+            bindings: _getShortcuts(),
+            child: Focus(
+              focusNode: _focusNode,
+              autofocus: true,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 7),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  radius: const Radius.circular(50),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: widget.controller.playerState.playlist.length,
+                      itemExtent: _itemExtent,
+                      itemBuilder: (BuildContext context, int index) {
+                        final item = widget.controller.playerState.playlist[index];
+                        final playlistItemWidget = PlaylistItemWidget(
+                          controller: widget.controller,
+                          item: item,
+                          index: index,
+                          autofocus: index == _selectedIndex,
+                          isActive: index == state.playIndex,
+                        );
+                        return playlistItemWidget;
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

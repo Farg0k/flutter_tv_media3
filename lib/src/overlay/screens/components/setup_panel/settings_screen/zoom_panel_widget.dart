@@ -7,8 +7,8 @@ import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 
 class ZoomPanelWidget extends StatefulWidget {
-  const ZoomPanelWidget({super.key, required this.controller, required this.bloc});
-
+  const ZoomPanelWidget({super.key, required this.controller, required this.bloc, required this.isTouch});
+  final bool isTouch;
   final Media3UiController controller;
   final OverlayUiBloc bloc;
 
@@ -22,7 +22,6 @@ class _ZoomPanelWidgetState extends State<ZoomPanelWidget> {
   double scaleY = 1;
   @override
   void initState() {
-    
     super.initState();
   }
 
@@ -33,7 +32,20 @@ class _ZoomPanelWidgetState extends State<ZoomPanelWidget> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ListTile(
-          leading: const Icon(Icons.zoom_in),
+          leading:
+              widget.isTouch == true
+                  ? IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      widget.bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
+                    },
+                    icon: Icon(Icons.arrow_back),
+                  )
+                  : const Icon(Icons.subtitles_outlined),
+          trailing:
+              widget.isTouch == true
+                  ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.zoom_in))
+                  : null,
           title: Text(OverlayLocalizations.get('zoom')),
           titleTextStyle: Theme.of(context).textTheme.headlineMedium,
         ),
@@ -82,7 +94,9 @@ class _ZoomPanelWidgetState extends State<ZoomPanelWidget> {
                                           '${e.nativeValue.replaceAll('_', ' ')}: X${scaleX.toStringAsFixed(1)}, Y${scaleY.toStringAsFixed(1)}',
                                         ),
                                         subtitle:
-                                            isEditScale == false ? Text(OverlayLocalizations.get('enterToEdit')) : Text(OverlayLocalizations.get('enterToSaveAndExit')),
+                                            isEditScale == false
+                                                ? Text(OverlayLocalizations.get('enterToEdit'))
+                                                : Text(OverlayLocalizations.get('enterToSaveAndExit')),
                                         trailing: isEditScale == true ? const Icon(Icons.control_camera) : null,
                                         onTap:
                                             () async => setState(() {

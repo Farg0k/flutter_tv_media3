@@ -8,8 +8,8 @@ import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 
 class SpeedPanelWidget extends StatelessWidget {
-  const SpeedPanelWidget({super.key, required this.controller, required this.bloc});
-
+  const SpeedPanelWidget({super.key, required this.controller, required this.bloc, required this.isTouch});
+  final bool isTouch;
   final Media3UiController controller;
   final OverlayUiBloc bloc;
   @override
@@ -28,36 +28,47 @@ class SpeedPanelWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ListTile(
-              leading: const Icon(Icons.speed),
+              leading:
+              isTouch
+                  ? IconButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
+                },
+                icon: Icon(Icons.arrow_back),
+              )
+                  : const Icon(Icons.speed),
+              trailing:
+              isTouch ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close)) : null,
               title: Text(OverlayLocalizations.get('speed')),
               titleTextStyle: Theme.of(context).textTheme.headlineMedium,
             ),
-            CallbackShortcuts(
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _returnToMenu(context: context),
-                const SingleActivator(LogicalKeyboardKey.arrowRight): () => _returnToMenu(context: context),
-                const SingleActivator(LogicalKeyboardKey.contextMenu): () => _returnToMenu(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyQ): () => _returnToMenu(context: context),
-              },
-              child: ListView(
-                shrinkWrap: true,
-                children:
-                    speedList
-                        .map(
-                          (e) => Material(
-                            color: Colors.transparent,
-                            child: ListTile(
-                              selected: e == currentSpeed,
-                              autofocus: e == currentSpeed,
-                              focusColor: AppTheme.focusColor,
-                              title: Text('${e}x'),
-                              onTap: () async => await controller.setSpeed(speed: e),
-                              titleTextStyle: Theme.of(context).textTheme.titleLarge,
-                              leading: e == currentSpeed ? const Icon(Icons.check) : null,
-                            ),
+            Expanded(
+              child: CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _returnToMenu(context: context),
+                  const SingleActivator(LogicalKeyboardKey.arrowRight): () => _returnToMenu(context: context),
+                  const SingleActivator(LogicalKeyboardKey.contextMenu): () => _returnToMenu(context: context),
+                  const SingleActivator(LogicalKeyboardKey.keyQ): () => _returnToMenu(context: context),
+                },
+                child: ListView(
+                  children: speedList
+                      .map(
+                        (e) => Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            selected: e == currentSpeed,
+                            autofocus: e == currentSpeed,
+                            focusColor: AppTheme.focusColor,
+                            title: Text('${e}x'),
+                            onTap: () async => await controller.setSpeed(speed: e),
+                            titleTextStyle: Theme.of(context).textTheme.titleLarge,
+                            leading: e == currentSpeed ? const Icon(Icons.check) : null,
                           ),
-                        )
-                        .toList(),
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ],

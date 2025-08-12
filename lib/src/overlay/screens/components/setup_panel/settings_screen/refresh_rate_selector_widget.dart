@@ -23,7 +23,7 @@ class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
   RefreshRateInfo? _refreshRateInfo;
   bool _isLoading = true;
   int _selectedIndex = 0;
-  static const double _itemExtent = 70.0;
+  static const double _itemExtent = AppTheme.customListItemExtent;
 
   @override
   void initState() {

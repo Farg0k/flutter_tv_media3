@@ -10,6 +10,7 @@ class StringSettingsWidget extends StatelessWidget {
   final String valueTitle;
   final String title;
   final bool autofocus;
+  final bool isTouch;
   const StringSettingsWidget({
     super.key,
     required this.leftCallback,
@@ -18,6 +19,7 @@ class StringSettingsWidget extends StatelessWidget {
     required this.valueTitle,
     required this.title,
     this.autofocus = false,
+    required this.isTouch,
   });
 
   @override
@@ -32,14 +34,28 @@ class StringSettingsWidget extends StatelessWidget {
         onTap: enterCallback,
         title: Text(title),
         focusColor: AppTheme.focusColor,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.arrow_left, color: AppTheme.fullFocusColor),
-            Text(valueTitle, style: Theme.of(context).textTheme.titleMedium),
-            Icon(Icons.arrow_right, color: AppTheme.fullFocusColor),
-          ],
-        ),
+        trailing:
+            isTouch
+                ? null
+                : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_left, color: AppTheme.fullFocusColor),
+                    Text(valueTitle, style: Theme.of(context).textTheme.titleMedium),
+                    Icon(Icons.arrow_right, color: AppTheme.fullFocusColor),
+                  ],
+                ),
+        subtitle:
+            isTouch
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(onPressed: leftCallback, icon: Icon(Icons.arrow_left, color: AppTheme.fullFocusColor)),
+                    Text(valueTitle, style: Theme.of(context).textTheme.titleMedium),
+                    IconButton(onPressed: rightCallback, icon: Icon(Icons.arrow_right, color: AppTheme.fullFocusColor)),
+                  ],
+                )
+                : null,
         titleTextStyle: Theme.of(context).textTheme.titleLarge,
       ),
     );

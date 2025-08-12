@@ -29,7 +29,7 @@ class _ColorSelectorWidgetState extends State<ColorSelectorWidget> {
   bool isFocus = false;
   late ScrollController _scrollController;
   final FocusNode _focusNode = FocusNode();
-  static const double _itemExtent = 50;
+  static const double _itemExtent = AppTheme.customListItemExtent;
 
   @override
   void initState() {

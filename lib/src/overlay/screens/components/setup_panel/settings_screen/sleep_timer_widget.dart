@@ -12,8 +12,8 @@ import '../../../../bloc/overlay_ui_bloc.dart';
 class SleepTimerWidget extends StatefulWidget {
   final OverlayUiBloc bloc;
   final bool isAuto;
-
-  const SleepTimerWidget({super.key, required this.bloc, this.isAuto = false});
+  final bool isTouch;
+  const SleepTimerWidget({super.key, required this.bloc, this.isAuto = false, required this.isTouch});
 
   @override
   State<SleepTimerWidget> createState() => _SleepTimerWidgetState();
@@ -71,7 +71,7 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _SleepTimerHeader(bloc: widget.bloc),
+          _SleepTimerHeader(bloc: widget.bloc, isTouch: widget.isTouch,),
           Expanded(
             child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
               bloc: widget.bloc,
@@ -135,7 +135,8 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
 
 class _SleepTimerHeader extends StatelessWidget {
   final OverlayUiBloc bloc;
-  const _SleepTimerHeader({required this.bloc});
+  final bool isTouch;
+  const _SleepTimerHeader({required this.bloc, required this.isTouch});
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +145,18 @@ class _SleepTimerHeader extends StatelessWidget {
       buildWhen: (oldState, newState) => oldState.sleepTime != newState.sleepTime,
       builder: (context, state) {
         return ListTile(
-          leading: const Icon(Icons.timelapse),
+          leading:
+          isTouch
+              ? IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
+            },
+            icon: Icon(Icons.arrow_back),
+          )
+              : const Icon(Icons.timelapse),
+          trailing:
+          isTouch ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close)) : null,
           title: const Text('Sleep Timer'),
           titleTextStyle: Theme.of(context).textTheme.headlineMedium,
           subtitle: Visibility(
