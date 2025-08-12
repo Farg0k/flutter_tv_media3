@@ -17,6 +17,7 @@ class OverlayUiState extends Equatable {
     required this.clockPosition,
     this.customInfoText,
     this.isScreenLocked = false,
+    this.isTouch = false,
   });
 
   /// The index of the current item in the playlist.
@@ -61,6 +62,9 @@ class OverlayUiState extends Equatable {
   /// A flag indicating if the touch controls are locked.
   final bool isScreenLocked;
 
+  /// A flag indicating if the UI is in touch mode.
+  final bool isTouch;
+
   @override
   List<Object?> get props => [
         playIndex,
@@ -75,6 +79,7 @@ class OverlayUiState extends Equatable {
         clockPosition,
         customInfoText,
         isScreenLocked,
+        isTouch,
       ];
 
   OverlayUiState copyWith({
@@ -92,6 +97,7 @@ class OverlayUiState extends Equatable {
     ClockPosition? clockPosition,
     String? customInfoText,
     bool? isScreenLocked,
+    bool? isTouch,
   }) {
     return OverlayUiState(
       playIndex: playIndex ?? this.playIndex,
@@ -108,6 +114,7 @@ class OverlayUiState extends Equatable {
       clockPosition: clockPosition ?? this.clockPosition,
       customInfoText: customInfoText ?? this.customInfoText,
       isScreenLocked: isScreenLocked ?? this.isScreenLocked,
+      isTouch: isTouch ?? this.isTouch,
     );
   }
 }

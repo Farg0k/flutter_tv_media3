@@ -115,7 +115,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
               showSideSheet(
                 context: context,
                 bloc: bloc,
-                body: SleepTimerWidget(bloc: bloc, isAuto: true, isTouch: false),
+                body: SleepTimerWidget(bloc: bloc, isAuto: true),
               );
             }
             if (state.playerPanel == PlayerPanel.epg) {
@@ -162,9 +162,11 @@ class _OverlayScreenState extends State<OverlayScreen> {
             }
 
             if (state.playerPanel == PlayerPanel.setup) {
+              bloc.add(const SetTouchMode(isTouch: false));
               return SetupPanel(controller: widget.controller, selSettingsTab: state.tabIndex);
             }
             if (state.playerPanel == PlayerPanel.touchOverlay) {
+              bloc.add(const SetTouchMode(isTouch: true));
               return TouchControlsOverlay(controller: widget.controller);
             }
             if (state.playerPanel == PlayerPanel.settings) {
@@ -172,7 +174,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 color: AppTheme.backgroundColor,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SettingsScreen(controller: widget.controller, isTouch: true),
+                  child: SettingsScreen(controller: widget.controller),
                 ),
               );
             }

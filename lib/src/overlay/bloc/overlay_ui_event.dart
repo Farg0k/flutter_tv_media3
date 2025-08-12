@@ -140,3 +140,12 @@ class ToggleScreenLock extends OverlayUiEvent {
   @override
   List<Object?> get props => [];
 }
+
+/// Sets the touch mode for the UI.
+class SetTouchMode extends OverlayUiEvent {
+  final bool isTouch;
+  const SetTouchMode({required this.isTouch});
+
+  @override
+  List<Object?> get props => [isTouch];
+}

@@ -49,6 +49,7 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
     on<SetClockSettings>(_setClockSettings);
     on<SetClockPosition>(_setClockPosition);
     on<ToggleScreenLock>(_toggleScreenLock);
+    on<SetTouchMode>(_onSetTouchMode);
   }
 
   /// Handles updates to the full player state.
@@ -181,5 +182,10 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   /// Toggles the screen lock state.
   void _toggleScreenLock(ToggleScreenLock event, Emitter<OverlayUiState> emit) {
     emit(state.copyWith(isScreenLocked: !state.isScreenLocked));
+  }
+
+  /// Sets the touch mode.
+  void _onSetTouchMode(SetTouchMode event, Emitter<OverlayUiState> emit) {
+    emit(state.copyWith(isTouch: event.isTouch));
   }
 }

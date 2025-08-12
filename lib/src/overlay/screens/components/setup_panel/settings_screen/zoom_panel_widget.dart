@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import '../../../../../app_theme/app_theme.dart';
 import '../../../../../entity/player_state.dart';
@@ -7,8 +8,7 @@ import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 
 class ZoomPanelWidget extends StatefulWidget {
-  const ZoomPanelWidget({super.key, required this.controller, required this.bloc, required this.isTouch});
-  final bool isTouch;
+  const ZoomPanelWidget({super.key, required this.controller, required this.bloc});
   final Media3UiController controller;
   final OverlayUiBloc bloc;
 
@@ -27,112 +27,108 @@ class _ZoomPanelWidgetState extends State<ZoomPanelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        ListTile(
-          leading:
-              widget.isTouch == true
+    return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      selector: (state) => state.isTouch,
+      builder: (context, isTouch) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ListTile(
+              leading: isTouch == true
                   ? IconButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      widget.bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
-                    },
-                    icon: Icon(Icons.arrow_back),
-                  )
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        widget.bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
+                      },
+                      icon: Icon(Icons.arrow_back),
+                    )
                   : const Icon(Icons.subtitles_outlined),
-          trailing:
-              widget.isTouch == true
+              trailing: isTouch == true
                   ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.zoom_in))
                   : null,
-          title: Text(OverlayLocalizations.get('zoom')),
-          titleTextStyle: Theme.of(context).textTheme.headlineMedium,
-        ),
-        CallbackShortcuts(
-          bindings: {
-            const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _returnToMenu(context: context),
-            const SingleActivator(LogicalKeyboardKey.arrowRight): () => _returnToMenu(context: context),
-            const SingleActivator(LogicalKeyboardKey.contextMenu): () => _returnToMenu(context: context),
-            const SingleActivator(LogicalKeyboardKey.keyQ): () => _returnToMenu(context: context),
-          },
-          child: StreamBuilder<PlayerState>(
-            initialData: widget.controller.playerState,
-            stream: widget.controller.playerStateStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData == false) {
-                return const SizedBox.shrink();
-              }
-              return ListView(
-                shrinkWrap: true,
-                children:
-                    PlayerZoom.values
+              title: Text(OverlayLocalizations.get('zoom')),
+              titleTextStyle: Theme.of(context).textTheme.headlineMedium,
+            ),
+            CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _returnToMenu(context: context),
+                const SingleActivator(LogicalKeyboardKey.arrowRight): () => _returnToMenu(context: context),
+                const SingleActivator(LogicalKeyboardKey.contextMenu): () => _returnToMenu(context: context),
+                const SingleActivator(LogicalKeyboardKey.keyQ): () => _returnToMenu(context: context),
+              },
+              child: StreamBuilder<PlayerState>(
+                initialData: widget.controller.playerState,
+                stream: widget.controller.playerStateStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData == false) {
+                    return const SizedBox.shrink();
+                  }
+                  return ListView(
+                    shrinkWrap: true,
+                    children: PlayerZoom.values
                         .map(
-                          (e) =>
-                              e == PlayerZoom.scale
-                                  ? CallbackShortcuts(
-                                    bindings:
-                                        isEditScale == true
-                                            ? {
-                                              const SingleActivator(LogicalKeyboardKey.arrowLeft):
-                                                  () => _updateScale(dx: -0.1),
-                                              const SingleActivator(LogicalKeyboardKey.arrowRight):
-                                                  () => _updateScale(dx: 0.1),
-                                              const SingleActivator(LogicalKeyboardKey.arrowUp):
-                                                  () => _updateScale(dy: 0.1),
-                                              const SingleActivator(LogicalKeyboardKey.arrowDown):
-                                                  () => _updateScale(dy: -0.1),
-                                            }
-                                            : {},
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: ListTile(
-                                        selected: e == snapshot.data!.zoom,
-                                        autofocus: e == snapshot.data!.zoom,
-                                        focusColor: AppTheme.focusColor,
-                                        title: Text(
-                                          '${e.nativeValue.replaceAll('_', ' ')}: X${scaleX.toStringAsFixed(1)}, Y${scaleY.toStringAsFixed(1)}',
-                                        ),
-                                        subtitle:
-                                            isEditScale == false
-                                                ? Text(OverlayLocalizations.get('enterToEdit'))
-                                                : Text(OverlayLocalizations.get('enterToSaveAndExit')),
-                                        trailing: isEditScale == true ? const Icon(Icons.control_camera) : null,
-                                        onTap:
-                                            () async => setState(() {
-                                              isEditScale = !isEditScale;
-                                              if (isEditScale == false) Navigator.pop(context);
-                                            }),
-                                        titleTextStyle: Theme.of(context).textTheme.titleLarge,
-                                        leading:
-                                            isEditScale == true || e == snapshot.data!.zoom
-                                                ? const Icon(Icons.check)
-                                                : null,
-                                      ),
-                                    ),
-                                  )
-                                  : Material(
+                          (e) => e == PlayerZoom.scale
+                              ? CallbackShortcuts(
+                                  bindings: isEditScale == true
+                                      ? {
+                                          const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+                                              _updateScale(dx: -0.1),
+                                          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+                                              _updateScale(dx: 0.1),
+                                          const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                                              _updateScale(dy: 0.1),
+                                          const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                                              _updateScale(dy: -0.1),
+                                        }
+                                      : {},
+                                  child: Material(
                                     color: Colors.transparent,
                                     child: ListTile(
                                       selected: e == snapshot.data!.zoom,
                                       autofocus: e == snapshot.data!.zoom,
                                       focusColor: AppTheme.focusColor,
-                                      title: Text(e.nativeValue.replaceAll('_', ' ')),
-                                      onTap: () async => await widget.controller.setZoom(zoom: e),
+                                      title: Text(
+                                        '${e.nativeValue.replaceAll('_', ' ')}: X${scaleX.toStringAsFixed(1)}, Y${scaleY.toStringAsFixed(1)}',
+                                      ),
+                                      subtitle: isEditScale == false
+                                          ? Text(OverlayLocalizations.get('enterToEdit'))
+                                          : Text(OverlayLocalizations.get('enterToSaveAndExit')),
+                                      trailing: isEditScale == true ? const Icon(Icons.control_camera) : null,
+                                      onTap: () async => setState(() {
+                                        isEditScale = !isEditScale;
+                                        if (isEditScale == false) Navigator.pop(context);
+                                      }),
                                       titleTextStyle: Theme.of(context).textTheme.titleLarge,
-                                      leading:
-                                          e == snapshot.data!.zoom && isEditScale == false
-                                              ? const Icon(Icons.check)
-                                              : null,
+                                      leading: isEditScale == true || e == snapshot.data!.zoom
+                                          ? const Icon(Icons.check)
+                                          : null,
                                     ),
                                   ),
+                                )
+                              : Material(
+                                  color: Colors.transparent,
+                                  child: ListTile(
+                                    selected: e == snapshot.data!.zoom,
+                                    autofocus: e == snapshot.data!.zoom,
+                                    focusColor: AppTheme.focusColor,
+                                    title: Text(e.nativeValue.replaceAll('_', ' ')),
+                                    onTap: () async => await widget.controller.setZoom(zoom: e),
+                                    titleTextStyle: Theme.of(context).textTheme.titleLarge,
+                                    leading: e == snapshot.data!.zoom && isEditScale == false
+                                        ? const Icon(Icons.check)
+                                        : null,
+                                  ),
+                                ),
                         )
                         .toList(),
-              );
-            },
-          ),
-        ),
-      ],
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

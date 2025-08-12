@@ -16,9 +16,8 @@ import 'package:flutter_tv_media3/src/overlay/screens/components/widgets/show_si
 import 'package:flutter_tv_media3/src/utils/string_utils.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final bool isTouch;
   final Media3UiController controller;
-  const SettingsScreen({super.key, required this.controller, this.isTouch = false});
+  const SettingsScreen({super.key, required this.controller});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -163,7 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           context: context,
           bloc: bloc,
           widthFactor: 0.35,
-          body: PlayerSettingsWidget(controller: widget.controller, bloc: bloc, isTouch: widget.isTouch),
+          body: PlayerSettingsWidget(controller: widget.controller, bloc: bloc),
         );
       },
     ),
@@ -199,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: (context) {
         final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-        showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc, isTouch: widget.isTouch));
+        showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc));
       },
     ),
     SettingsItem(
@@ -214,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         showSideSheet(
           context: context,
           bloc: bloc,
-          body: ZoomPanelWidget(controller: widget.controller, bloc: bloc, isTouch: widget.isTouch),
+          body: ZoomPanelWidget(controller: widget.controller, bloc: bloc),
         );
       },
     ),
@@ -230,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         showSideSheet(
           context: context,
           bloc: bloc,
-          body: SpeedPanelWidget(controller: widget.controller, bloc: bloc, isTouch: widget.isTouch),
+          body: SpeedPanelWidget(controller: widget.controller, bloc: bloc),
         );
       },
     ),
@@ -277,7 +276,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           bloc: bloc,
           barrierColor: Colors.transparent,
           widthFactor: 0.35,
-          body: SubtitleSettingsWidget(controller: widget.controller, isTouch: widget.isTouch, bloc: bloc),
+          body: SubtitleSettingsWidget(controller: widget.controller, bloc: bloc),
         );
       },
     ),
@@ -292,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           bloc: bloc,
           barrierColor: Colors.transparent,
           widthFactor: 0.38,
-          body: ClockSettingsWidget(controller: widget.controller, bloc: bloc, isTouch: widget.isTouch),
+          body: ClockSettingsWidget(controller: widget.controller, bloc: bloc),
         );
       },
     ),
