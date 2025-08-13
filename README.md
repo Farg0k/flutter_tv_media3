@@ -54,14 +54,14 @@ Understanding the architecture is key to using this plugin correctly:
 *   **EPG (Electronic Program Guide):** Ability to pass and display a program guide for TV channels. The EPG is activated in the player by pressing the left/right D-pad buttons. To activate this, the `List<EpgProgram>? programs` field must not be `null`.
 *   **Settings Persistence:** Callbacks to save player settings (quality, language) and subtitle styles that the user changes in the UI.
 <p align="center">
-  <a href="screenshots/screen0.png"><img src="screenshots/screen0.png" width="200"/></a>
-  <a href="screenshots/screen1.png"><img src="screenshots/screen1.png" width="200"/></a>
-  <a href="screenshots/screen2.png"><img src="screenshots/screen2.png" width="200"/></a>
+  <a href="screenshots/screen0.png"><img src="screenshots/screen0.png" width="400"/></a>
+  <a href="screenshots/screen1.png"><img src="screenshots/screen1.png" width="400"/></a>
+  <a href="screenshots/screen2.png"><img src="screenshots/screen2.png" width="400"/></a>
 </p>
 <p align="center">
-  <a href="screenshots/screen3.png"><img src="screenshots/screen3.png" width="200"/></a>
-  <a href="screenshots/screen4.png"><img src="screenshots/screen4.png" width="200"/></a>
-  <a href="screenshots/screen5.png"><img src="screenshots/screen5.png" width="200"/></a>
+  <a href="screenshots/screen3.png"><img src="screenshots/screen3.png" width="400"/></a>
+  <a href="screenshots/screen4.png"><img src="screenshots/screen4.png" width="400"/></a>
+  <a href="screenshots/screen5.png"><img src="screenshots/screen5.png" width="400"/></a>
 </p>
 ## Getting Started
 
