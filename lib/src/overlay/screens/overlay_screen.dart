@@ -21,7 +21,9 @@ import 'components/setup_panel/video_widget/video_widget.dart';
 import 'components/simple_panel.dart';
 import 'components/touch_controls_overlay.dart';
 import 'components/widgets/player_error_widget.dart';
+import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'components/widgets/show_side_sheet.dart';
+import 'components/widgets/titled_panel_scaffold.dart';
 
 /// The root widget for the player's UI overlay, running in a separate
 /// Flutter Engine.
@@ -179,39 +181,31 @@ class _OverlayScreenState extends State<OverlayScreen> {
               );
             }
             if (state.playerPanel == PlayerPanel.playlist) {
-              return Container(
-                color: AppTheme.backgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: PlaylistWidget(controller: widget.controller),
-                ),
+              return TitledPanelScaffold(
+                title: OverlayLocalizations.get('playlist'),
+                icon: Icons.playlist_play,
+                child: PlaylistWidget(controller: widget.controller),
               );
             }
             if (state.playerPanel == PlayerPanel.audio) {
-              return Container(
-                color: AppTheme.backgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: AudioWidget(controller: widget.controller),
-                ),
+              return TitledPanelScaffold(
+                title: OverlayLocalizations.get('audio'),
+                icon: Icons.audiotrack,
+                child: AudioWidget(controller: widget.controller),
               );
             }
             if (state.playerPanel == PlayerPanel.video) {
-              return Container(
-                color: AppTheme.backgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: VideoWidget(controller: widget.controller),
-                ),
+              return TitledPanelScaffold(
+                title: OverlayLocalizations.get('video'),
+                icon: Icons.video_library,
+                child: VideoWidget(controller: widget.controller),
               );
             }
             if (state.playerPanel == PlayerPanel.subtitle) {
-              return Container(
-                color: AppTheme.backgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SubtitleWidget(controller: widget.controller),
-                ),
+              return TitledPanelScaffold(
+                title: OverlayLocalizations.get('subtitle'),
+                icon: Icons.subtitles,
+                child: SubtitleWidget(controller: widget.controller),
               );
             }
             if (widget.controller.playerState.videoTracks.isEmpty) {
