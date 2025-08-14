@@ -19,6 +19,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultSubtitleStyle = SubtitleStyle();
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return StreamBuilder<PlayerState>(
@@ -97,6 +98,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             colorList: ExtendedColors.allColors,
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async => await _setFontSize(action: -0.1, subtitleStyle: subtitleStyle),
                             rightCallback: () async => await _setFontSize(action: 0.1, subtitleStyle: subtitleStyle),
                             enterCallback: () async => await controller.updateSubtitleStyle(
@@ -108,6 +110,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('fontSize'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async => await controller.updateSubtitleStyle(
                               subtitleStyle: subtitleStyle.copyWith(
                                 applyEmbeddedStyles: !(subtitleStyle.applyEmbeddedStyles ?? true),
@@ -129,6 +132,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('applyEmbeddedStyles'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async =>
                                 await _setPadding(action: -1, subtitleStyle: subtitleStyle, side: Side.bottom),
                             rightCallback: () async =>
@@ -141,6 +145,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('bottomPadding'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async =>
                                 await _setPadding(action: -1, subtitleStyle: subtitleStyle, side: Side.left),
                             rightCallback: () async =>
@@ -152,6 +157,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('leftPadding'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async =>
                                 await _setPadding(action: -1, subtitleStyle: subtitleStyle, side: Side.right),
                             rightCallback: () async =>
@@ -164,6 +170,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('rightPadding'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async =>
                                 await _setPadding(action: -1, subtitleStyle: subtitleStyle, side: Side.top),
                             rightCallback: () async =>
@@ -175,6 +182,7 @@ class SubtitleSettingsWidget extends StatelessWidget {
                             title: OverlayLocalizations.get('topPadding'),
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async => await _setEdgeType(action: -1, subtitleStyle: subtitleStyle),
                             rightCallback: () async => await _setEdgeType(action: 1, subtitleStyle: subtitleStyle),
                             enterCallback: () async => await controller.updateSubtitleStyle(

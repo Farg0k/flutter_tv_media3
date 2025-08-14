@@ -16,6 +16,7 @@ class SpeedPanelWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<double> speedList = [0.25, 0.50, 0.75, 1, 1.25, 1.50, 1.75, 2];
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return StreamBuilder<PlayerState>(

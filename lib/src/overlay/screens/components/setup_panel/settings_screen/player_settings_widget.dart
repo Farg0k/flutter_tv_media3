@@ -21,6 +21,7 @@ class PlayerSettingsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultPlayerSettings = PlayerSettings();
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return StreamBuilder<PlayerState>(
@@ -70,9 +71,10 @@ class PlayerSettingsWidget extends StatelessWidget {
                               playerSettings: playerSettings.copyWith(videoQuality: defaultPlayerSettings.videoQuality),
                             ),
                             valueTitle: (playerSettings.videoQuality.name).toUpperCase(),
-                            title: OverlayLocalizations.get('videoQuality'),
+                            title: OverlayLocalizations.get('videoQuality'), bloc: bloc,
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async => await controller.savePlayerSettings(
                               playerSettings: playerSettings.copyWith(isAfrEnabled: !playerSettings.isAfrEnabled),
                             ),
@@ -110,6 +112,7 @@ class PlayerSettingsWidget extends StatelessWidget {
                             },
                           ),
                           StringSettingsWidget(
+                            bloc: bloc,
                             leftCallback: () async => await controller.savePlayerSettings(
                               playerSettings: playerSettings.copyWith(
                                 forcedAutoEnable: !playerSettings.forcedAutoEnable,

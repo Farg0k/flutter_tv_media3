@@ -24,6 +24,7 @@ class ClockSettingsWidget extends StatelessWidget {
     final defaultSettings = ClockSettings();
 
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return BlocBuilder<OverlayUiBloc, OverlayUiState>(
@@ -63,6 +64,7 @@ class ClockSettingsWidget extends StatelessWidget {
                       physics: const NeverScrollableScrollPhysics(), // Disable inner ListView scrolling
                       children: [
                         StringSettingsWidget(
+                          bloc: bloc,
                           autofocus: true,
                           leftCallback:
                               () async => await _setClockPosition(action: -1, clockSettings: state.clockSettings),
@@ -88,6 +90,7 @@ class ClockSettingsWidget extends StatelessWidget {
                           colorList: ExtendedColors.allColors,
                         ),
                         StringSettingsWidget(
+                          bloc: bloc,
                           leftCallback: () async => await _saveClockSettings(
                             clockSettings: state.clockSettings.copyWith(
                               showClockBorder: !state.clockSettings.showClockBorder,
@@ -119,6 +122,7 @@ class ClockSettingsWidget extends StatelessWidget {
                           colorList: ExtendedColors.allColors,
                         ),
                         StringSettingsWidget(
+                          bloc: bloc,
                           leftCallback: () async => await _saveClockSettings(
                             clockSettings: state.clockSettings.copyWith(
                               showClockBackground: !state.clockSettings.showClockBackground,

@@ -35,8 +35,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    items = _getSettingsItems();
-    _selectedIndex = context.read<OverlayUiBloc>().state.settingsItemIndex;
+    final bloc = context.read<OverlayUiBloc>();
+    items = _getSettingsItems(bloc: bloc);
+    _selectedIndex = bloc.state.settingsItemIndex;
     if (_selectedIndex >= items.length) {
       _selectedIndex = 0;
     }
@@ -151,12 +152,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  List<SettingsItem> _getSettingsItems() => [
+  List<SettingsItem> _getSettingsItems({required OverlayUiBloc bloc}) => [
     SettingsItem(
       icon: Icons.settings_applications_outlined,
       title: OverlayLocalizations.get('playerSettings'),
       onTap: (context) {
-        final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
           context: context,
@@ -171,6 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: OverlayLocalizations.get('sleepTimer'),
       trailingBuilder:
           (context) => BlocBuilder<OverlayUiBloc, OverlayUiState>(
+            bloc: bloc,
             buildWhen: (old, now) => old.sleepTime != now.sleepTime || old.sleepAfter != now.sleepAfter,
             builder: (context, state) {
               final textTheme = Theme.of(context).textTheme.headlineSmall!;
@@ -208,7 +209,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) =>
               Text(widget.controller.playerState.zoom.nativeValue, style: Theme.of(context).textTheme.headlineSmall),
       onTap: (context) {
-        final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
           context: context,
@@ -224,7 +224,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) =>
               Text('${widget.controller.playerState.speed}x', style: Theme.of(context).textTheme.headlineSmall),
       onTap: (context) {
-        final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
           context: context,
@@ -269,7 +268,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.subtitles_outlined,
       title: OverlayLocalizations.get('subtitleSettings'),
       onTap: (context) {
-        final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
           context: context,
@@ -284,7 +282,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.access_time,
       title: OverlayLocalizations.get('clock'),
       onTap: (context) {
-        final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
           context: context,

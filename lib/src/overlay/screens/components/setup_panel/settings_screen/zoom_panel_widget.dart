@@ -28,6 +28,7 @@ class _ZoomPanelWidgetState extends State<ZoomPanelWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: widget.bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return Column(

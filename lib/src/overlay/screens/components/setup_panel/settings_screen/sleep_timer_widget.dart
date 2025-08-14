@@ -139,6 +139,7 @@ class _SleepTimerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return BlocBuilder<OverlayUiBloc, OverlayUiState>(

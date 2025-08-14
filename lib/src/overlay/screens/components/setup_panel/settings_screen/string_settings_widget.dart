@@ -12,6 +12,7 @@ class StringSettingsWidget extends StatelessWidget {
   final String valueTitle;
   final String title;
   final bool autofocus;
+  final OverlayUiBloc bloc;
   const StringSettingsWidget({
     super.key,
     required this.leftCallback,
@@ -19,12 +20,13 @@ class StringSettingsWidget extends StatelessWidget {
     required this.enterCallback,
     required this.valueTitle,
     required this.title,
-    this.autofocus = false,
+    this.autofocus = false, required this.bloc,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocSelector<OverlayUiBloc, OverlayUiState, bool>(
+      bloc: bloc,
       selector: (state) => state.isTouch,
       builder: (context, isTouch) {
         return CallbackShortcuts(
