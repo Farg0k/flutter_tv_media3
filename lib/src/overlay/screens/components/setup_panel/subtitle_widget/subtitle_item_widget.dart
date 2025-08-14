@@ -12,12 +12,14 @@ class SubtitleItemWidget extends StatelessWidget {
     required this.index,
     required this.isFocused,
     this.searchStatus = SubtitleSearchStatus.idle,
+    this.onTap,
   });
 
   final SubtitleTrack track;
   final int index;
   final bool isFocused;
   final SubtitleSearchStatus searchStatus;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,30 +29,33 @@ class SubtitleItemWidget extends StatelessWidget {
         : isSelected
             ? AppTheme.focusColor.withValues(alpha: 0.3)
             : Colors.transparent;
-    return Material(
-      color: backgroundColor,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 40,
-              height: 40,
-              child: _buildIcon(track, isSelected, isFocused),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: MarqueeWidget(
-                text: StringUtils.getSubtitleTrackLabel(track: track, index: index),
-                focus: isFocused,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: isFocused || isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isFocused || isSelected ? Colors.white : Colors.white70,
+    return GestureDetector(
+      onTap: onTap,
+      child: Material(
+        color: backgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: _buildIcon(track, isSelected, isFocused),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: MarqueeWidget(
+                  text: StringUtils.getSubtitleTrackLabel(track: track, index: index),
+                  focus: isFocused,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: isFocused || isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isFocused || isSelected ? Colors.white : Colors.white70,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

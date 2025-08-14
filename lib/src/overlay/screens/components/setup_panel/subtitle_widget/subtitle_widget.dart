@@ -275,6 +275,12 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
                         index: index,
                         isFocused: index == _selectedIndex,
                         searchStatus: track.id == '-2' ? findState.status : SubtitleSearchStatus.idle,
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = index;
+                          });
+                          _handleSelect(track);
+                        },
                       );
                     },
                   );
