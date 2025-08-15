@@ -208,7 +208,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 child: SubtitleWidget(controller: widget.controller),
               );
             }
-            if (widget.controller.playerState.videoTracks.isEmpty) {
+            if (_shouldShowAudioUI()) {
               return CallbackShortcuts(
                 bindings: _generalBindings(),
                 child: Focus(
@@ -262,6 +262,33 @@ class _OverlayScreenState extends State<OverlayScreen> {
         ),
       ),
     );
+  }
+
+  bool _shouldShowAudioUI() {
+    final playerState = widget.controller.playerState;
+    final playIndex = playerState.playIndex;
+    final playlist = playerState.playlist;
+
+    if (playIndex < 0 || playIndex >= playlist.length) {
+      return false;
+    }
+
+    final currentItem = playlist[playIndex];
+    final mimeType = currentItem.mediaItemType.name.toLowerCase();
+
+    if (mimeType.startsWith('audio') == true) {
+      return true;
+    }
+
+
+    // 2. Fallback check: for undefined or missing mimeType
+    // Check that the player is in a stable state (not loading, buffering, or in error)
+    final isPlayerStable = playerState.stateValue != StateValue.buffering &&
+        playerState.stateValue != StateValue.initial &&
+        playerState.loadingStatus == null &&
+        playerState.lastError == null;
+
+    return playerState.videoTracks.isEmpty && isPlayerStable;
   }
 
   Map<ShortcutActivator, VoidCallback> _placeholderBindings() {

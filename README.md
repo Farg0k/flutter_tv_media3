@@ -348,7 +348,7 @@ A class to describe a single item in a playlist. Objects of this class are immut
 *   `label` (String?): A text label displayed for this item in the playlist UI.
 *   `coverImg` (String?): The URL for the cover art image.
 *   `placeholderImg` (String?): The URL for a placeholder image shown while the media is loading.
-*   `mediaItemType` (`MediaItemType`): The type of the media item (`video`, `audio`, `tvStream`). **Used only to display a corresponding icon in the playlist UI.**
+*   `mediaItemType` (`MediaItemType`): The type of the media item (`video`, `audio`, `tvStream`). This property has two functions: it is used to display a corresponding icon in the playlist UI, and **it can be used to force a specific player interface.** If set to `MediaItemType.audio`, the player will display the audio-only interface. Otherwise, the player will attempt to determine the interface automatically based on the media's tracks.
 
 **Audio Metadata:**
 
