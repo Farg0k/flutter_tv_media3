@@ -2,17 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 
+import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
+
 import '../../../../../app_theme/app_theme.dart';
 import '../../../../../entity/epg_channel.dart';
 import '../../widgets/marquee_title_widget.dart';
-
 
 class ProgramListItem extends StatefulWidget {
   final EpgProgram program;
   final bool isSelected;
   final bool isTheActiveProgram;
 
-  const ProgramListItem({super.key, required this.program, required this.isSelected, required this.isTheActiveProgram});
+  const ProgramListItem(
+      {super.key,
+      required this.program,
+      required this.isSelected,
+      required this.isTheActiveProgram});
 
   @override
   State<ProgramListItem> createState() => _ProgramListItemState();
@@ -48,7 +53,7 @@ class _ProgramListItemState extends State<ProgramListItem> {
   }
 
   void _startTimer() {
-    _timer?.cancel(); 
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
         _updateProgress();
@@ -75,11 +80,12 @@ class _ProgramListItemState extends State<ProgramListItem> {
       return;
     }
     setState(() {
-      _progress =
-          (now.difference(program.startTime).inSeconds / program.endTime.difference(program.startTime).inSeconds).clamp(
-            0.0,
-            1.0,
-          );
+      _progress = (now.difference(program.startTime).inSeconds /
+              program.endTime.difference(program.startTime).inSeconds)
+          .clamp(
+        0.0,
+        1.0,
+      );
     });
   }
 
@@ -90,12 +96,30 @@ class _ProgramListItemState extends State<ProgramListItem> {
     final isPassed = program.endTime.isBefore(now);
 
     return Container(
-      color: widget.isTheActiveProgram && widget.isSelected == false ? AppTheme.focusColor.withValues(alpha:0.2) : null,
-
+      color: widget.isTheActiveProgram && !widget.isSelected
+          ? AppTheme.focusColor.withValues(alpha: 0.2)
+          : null,
       child: ListTile(
-        leading: Text(
-          '${program.startTime.hour}:${program.startTime.minute.toString().padLeft(2, '0')} - ${program.endTime.hour}:${program.endTime.minute.toString().padLeft(2, '0')}',
-          style: isPassed ? AppTheme.programListPassedItemTimeStyle : AppTheme.programListItemTimeStyle,
+        leading: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            Text(
+              OverlayLocalizations.formatShortTimeRange(
+                  program.startTime, program.endTime),
+              style: isPassed
+                  ? AppTheme.programListPassedItemTimeStyle
+                  : AppTheme.programListItemTimeStyle,
+            ),
+            Text(
+              OverlayLocalizations.dateFormat(date: program.startTime),
+              style: (isPassed
+                  ? AppTheme.programListPassedItemTimeStyle.copyWith(fontSize: 12)
+                  : AppTheme.programListItemTimeStyle).copyWith(fontSize: 12)
+                  .copyWith(fontWeight: FontWeight.w300),
+            ),
+          ],
         ),
         title: MarqueeWidget(
           text: program.title,
@@ -104,7 +128,7 @@ class _ProgramListItemState extends State<ProgramListItem> {
                 ? FontWeight.bold
                 : FontWeight.normal,
             color: isPassed
-                ? AppTheme.colorSecondary.withValues(alpha:0.5)
+                ? AppTheme.colorSecondary.withValues(alpha: 0.5)
                 : AppTheme.colorPrimary,
           ),
           focus: widget.isSelected,
@@ -126,7 +150,8 @@ class _ProgramListItemState extends State<ProgramListItem> {
                         backgroundColor: AppTheme.divider,
                       ),
                     ),
-                    Icon(Icons.play_arrow, color: AppTheme.colorPrimary, size: 18),
+                    Icon(Icons.play_arrow,
+                        color: AppTheme.colorPrimary, size: 18),
                   ],
                 ),
               )

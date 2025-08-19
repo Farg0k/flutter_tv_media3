@@ -27,6 +27,7 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     
     on<EpgTimerTicked>(_onTimerTicked);
     on<EpgDateChanged>(_onDateChanged);
+    on<EpgScrolled>(_onEpgScrolled);
     on<EpgPlayerStateUpdated>(_onPlayerStateUpdated);
     _startTimer();
     _playerStateSubscription = _media3UiController.playerStateStream.listen((playerState) {
@@ -107,8 +108,25 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
 
   void _onDateChanged(EpgDateChanged event, Emitter<EpgState> emit) {
     if (event.dateIndex >= 0 && event.dateIndex < state.availableDates.length) {
-      emit(state.copyWith(selectedDateIndex: event.dateIndex));
+      final selectedDate = state.availableDates[event.dateIndex];
+      final programIndex = state.selectedChannel?.programs.indexWhere((p) {
+        final programDate = DateTime(p.startTime.year, p.startTime.month, p.startTime.day);
+        return programDate.isAtSameMomentAs(selectedDate);
+      });
+
+      if (programIndex != -1) {
+        emit(state.copyWith(
+          selectedDateIndex: event.dateIndex,
+          programIndexToScroll: programIndex,
+        ));
+      } else {
+        emit(state.copyWith(selectedDateIndex: event.dateIndex));
+      }
     }
+  }
+
+  void _onEpgScrolled(EpgScrolled event, Emitter<EpgState> emit) {
+    emit(state.copyWith(programIndexToScroll: null));
   }
 
   void _onPageChanged(EpgPageChanged event, Emitter<EpgState> emit) {

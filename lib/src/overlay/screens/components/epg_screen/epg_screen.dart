@@ -5,9 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../../../app_theme/app_theme.dart';
 import '../../../../entity/epg_channel.dart';
+import '../../../bloc/overlay_ui_bloc.dart';
+import '../widgets/clock_widget.dart';
 import 'bloc/epg_bloc.dart';
 import 'package:flutter_tv_media3/src/overlay/media_ui_service/media3_ui_controller.dart';
-
 import 'widgets/channels_list_view.dart';
 import 'widgets/epg_date_selector.dart';
 import 'widgets/epg_page_indicator.dart';
@@ -18,7 +19,7 @@ import 'widgets/programs_list_view.dart';
 class EpgScreen extends StatelessWidget {
   final String initialChannelId;
   final int initialPage;
-
+  final OverlayUiBloc bloc;
   final ValueChanged<EpgChannel> onChannelLaunch;
   final Locale deviceLocale;
   final Media3UiController controller;
@@ -30,22 +31,25 @@ class EpgScreen extends StatelessWidget {
     this.initialPage = 1,
     required this.onChannelLaunch,
     required this.deviceLocale,
+    required this.bloc,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => EpgBloc(
-        media3UiController: controller,
-        initialPage: initialPage,
-      )..add(EpgStarted(initialChannelId: initialChannelId)),
+      create: (context) =>
+          EpgBloc(media3UiController: controller, initialPage: initialPage)
+            ..add(EpgStarted(initialChannelId: initialChannelId)),
       child: BlocBuilder<EpgBloc, EpgState>(
         builder: (context, state) {
-          if (state.status == EpgStatus.loading || state.status == EpgStatus.initial) {
+          if (state.status == EpgStatus.loading ||
+              state.status == EpgStatus.initial) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state.status == EpgStatus.failure) {
-            return Center(child: Text('${OverlayLocalizations.get('errorPrefix')}${state.errorMessage}'));
+            return Center(
+                child: Text(
+                    '${OverlayLocalizations.get('errorPrefix')}${state.errorMessage}'));
           }
 
           return EpgView(
@@ -53,6 +57,7 @@ class EpgScreen extends StatelessWidget {
             onChannelLaunch: onChannelLaunch,
             deviceLocale: deviceLocale,
             hasPrograms: state.hasPrograms,
+            bloc: bloc,
           );
         },
       ),
@@ -64,12 +69,13 @@ class EpgView extends StatefulWidget {
   final ValueChanged<EpgChannel> onChannelLaunch;
   final Locale deviceLocale;
   final bool hasPrograms;
-  const EpgView({
-    super.key,
-    required this.onChannelLaunch,
-    required this.deviceLocale,
-    required this.hasPrograms,
-  });
+  final OverlayUiBloc bloc;
+  const EpgView(
+      {super.key,
+      required this.onChannelLaunch,
+      required this.deviceLocale,
+      required this.hasPrograms,
+      required this.bloc});
 
   @override
   State<EpgView> createState() => _EpgViewState();
@@ -101,12 +107,13 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
           ]
         : [
             OverlayLocalizations.get('channels_title'),
-            OverlayLocalizations.get('programs_title'),
+            OverlayLocalizations.get('programs_title')
           ];
     _columnFocusNodes = List.generate(_pageCount, (index) => FocusNode());
 
     _pageController = PageController(initialPage: bloc.state.currentPage);
-    _tabController = TabController(length: _pageCount, vsync: this, initialIndex: bloc.state.currentPage);
+    _tabController = TabController(
+        length: _pageCount, vsync: this, initialIndex: bloc.state.currentPage);
 
     _pageController.addListener(() {
       if (_pageController.page != null) {
@@ -170,14 +177,19 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final isTouch = widget.bloc.state.isTouch;
+    final epgBloc = context.read<EpgBloc>();
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: BlocConsumer<EpgBloc, EpgState>(
-          listenWhen: (previous, current) => previous.currentPage != current.currentPage,
+          listenWhen: (previous, current) =>
+              previous.currentPage != current.currentPage,
           listener: (context, state) {
-            if (_pageController.hasClients && _pageController.page?.round() != state.currentPage) {
+            if (_pageController.hasClients &&
+                _pageController.page?.round() != state.currentPage) {
               _pageController.animateToPage(
                 state.currentPage,
                 duration: const Duration(milliseconds: 300),
@@ -189,28 +201,86 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
           builder: (context, state) {
             return CallbackShortcuts(
               bindings: {
-                LogicalKeySet(LogicalKeyboardKey.arrowLeft): () => _move(context, -1),
-                LogicalKeySet(LogicalKeyboardKey.arrowRight): () => _move(context, 1),
+                LogicalKeySet(LogicalKeyboardKey.arrowLeft): () =>
+                    _move(context, -1),
+                LogicalKeySet(LogicalKeyboardKey.arrowRight): () =>
+                    _move(context, 1),
               },
               child: Focus(
                 focusNode: _pageFocusNode,
                 child: Column(
                   children: [
-                    EpgPageIndicator(
-                      tabController: _tabController,
-                      tabs: _pageTitles.map((title) => Tab(text: title)).toList(),
-                      deviceLocale: widget.deviceLocale,
-                    ),
-                    if (state.currentPage == 1) 
+                    if (isTouch)
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true).pop();
+                                  widget.bloc.add(
+                                      const SetSideSheetState(isOpen: false));
+                                  widget.bloc.add(SetActivePanel(playerPanel: PlayerPanel.touchOverlay));
+                                },
+                              ),
+                              const Expanded(child: Center(child: ClockWidget())),
+                              IconButton(
+                                icon: const Icon(Icons.close,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  Navigator.of(context, rootNavigator: true).pop();
+                                      widget.bloc.add(
+                                          const SetSideSheetState(isOpen: false));
+                                },
+                              ),
+                            ],
+                          ),
+                          EpgPageIndicator(
+                            tabController: _tabController,
+                            tabs: _pageTitles
+                                .map((title) => Tab(text: title))
+                                .toList(),
+                            deviceLocale: widget.deviceLocale,
+                            showClock: false,
+                          ),
+                        ],
+                      )
+                    else
+                      EpgPageIndicator(
+                        tabController: _tabController,
+                        tabs: _pageTitles
+                            .map((title) => Tab(text: title))
+                            .toList(),
+                        deviceLocale: widget.deviceLocale,
+                        showClock: true,
+                      ),
+                    if (state.currentPage == 1)
                       EpgDateSelector(
+                        bloc: widget.bloc,
                         dates: state.availableDates,
                         selectedIndex: state.selectedDateIndex,
+                        onPreviousDay: () {
+                          if (state.selectedDateIndex > 0) {
+                            epgBloc
+                                .add(EpgDateChanged(state.selectedDateIndex - 1));
+                          }
+                        },
+                        onNextDay: () {
+                          if (state.selectedDateIndex <
+                              state.availableDates.length - 1) {
+                            epgBloc
+                                .add(EpgDateChanged(state.selectedDateIndex + 1));
+                          }
+                        },
                       ),
                     Expanded(
                       child: PageView.builder(
                         controller: _pageController,
                         onPageChanged: (index) {
-                          if (context.read<EpgBloc>().state.currentPage != index) {
+                          if (context.read<EpgBloc>().state.currentPage !=
+                              index) {
                             context.read<EpgBloc>().add(EpgPageChanged(index));
                           }
                         },
@@ -223,8 +293,10 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
                               state: state,
                               columnFocusNodes: _columnFocusNodes,
                               onChannelLaunch: widget.onChannelLaunch,
-                              onScrollUpChanged: (can) => _canScrollUp.value = can,
-                              onScrollDownChanged: (can) => _canScrollDown.value = can,
+                              onScrollUpChanged: (can) =>
+                                  _canScrollUp.value = can,
+                              onScrollDownChanged: (can) =>
+                                  _canScrollDown.value = can,
                             ),
                           );
                         },

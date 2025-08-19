@@ -20,6 +20,7 @@ class OverlayLocalizations {
 
   /// Initializes the localization service.
   ///
+  
   /// This should be called once at the start of the overlay to set up
   /// default date formatting for the initial locale.
   static void init() {
@@ -66,5 +67,19 @@ class OverlayLocalizations {
   /// Formats the day of the week of a [DateTime] object according to the current locale.
   static String dayFormat({required DateTime date}) {
     return DateFormat.E(_locale.toString()).format(date);
+  }
+
+  /// Formats a time range. If the start and end times are on the same day,
+  /// it only shows the time. Otherwise, it includes the date.
+  static String formatShortTimeRange(DateTime startTime, DateTime endTime) {
+    final timeFormat = DateFormat.Hm(_locale.toString());
+    if (startTime.year == endTime.year &&
+        startTime.month == endTime.month &&
+        startTime.day == endTime.day) {
+      return '${timeFormat.format(startTime)} - ${timeFormat.format(endTime)}';
+    } else {
+      final dateTimeFormat = DateFormat.Md(_locale.toString()).add_Hm();
+      return '${dateTimeFormat.format(startTime)} - ${dateTimeFormat.format(endTime)}';
+    }
   }
 }

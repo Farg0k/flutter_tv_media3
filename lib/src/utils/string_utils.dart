@@ -13,7 +13,9 @@ class StringUtils {
   }
 
   static double getPercentage({int? duration, int? position}) =>
-      (duration != null && position != null && duration != 0) ? position / duration : 0;
+      (duration != null && position != null && duration > 0)
+          ? (position / duration).clamp(0.0, 1.0)
+          : 0.0;
 
   static String getTimeLeft({int? position, int? duration, bool seconds = true}) {
     if (position == null || duration == null) return '--:--';

@@ -41,6 +41,8 @@ class EpgDateChanged extends EpgEvent {
   const EpgDateChanged(this.dateIndex);
 }
 
+class EpgScrolled extends EpgEvent {}
+
 class EpgPlayerStateUpdated extends EpgEvent {
   final PlayerState playerState;
   const EpgPlayerStateUpdated(this.playerState);

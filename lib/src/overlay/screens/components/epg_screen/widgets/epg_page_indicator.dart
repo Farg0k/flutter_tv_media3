@@ -7,13 +7,20 @@ class EpgPageIndicator extends StatelessWidget {
   final TabController tabController;
   final List<Tab> tabs;
   final Locale deviceLocale;
+  final bool showClock;
 
-  const EpgPageIndicator({super.key, required this.tabController, required this.tabs, required this.deviceLocale});
+  const EpgPageIndicator({
+    super.key,
+    required this.tabController,
+    required this.tabs,
+    required this.deviceLocale,
+    this.showClock = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:  EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -23,7 +30,7 @@ class EpgPageIndicator extends StatelessWidget {
               tabs: tabs,
               indicator: UnderlineTabIndicator(borderSide: BorderSide(width: 2, color: AppTheme.fullFocusColor)),
               indicatorSize: TabBarIndicatorSize.tab,
-              indicatorPadding: EdgeInsets.only(top: -4.0),
+              indicatorPadding: const EdgeInsets.only(top: -4.0),
               labelPadding: EdgeInsets.zero,
               dividerColor: Colors.transparent,
               dividerHeight: 0,
@@ -33,9 +40,10 @@ class EpgPageIndicator extends StatelessWidget {
               unselectedLabelColor: AppTheme.colorSecondary,
             ),
           ),
-          ClockWidget(),
+          if (showClock) const ClockWidget(),
         ],
       ),
     );
   }
 }
+

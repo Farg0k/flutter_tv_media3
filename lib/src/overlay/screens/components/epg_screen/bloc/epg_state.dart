@@ -11,6 +11,7 @@ class EpgState extends Equatable {
     this.selectedProgramIndex = 0,
     this.selectedDateIndex = 0,
     this.currentPage = 0,
+    this.programIndexToScroll,
   });
 
   final EpgStatus status;
@@ -22,6 +23,7 @@ class EpgState extends Equatable {
   final int selectedProgramIndex;
   final int selectedDateIndex;
   final int currentPage;
+  final int? programIndexToScroll;
 
   EpgChannel? get selectedChannel {
     if (allChannels.isNotEmpty && selectedChannelIndex < allChannels.length) {
@@ -52,6 +54,7 @@ class EpgState extends Equatable {
     int? selectedProgramIndex,
     int? selectedDateIndex,
     int? currentPage,
+    int? programIndexToScroll,
   }) {
     return EpgState(
       status: status ?? this.status,
@@ -63,6 +66,7 @@ class EpgState extends Equatable {
       selectedProgramIndex: selectedProgramIndex ?? this.selectedProgramIndex,
       selectedDateIndex: selectedDateIndex ?? this.selectedDateIndex,
       currentPage: currentPage ?? this.currentPage,
+      programIndexToScroll: programIndexToScroll,
     );
   }
 
@@ -77,5 +81,6 @@ class EpgState extends Equatable {
         selectedProgramIndex,
         selectedDateIndex,
         currentPage,
+        programIndexToScroll,
       ];
 }

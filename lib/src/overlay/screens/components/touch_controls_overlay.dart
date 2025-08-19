@@ -229,6 +229,20 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           panel: PlayerPanel.playlist,
                                         ),
                                         const SizedBox(height: 16),
+                                        Visibility(
+                                          visible: widget.controller.playItem.programs != null,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              _buildPanelButton(
+                                                bloc: bloc,
+                                                icon: Icons.list_alt,
+                                                panel: PlayerPanel.epg,
+                                              ),
+                                              const SizedBox(height: 16),
+                                            ],
+                                          ),
+                                        ),
                                         _buildPanelButton(
                                           bloc: bloc,
                                           icon: Icons.video_settings,

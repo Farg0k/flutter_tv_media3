@@ -153,14 +153,25 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                 ),
               ),
             ),
-            isTheActiveProgram
-                ? ProgramTimelineWidget(
-              startTime: program.startTime,
-              endTime: program.endTime,
-            )
-                : Text(
-              '${program.startTime.hour}:${program.startTime.minute.toString().padLeft(2, '0')} - ${program.endTime.hour}:${program.endTime.minute.toString().padLeft(2, '0')}',
-              style: AppTheme.detailsProgramTimeStyle,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  OverlayLocalizations.dateFormat(date: program.startTime),
+                  style: AppTheme.detailsProgramTimeStyle
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+                isTheActiveProgram
+                    ? ProgramTimelineWidget(
+                        startTime: program.startTime,
+                        endTime: program.endTime,
+                      )
+                    : Text(
+                        OverlayLocalizations.formatShortTimeRange(
+                            program.startTime, program.endTime),
+                        style: AppTheme.detailsProgramTimeStyle,
+                      ),
+              ],
             ),
             Expanded(
               child: SingleChildScrollView(

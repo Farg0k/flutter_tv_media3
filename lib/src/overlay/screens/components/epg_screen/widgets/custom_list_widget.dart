@@ -31,10 +31,10 @@ class CustomListWidget<T> extends StatefulWidget {
   });
 
   @override
-  State<CustomListWidget<T>> createState() => _CustomListWidgetState<T>();
+  State<CustomListWidget<T>> createState() => CustomListWidgetState<T>();
 }
 
-class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
+class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   late ScrollController _scrollController;
   late FocusNode _focusNode; 
   late int _selectedIndex;
@@ -53,7 +53,7 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
     _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _scrollToIndex(_selectedIndex);
+        scrollToIndex(_selectedIndex);
         _updateScrollability(); 
         
         if (widget.hasFocus) {
@@ -83,7 +83,7 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
     if ((widget.hasFocus && !oldWidget.hasFocus) || (widget.initialIndex != oldWidget.initialIndex)) {
        WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _scrollToIndex(_selectedIndex);
+          scrollToIndex(_selectedIndex);
         }
       });
     }
@@ -120,7 +120,7 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
     }
   }
 
-  void _scrollToIndex(int index) {
+  void scrollToIndex(int index) {
     if (!_scrollController.hasClients || widget.items.isEmpty || index < 0 || index >= widget.items.length) return;
 
     final viewportHeight = _scrollController.position.viewportDimension;
@@ -146,7 +146,7 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
         if (_selectedIndex > 0) {
           _selectedIndex--;
           widget.onSelectedIndexChanged(_selectedIndex);
-          _scrollToIndex(_selectedIndex);
+          scrollToIndex(_selectedIndex);
           _updateScrollability();
         }
       }),
@@ -154,7 +154,7 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
         if (_selectedIndex < widget.items.length - 1) {
           _selectedIndex++;
           widget.onSelectedIndexChanged(_selectedIndex);
-          _scrollToIndex(_selectedIndex);
+          scrollToIndex(_selectedIndex);
           _updateScrollability();
         }
       }),
@@ -204,19 +204,34 @@ class _CustomListWidgetState<T> extends State<CustomListWidget<T>> {
           itemBuilder: (context, index) {
             final isSelected = index == _selectedIndex;
             final item = widget.items[index];
-            return Container(
-              height: _itemExtent,
-              color: widget.hasFocus && isSelected ? AppTheme.focusColor : Colors.transparent,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: DefaultTextStyle.merge(
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: widget.hasFocus && isSelected
-                        ? AppTheme.fullFocusColor
-                        : AppTheme.divider,
+            return InkWell(
+              onTap: () {
+                if (_selectedIndex != index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                  widget.onSelectedIndexChanged(index);
+                  _updateScrollability();
+                }
+                // Trigger the action associated with the item
+                if (widget.onItemSelected != null) {
+                  widget.onItemSelected!(item);
+                }
+              },
+              child: Container(
+                height: _itemExtent,
+                color: widget.hasFocus && isSelected ? AppTheme.focusColor : Colors.transparent,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: widget.hasFocus && isSelected
+                          ? AppTheme.fullFocusColor
+                          : AppTheme.divider,
+                    ),
+                    child: widget.itemBuilder(item, index, isSelected, widget.hasFocus),
                   ),
-                  child: widget.itemBuilder(item, index, isSelected, widget.hasFocus),
                 ),
               ),
             );

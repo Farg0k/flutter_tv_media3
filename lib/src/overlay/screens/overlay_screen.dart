@@ -126,6 +126,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 context: context,
                 bloc: bloc,
                 body: EpgScreen(
+                  bloc: bloc,
                   controller: widget.controller,
                   initialChannelId: widget.controller.playItem.id,
                   onChannelLaunch: (EpgChannel value) {
