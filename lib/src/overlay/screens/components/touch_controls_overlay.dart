@@ -118,6 +118,7 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                               child: Row(
                                 children: [
                                   Column(
+                              mainAxisAlignment : MainAxisAlignment.spaceBetween,
                                     children: [
                                       IconButton(
                                         icon: Icon(
@@ -126,6 +127,13 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           size: 32,
                                         ),
                                         onPressed: () => bloc.add(const ToggleScreenLock()),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.stop_circle, color: Colors.white, size: 32),
+                                        onPressed: () {
+                                          _startHideTimer();
+                                          widget.controller.stop();
+                                        },
                                       ),
                                     ],
                                   ),
@@ -220,15 +228,14 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                   Visibility(
                                     visible: !isLocked,
                                     child: Column(
+                                      mainAxisAlignment : MainAxisAlignment.spaceBetween,
                                       children: [
                                         _buildPanelButton(bloc: bloc, icon: Icons.settings, panel: PlayerPanel.settings),
-                                        const SizedBox(height: 16),
                                         _buildPanelButton(
                                           bloc: bloc,
                                           icon: Icons.playlist_play,
                                           panel: PlayerPanel.playlist,
                                         ),
-                                        const SizedBox(height: 16),
                                         Visibility(
                                           visible: widget.controller.playItem.programs != null,
                                           child: Column(
@@ -248,9 +255,7 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           icon: Icons.video_settings,
                                           panel: PlayerPanel.video,
                                         ),
-                                        const SizedBox(height: 16),
                                         _buildPanelButton(bloc: bloc, icon: Icons.audiotrack, panel: PlayerPanel.audio),
-                                        const SizedBox(height: 16),
                                         _buildPanelButton(
                                           bloc: bloc,
                                           icon: Icons.subtitles,
