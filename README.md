@@ -38,11 +38,10 @@ Understanding the architecture is key to using this plugin correctly:
 *   **Native Window:** The player runs in a separate Android `Activity`. This ensures the best possible performance and access to low-level system features.
 *   **Separate UI Engine:** The user interface (UI) for the player is written in Flutter and runs in a separate, isolated `FlutterEngine`.
 *   **Programmatic Control:** Interaction with the player from your main application is done exclusively programmatically via the `AppPlayerController` singleton.
-
+*   **D-pad and Touch Control:** The player UI is designed for D-pad (remote control's directional pad) navigation and also supports touch input(mouse). 
 ### Important Limitations
 
-1.  **UI is Not Customizable:** The player's UI is an internal part of the plugin. You cannot change its appearance or add your own widgets without modifying the plugin's source code.
-2.  **D-pad Control Only:** The player UI is designed exclusively for D-pad (remote control's directional pad) navigation. There is no support for touch or mouse input.
+*  **UI is Not Customizable:** The player's UI is an internal part of the plugin. You cannot change its appearance or add your own widgets without modifying the plugin's source code.
 
 ## Key Features
 
@@ -51,17 +50,22 @@ Understanding the architecture is key to using this plugin correctly:
 *   **Playlist Management:** Create and manage playlists using `PlaylistMediaItem` objects.
 *   **State Tracking:** Monitor the player's state, metadata, and playback progress through streams. This is primarily intended for implementing IP control.
 *   **Dynamic Links:** Support for media that requires dynamically resolving a direct playback URL via an asynchronous callback.
-*   **EPG (Electronic Program Guide):** Ability to pass and display a program guide for TV channels. The EPG is activated in the player by pressing the left/right D-pad buttons. To activate this, the `List<EpgProgram>? programs` field must not be `null`.
+*   **EPG (Electronic Program Guide):** Ability to pass and display a program guide for TV channels. The EPG is activated in the player by pressing the left/right D-pad buttons or on touch panel. To activate this, the `List<EpgProgram>? programs` field must not be `null`.
 *   **Settings Persistence:** Callbacks to save player settings (quality, language) and subtitle styles that the user changes in the UI.
 <p align="center">
-  <a href="screenshots/screen0.png"><img src="screenshots/screen0.png" width="400"/></a>
-  <a href="screenshots/screen1.png"><img src="screenshots/screen1.png" width="400"/></a>
-  <a href="screenshots/screen2.png"><img src="screenshots/screen2.png" width="400"/></a>
+    <a href="screenshots/screen0.png"><img src="screenshots/screen0.png" width="400"/></a>
+    <a href="screenshots/screen1.png"><img src="screenshots/screen1.png" width="400"/></a>
 </p>
 <p align="center">
-  <a href="screenshots/screen3.png"><img src="screenshots/screen3.png" width="400"/></a>
-  <a href="screenshots/screen4.png"><img src="screenshots/screen4.png" width="400"/></a>
-  <a href="screenshots/screen5.png"><img src="screenshots/screen5.png" width="400"/></a>
+    <a href="screenshots/screen2.png"><img src="screenshots/screen2.png" width="400"/></a>
+    <a href="screenshots/screen3.png"><img src="screenshots/screen3.png" width="400"/></a>
+</p>
+<p align="center">
+    <a href="screenshots/screen4.png"><img src="screenshots/screen4.png" width="400"/></a>
+    <a href="screenshots/screen5.png"><img src="screenshots/screen5.png" width="400"/></a>
+</p>
+<p align="center">
+    <a href="screenshots/screen4.png"><img src="screenshots/screen6.png" width="400"/></a>
 </p>
 ## Getting Started
 
@@ -72,6 +76,12 @@ Add the dependency to your `pubspec.yaml`:
 ```yaml
 dependencies:
   flutter_tv_media3: ^0.0.1 # Replace with the latest version
+```
+or 
+```yaml
+dependencies:
+  flutter_tv_media3:
+   git: https://github.com/Farg0k/flutter_tv_media3
 ```
 
 ### 2. Android Configuration
@@ -246,30 +256,6 @@ The `AppPlayerController` is not just for launching the player. Its methods and 
 This is a two-way communication:
 1.  **Sending Commands:** Use controller methods like `playPause()`, `seekTo()`, etc., to control playback.
 2.  **Listening to State:** Use controller streams like `playerStateStream` to monitor the player's state and update your external UI accordingly.
-
-**Sending Commands Example:**
-
-```
-// Example of buttons in your main app that
-// control the player while it's open
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    ElevatedButton(
-      onPressed: () => controller.playPrevious(),
-      child: Text('Previous'),
-    ),
-    ElevatedButton(
-      onPressed: () => controller.playPause(),
-      child: Text('Play/Pause'),
-    ),
-    ElevatedButton(
-      onPressed: () => controller.playNext(),
-      child: Text('Next'),
-    ),
-  ],
-)
-```
 
 **Listening to State Example:**
 
