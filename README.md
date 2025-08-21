@@ -468,14 +468,18 @@ To activate the subtitle search functionality, you must pass the following param
     *   **Type:** `String?`
     *   **Description:** The initial static text for the subtitle search button in the player's UI. For example: "Find on OpenSubtitles".
 
+*   **`findSubtitlesStateInfoLabel`**:
+    *   **Type:** `String?`
+    *   **Description:** Optional. The initial text to display under the button with additional info (e.g., API usage limits like "10/10"). This text can be dynamically updated after each search using the `labelSearchExternalSubtitle` callback.
+
 *   **`labelSearchExternalSubtitle`**:
     *   **Type:** `Future<String> Function()`
-    *   **Description:** An optional function that is called *after* every successful or failed search to dynamically update the button's text. This allows displaying up-to-date information, such as API usage limits (e.g., "5 searches left") or other service statuses. The function must return a `Future<String>`, the result of which will become the new text for `findSubtitlesLabel`.
+    *   **Description:** An optional function that is called *after* every successful or failed search to dynamically update the `findSubtitlesStateInfoLabel` text. This allows displaying up-to-date information, such as API usage limits (e.g., "9/10 searches left") or other service statuses. The function must return a `Future<String>`, the result of which will become the new text for the info label.
 
 ### Data Flow
 
 1.  **Initialization:**
-    *   The main app, when configuring `AppPlayerController`, passes the `searchExternalSubtitle` function and, optionally, `findSubtitlesLabel` and `labelSearchExternalSubtitle`.
+    *   The main app, when configuring `AppPlayerController`, passes the `searchExternalSubtitle` function and, optionally, `findSubtitlesLabel`, `findSubtitlesStateInfoLabel`, and `labelSearchExternalSubtitle`.
     *   This data is serialized to JSON and passed to `PlayerActivity` as `subtitle_search` on launch.
     *   `PlayerActivity` forwards this data to the UI overlay, where `Media3UiController` initializes `findSubtitlesStateNotifier`.
 
@@ -493,7 +497,7 @@ To activate the subtitle search functionality, you must pass the following param
 4.  **State and Result Updates:**
     *   `PlayerActivity` receives these updates via the `onSubtitleSearchStateChanged` method and broadcasts them to the UI overlay.
     *   `Media3UiController` in the overlay receives these states and updates `findSubtitlesStateNotifier`. The `SubtitleWidget` listens to this `ValueNotifier` and rebuilds, showing a loading indicator, error message, etc.
-    *   After the search is complete (successful or not), `AppPlayerController` calls the `_labelSearchExternalSubtitle` function (if provided) to update the search button's text.
+    *   After the search is complete (successful or not), `AppPlayerController` calls the `_labelSearchExternalSubtitle` function (if provided) to update the info label's text (`findSubtitlesStateInfoLabel`).
     *   If the search is successful, `AppPlayerController` calls `setExternalSubtitles`, passing the list of found `MediaItemSubtitle`.
     *   `PlayerActivity` receives this list, adds it to `currentSubtitleTracks`, and rebuilds the player's `MediaSource` to make the new subtitles available for selection.
 
@@ -506,6 +510,7 @@ To activate the subtitle search functionality, you must pass the following param
 *   **`FindSubtitlesState`**: A class that encapsulates the complete UI state for the search feature. It contains the following fields:
     *   `isVisible`: Whether to show the search button.
     *   `label`: The text on the button.
+    *   `stateInfoLabel`: The text to display under the button with additional info.
     *   `errorMessage`: The error message to display.
     *   `status`: The current status (`idle`, `loading`, `error`, `success`).
 *   **`MediaItemSubtitle`**: A class representing an external subtitle track, containing the URL, title, and language.

@@ -12,6 +12,7 @@ class SubtitleItemWidget extends StatelessWidget {
     required this.index,
     required this.isFocused,
     this.searchStatus = SubtitleSearchStatus.idle,
+    this.stateInfoLabel,
     this.onTap,
   });
 
@@ -19,6 +20,7 @@ class SubtitleItemWidget extends StatelessWidget {
   final int index;
   final bool isFocused;
   final SubtitleSearchStatus searchStatus;
+  final String? stateInfoLabel;
   final VoidCallback? onTap;
 
   @override
@@ -54,6 +56,17 @@ class SubtitleItemWidget extends StatelessWidget {
                   ),
                 ),
               ),
+              if (stateInfoLabel != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2.0),
+                  child: Text(
+                    stateInfoLabel!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isFocused ? Colors.white : Colors.white70,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

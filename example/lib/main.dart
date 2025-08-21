@@ -214,6 +214,8 @@ class _MyHomePageState extends State<MyHomePage> {
       sleepTimerExec: sleepTimerExec,
       searchExternalSubtitle: _mockSearchSubtitles,
       findSubtitlesLabel: 'Find on MockSubtitles.com',
+      findSubtitlesStateInfoLabel:'10/10' ,
+      labelSearchExternalSubtitle: labelSearchExternalSubtitle
     );
 
     //This listener is required to update the playlist screen.
@@ -230,6 +232,10 @@ class _MyHomePageState extends State<MyHomePage> {
       controller.sendCustomInfoToOverlay('Last update: $timeString');
     });
   }
+
+  Future<String> labelSearchExternalSubtitle()async{
+      return '9/10';
+    }
 
   @override
   void dispose() {

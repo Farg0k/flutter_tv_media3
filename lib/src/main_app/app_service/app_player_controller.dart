@@ -65,6 +65,7 @@ class AppPlayerController {
   SearchExternalSubtitle? _searchExternalSubtitle;
   LabelSearchExternalSubtitle? _labelSearchExternalSubtitle;
   String? _findSubtitlesLabel;
+  String? _findSubtitlesStateInfoLabel;
   SaveWatchTimeSeconds? _saveWatchTime;
   SubtitleStyle? _subtitleStyle;
   ClockSettings? _clockSettings;
@@ -142,6 +143,7 @@ class AppPlayerController {
     VoidCallback? sleepTimerExec,
     SearchExternalSubtitle? searchExternalSubtitle,
     String? findSubtitlesLabel,
+    String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
@@ -155,6 +157,7 @@ class AppPlayerController {
     _sleepTimerExec = sleepTimerExec;
     _searchExternalSubtitle = searchExternalSubtitle;
     _findSubtitlesLabel = findSubtitlesLabel;
+    _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
     _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
   }
 
@@ -232,6 +235,7 @@ class AppPlayerController {
         final baseFindState = FindSubtitlesState(
           isVisible: _searchExternalSubtitle != null,
           label: _findSubtitlesLabel,
+          stateInfoLabel: _findSubtitlesStateInfoLabel,
         );
 
         try {
@@ -248,18 +252,24 @@ class AppPlayerController {
 
           try {
             final List<MediaItemSubtitle>? foundSubtitles = await _searchExternalSubtitle!(id: mediaId);
-            _findSubtitlesLabel =
-                _labelSearchExternalSubtitle != null ? await _labelSearchExternalSubtitle!() : _findSubtitlesLabel;
+            _findSubtitlesStateInfoLabel =
+                _labelSearchExternalSubtitle != null
+                    ? await _labelSearchExternalSubtitle!()
+                    : _findSubtitlesStateInfoLabel;
             if (foundSubtitles != null && foundSubtitles.isNotEmpty) {
               await setExternalSubtitles(subtitleTracks: foundSubtitles);
               // The UI will show its own success notification when the track list updates.
               // We just reset the state to idle.
               _updateFindSubtitlesState(
-                baseFindState.copyWith(status: SubtitleSearchStatus.idle, label: _findSubtitlesLabel),
+                baseFindState.copyWith(status: SubtitleSearchStatus.idle, stateInfoLabel: _findSubtitlesStateInfoLabel),
               );
             } else {
               _updateFindSubtitlesState(
-                baseFindState.copyWith(status: SubtitleSearchStatus.error, errorMessage: 'No subtitles found.'),
+                baseFindState.copyWith(
+                  status: SubtitleSearchStatus.error,
+                  errorMessage: 'No subtitles found.',
+                  stateInfoLabel: _findSubtitlesStateInfoLabel,
+                ),
               );
             }
           } catch (e) {
@@ -515,7 +525,11 @@ class AppPlayerController {
     final clockSettingsStr = _clockSettings != null ? jsonEncode(_clockSettings?.toMap()) : null;
 
     final subtitleSearch =
-        FindSubtitlesState(isVisible: _searchExternalSubtitle != null, label: _findSubtitlesLabel).toMap();
+        FindSubtitlesState(
+          isVisible: _searchExternalSubtitle != null,
+          label: _findSubtitlesLabel,
+          stateInfoLabel: _findSubtitlesStateInfoLabel,
+        ).toMap();
 
     try {
       await _invokeMethodGuarded<void>(_pluginChannel, 'openPlayer', {

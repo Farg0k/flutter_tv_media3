@@ -14,6 +14,9 @@ class FindSubtitlesState {
   /// The normal text for the button (e.g., "Find on SubDB", "Searching...").
   final String? label;
 
+  /// The text to display under the button with additional info.
+  final String? stateInfoLabel;
+
   /// The message to display in case of an error.
   final String? errorMessage;
 
@@ -23,6 +26,7 @@ class FindSubtitlesState {
   const FindSubtitlesState({
     this.isVisible = false,
     this.label,
+    this.stateInfoLabel,
     this.errorMessage,
     this.status = SubtitleSearchStatus.idle,
   });
@@ -31,6 +35,7 @@ class FindSubtitlesState {
   FindSubtitlesState copyWith({
     bool? isVisible,
     String? label,
+    String? stateInfoLabel,
     String? errorMessage,
     SubtitleSearchStatus? status,
     bool? resetError,
@@ -38,7 +43,9 @@ class FindSubtitlesState {
     return FindSubtitlesState(
       isVisible: isVisible ?? this.isVisible,
       label: label ?? this.label,
-      errorMessage: errorMessage ?? (resetError == true ? null : this.errorMessage),
+      stateInfoLabel: stateInfoLabel ?? this.stateInfoLabel,
+      errorMessage:
+          errorMessage ?? (resetError == true ? null : this.errorMessage),
       status: status ?? this.status,
     );
   }
@@ -48,7 +55,9 @@ class FindSubtitlesState {
     return {
       'isVisible': isVisible,
       'label': label,
-      'error': errorMessage, // Keep 'error' key for backward compatibility with native side if needed
+      'stateInfoLabel': stateInfoLabel,
+      'error':
+          errorMessage, // Keep 'error' key for backward compatibility with native side if needed
       'status': status.name,
     };
   }
@@ -58,6 +67,7 @@ class FindSubtitlesState {
     return FindSubtitlesState(
       isVisible: map['isVisible'] as bool? ?? false,
       label: map['label'] as String?,
+      stateInfoLabel: map['stateInfoLabel'] as String?,
       errorMessage: map['error'] as String?,
       status: SubtitleSearchStatus.values.firstWhere(
         (e) => e.name == map['status'],
