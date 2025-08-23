@@ -101,11 +101,59 @@ To play videos from `http` links (not `https`):
 
 ## Basic Usage
 
-### 1. Plugin and Controller Initialization
+### 1. Controller Lifecycle: `init()` and `close()`
+
+Properly managing the lifecycle of the `AppPlayerController` is crucial for the stability of your application.
+
+*   **`init()`**: This method must be called **once** before any other interaction with the controller. It configures all the necessary callbacks, initial settings, and localization strings. A good place to call it is in the `initState` of your main widget. The configuration cannot be changed after initialization.
+*   **`close()`**: This method should be called when the controller is no longer needed, typically in the `dispose` method of your widget. It closes all internal streams and releases resources, preventing memory leaks.
+
+```dart
+@override
+void initState() {
+  super.initState();
+  controller.init(...);
+}
+
+@override
+void dispose() {
+  controller.close();
+  super.dispose();
+}
+```
+
+### 2. Plugin and Controller Initialization
 
 First, get the singleton instance of the `AppPlayerController`. It's best to do this in a `StatefulWidget`.
 
 The controller must be configured **once** before launching the player for the first time. This is done exclusively through the `init()` method, typically in your widget's `initState`. All configuration properties are private and cannot be changed after initialization.
+
+The `init()` method accepts a variety of parameters to customize the player's behavior and set up callbacks. Below is a complete list of available parameters.
+
+**General Configuration and Callbacks:**
+
+These parameters are detailed in the [Full Configuration and Callbacks](#full-configuration-and-callbacks) section.
+
+*   `localeStrings`: A map to provide localized strings for the player UI.
+*   `subtitleStyle`: The initial `SubtitleStyle` to be applied.
+*   `playerSettings`: The initial `PlayerSettings` (e.g., video quality, preferred languages).
+*   `clockSettings`: The initial `ClockSettings` (e.g., position, format).
+*   `saveSubtitleStyle`: A callback that is triggered when the user changes subtitle settings in the UI.
+*   `savePlayerSettings`: A callback that is triggered when the user changes player settings.
+*   `saveClockSettings`: A callback that is triggered when the user changes clock settings.
+*   `saveWatchTime`: A callback to save the playback progress for a media item.
+*   `sleepTimerExec`: A callback that is executed when the sleep timer is triggered from the player UI.
+
+**External Subtitle Search:**
+
+These parameters enable and configure the external subtitle search feature, which is described in detail in the [External Subtitle Search Architecture](#external-subtitle-search-architecture) section.
+
+*   `searchExternalSubtitle`: The main handler function that performs the subtitle search.
+*   `findSubtitlesLabel`: The text for the search button in the UI.
+*   `findSubtitlesStateInfoLabel`: Optional text displayed below the search button (e.g., API usage).
+*   `labelSearchExternalSubtitle`: An optional callback to dynamically update the `findSubtitlesStateInfoLabel` after a search.
+
+**Example:**
 
 ```dart
 // In your widget's state
@@ -115,19 +163,31 @@ final controller = AppPlayerController();
 void initState() {
   super.initState();
   
-  // Configuration is done once via the init() method.
+  // A comprehensive initialization example
   controller.init(
+    // General settings
     localeStrings: {'loading': 'Loading...'},
     clockSettings: ClockSettings(clockPosition: ClockPosition.topLeft),
-    saveWatchTime: ({required String id, required int duration, required int position}) async {
-      // ... logic to save watch time
-    },
-    // ... other settings
+    saveWatchTime: _mySaveWatchTimeFunction,
+    
+    // Subtitle search settings
+    searchExternalSubtitle: _mySubtitleSearchFunction,
+    findSubtitlesLabel: 'Search on OpenSubtitles',
   );
+}
+
+// Define your callback functions elsewhere
+Future<void> _mySaveWatchTimeFunction({required String id, required int duration, required int position}) async {
+  // ... logic to save watch time
+}
+
+Future<List<MediaItemSubtitle>?> _mySubtitleSearchFunction({required String id}) async {
+  // ... logic to search for subtitles
+  return null;
 }
 ```
 
-### 2. Creating a Playlist
+### 3. Creating a Playlist
 
 A playlist is a list of `PlaylistMediaItem` objects. Each object describes a single media item in detail.
 
@@ -160,7 +220,7 @@ final mediaItems = [
 ];
 ```
 
-### 3. Launching the Player
+### 4. Launching the Player
 
 The `openPlayer` method launches the player `Activity` with your playlist.
 
@@ -300,20 +360,41 @@ A singleton for controlling the player.
 
 **Key Methods:**
 
-*   `openPlayer()`: **This is the only method required to use the plugin.** It opens the player with a playlist.
+*   `init()`: **(Lifecycle)** Initializes the controller. Must be called once before any other methods.
+*   `openPlayer()`: **(Core)** Opens the player with a playlist. This is the primary method for launching the player UI. It handles Flutter navigation.
+*   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer` that directly triggers the native player activity without managing Flutter navigation. Useful in specific integration scenarios.
+*   `close()`: **(Lifecycle)** Releases the controller's resources. Must be called in your widget's `dispose` method to prevent memory leaks.
 
 All subsequent methods and streams are **optional** and are primarily intended for advanced scenarios, such as implementing IP control:
 
+**Playback Control:**
 *   `playPause()`: Toggles between play and pause.
+*   `play()` / `pause()`: Starts or pauses playback.
+*   `stop()`: Stops playback and releases player resources.
 *   `seekTo(Duration)`: Seeks to the specified position.
-*   `seekForward()` / `seekBack()`: Seeks forward/backward by a predefined step.
 *   `playNext()` / `playPrevious()`: Switches to the next/previous item in the playlist.
-*   `selectAudioTrack(MediaTrack)` / `selectTextTrack(MediaTrack)`: Selects an audio or text track.
-*   `setPlaybackSpeed(double)`: Sets the playback speed.
-*   `closePlayer()`: Closes the player programmatically.
+*   `playSelectedIndex({required int index})`: Plays a specific item from the playlist by its index.
+*   `setSpeed({required double speed})`: Sets the playback speed.
+*   `setRepeatMode({required RepeatMode repeatMode})`: Sets the repeat mode (off, one, all).
+*   `setShuffleMode(bool enabled)`: Enables or disables shuffle mode.
+
+**Track and Subtitle Management:**
+*   `selectAudioTrack(AudioTrack)` / `selectSubtitleTrack(SubtitleTrack)` / `selectVideoTrack(VideoTrack)`: Selects a specific track.
+*   `setExternalSubtitles({required List<MediaItemSubtitle> subtitleTracks})`: Programmatically adds a list of external subtitle tracks to the current media item.
+*   `setExternalAudio({required List<MediaItemAudioTrack> audioTracks})`: Programmatically adds a list of external audio tracks.
+
+**UI and Display Control:**
+*   `setZoom({required PlayerZoom zoom})`: Sets the video zoom/resize mode (e.g., fit, fill).
+*   `setScale({required double scaleX, required double scaleY})`: Applies a custom scale to the video, allowing for fine-grained zoom control.
+*   `sendCustomInfoToOverlay(String text)`: Displays a custom string in the player's timeline panel. Useful for showing dynamic information like network speed or connection status.
+
+**Information Retrieval:**
+*   `getMetaData()`: Fetches the latest metadata for the currently playing media item.
+*   `getCurrentTracks()`: Returns a list of all available tracks (video, audio, subtitle).
+*   `getRefreshRateInfo()`: Gets information about the display's supported and active refresh rates.
 
 **Key Streams (Optional):**
-*   `playerStateStream`: A stream that emits `PlayerState` objects on any state change.
+*   `playerStateStream`: A stream that emits `PlayerState` objects on any significant state change (e.g., play/pause, track change, error).
 *   `playbackStateStream`: A stream that emits `PlaybackState` objects (position, duration) several times per second during playback.
 *   `mediaMetadataStream`: A stream that emits `MediaMetadata` objects when the current media item changes.
 
