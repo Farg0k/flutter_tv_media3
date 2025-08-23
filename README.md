@@ -2,8 +2,9 @@
 
 [![pub package](https://img.shields.io/pub/v/flutter_tv_media3.svg)](https://pub.dev/packages/flutter_tv_media3)
 
-A Flutter plugin for playing video on Android TV using the native Media3 player, which runs in its own `Activity`.
-
+A Flutter plugin for playing video on Android TV using the native Media3 player, which runs in its own `Activity`. 
+**Note: This plugin is for Android  only.**
+Android (minSdk = 21).
 The main difference of this plugin is that the player is launched in a separate native Android window, not as a widget in the Flutter hierarchy. This approach allows for the use of native features like **Auto Frame Rate (AFR) switching** and potential support for **HDR/Dolby Vision**, which may not be available in standard widget-based player implementations.
 
 ## Table of Contents
@@ -65,7 +66,7 @@ Understanding the architecture is key to using this plugin correctly:
     <a href="screenshots/screen5.png"><img src="screenshots/screen5.png" width="400"/></a>
 </p>
 <p align="center">
-    <a href="screenshots/screen4.png"><img src="screenshots/screen6.png" width="400"/></a>
+    <a href="screenshots/screen6.png"><img src="screenshots/screen6.png" width="400"/></a>
 </p>
 ## Getting Started
 
@@ -134,7 +135,7 @@ The `init()` method accepts a variety of parameters to customize the player's be
 
 These parameters are detailed in the [Full Configuration and Callbacks](#full-configuration-and-callbacks) section.
 
-*   `localeStrings`: A map to provide localized strings for the player UI.
+*   `localeStrings`: A map to provide localized strings for the player UI. For a complete list of available keys, see the `lib/src/localization/default_locale_strings.dart` file.
 *   `subtitleStyle`: The initial `SubtitleStyle` to be applied.
 *   `playerSettings`: The initial `PlayerSettings` (e.g., video quality, preferred languages).
 *   `clockSettings`: The initial `ClockSettings` (e.g., position, format).
@@ -352,6 +353,46 @@ void initState() {
 }
 ```
 
+### Error Handling
+
+The plugin provides a mechanism for tracking and handling errors that may occur during playback. This is crucial for building a reliable and user-friendly application.
+
+The primary way to receive error notifications is by listening to the `playerStateStream`. The `PlayerState` object emitted from this stream contains a `lastError` field.
+
+**How It Works:**
+
+1.  **Error Detection:** When an error occurs (e.g., unable to load a video, a network issue, or a decoding problem), information about it is written to the `lastError` field in the `PlayerState` object, and the new state is emitted to the `playerStateStream`.
+2.  **Handling the Error:** Your code, subscribed to `playerStateStream`, receives the updated state. You can check if `state.lastError` is not `null`. If an error exists, you can display an appropriate message to the user, attempt to restart playback, or perform other necessary actions.
+3.  **Resetting the Error:** After you have handled the error, it is important to "reset" it to prevent it from being processed again on subsequent state updates. This is done using the `controller.resetError()` method. It sets `lastError` back to `null`. If you don't do this, you might handle the same error multiple times.
+
+**Code Example:**
+
+```dart
+@override
+void initState() {
+  super.initState();
+  // ... other initialization
+
+  controller.playerStateStream.listen((state) {
+    // Check for an unhandled error
+    if (state.lastError != null) {
+      // Show a notification to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred: ${state.lastError}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      // After handling, reset the error to avoid reacting to it again
+      controller.resetError();
+    }
+  });
+}
+```
+
+This approach allows for centralized error management and ensures the stable operation of the player in your application.
+
 ## API Reference
 
 ### `AppPlayerController`
@@ -362,7 +403,7 @@ A singleton for controlling the player.
 
 *   `init()`: **(Lifecycle)** Initializes the controller. Must be called once before any other methods.
 *   `openPlayer()`: **(Core)** Opens the player with a playlist. This is the primary method for launching the player UI. It handles Flutter navigation.
-*   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer` that directly triggers the native player activity without managing Flutter navigation. Useful in specific integration scenarios.
+*   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer`. It directly triggers the native player activity, which is useful if you want to bypass the default loading screen (`Media3PlayerScreen`). This method does not manage Flutter navigation.
 *   `close()`: **(Lifecycle)** Releases the controller's resources. Must be called in your widget's `dispose` method to prevent memory leaks.
 
 All subsequent methods and streams are **optional** and are primarily intended for advanced scenarios, such as implementing IP control:
