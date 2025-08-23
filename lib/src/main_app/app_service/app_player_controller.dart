@@ -167,6 +167,8 @@ class AppPlayerController {
   /// Cleans up resources, closing stream controllers and removing method call handlers.
   void close() {
     _stateController.close();
+    _playbackStateController.close();
+    _mediaMetadataController.close();
     _activityChannel.setMethodCallHandler(null);
     _pluginChannel.setMethodCallHandler(null);
   }
