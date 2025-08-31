@@ -223,13 +223,49 @@ final mediaItems = [
 
 ### 4. Launching the Player
 
-The `openPlayer` method launches the player `Activity` with your playlist.
+There are three ways to launch the player, depending on your needs.
 
-```
+#### Method 1: Launching with the Built-in Loading Screen (Recommended)
+
+This approach provides visual feedback to the user while the native player initializes. It can be done in two ways:
+
+**A) Using the `openPlayer` helper method:**
+
+This is the most convenient way. The `AppPlayerController` handles the navigation for you.
+
+```dart
 controller.openPlayer(
   context: context,
   playlist: mediaItems,
   initialIndex: 0, // Start with the first item
+);
+```
+
+**B) Using Flutter's Navigator directly:**
+
+You can also push the `Media3PlayerScreen` widget onto the navigation stack yourself. This gives you more control over the navigation, for example, if you want to use a different page route transition. This is the method used in the example application.
+
+```dart
+Navigator.of(context).push(
+  MaterialPageRoute(
+    builder: (context) => Media3PlayerScreen(
+      playlist: mediaItems,
+      initialIndex: 0,
+    ),
+  ),
+);
+```
+
+#### Method 2: `openNativePlayer` (Advanced)
+
+This method directly launches the native Android `Activity` for the player, bypassing the Flutter loading screen. This is useful if you want to implement your own custom loading logic or splash screen.
+
+**Note:** This method does not use Flutter's `Navigator`. It's a direct call to the native side.
+
+```dart
+controller.openNativePlayer(
+  playlist: mediaItems,
+  initialIndex: 0,
 );
 ```
 
@@ -402,8 +438,8 @@ A singleton for controlling the player.
 **Key Methods:**
 
 *   `init()`: **(Lifecycle)** Initializes the controller. Must be called once before any other methods.
-*   `openPlayer()`: **(Core)** Opens the player with a playlist. This is the primary method for launching the player UI. It handles Flutter navigation.
-*   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer`. It directly triggers the native player activity, which is useful if you want to bypass the default loading screen (`Media3PlayerScreen`). This method does not manage Flutter navigation.
+*   `openPlayer()`: **(Core)** Opens the player with a playlist using a built-in loading screen (`Media3PlayerScreen`). This method handles Flutter navigation and is the recommended way to launch the player for most use cases.
+*   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer`. It directly triggers the native player activity, bypassing the Flutter loading screen. This is useful if you want to implement a custom loading UI. This method does not manage Flutter navigation.
 *   `close()`: **(Lifecycle)** Releases the controller's resources. Must be called in your widget's `dispose` method to prevent memory leaks.
 
 All subsequent methods and streams are **optional** and are primarily intended for advanced scenarios, such as implementing IP control:

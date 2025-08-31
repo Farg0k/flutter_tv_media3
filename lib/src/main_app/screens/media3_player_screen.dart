@@ -15,9 +15,14 @@ import '../../app_theme/app_theme.dart';
 /// [PlayerState] stream), this screen automatically closes, and the user
 /// sees the full player interface.
 class Media3PlayerScreen extends StatefulWidget {
-  const Media3PlayerScreen({super.key, required this.controller, required this.playerLabel});
-
-  final AppPlayerController controller;
+  const Media3PlayerScreen({
+    super.key,
+    this.playerLabel,
+    required this.playlist,
+    this.initialIndex = 0,
+  });
+  final List<PlaylistMediaItem> playlist;
+  final int initialIndex;
   final Widget? playerLabel;
   @override
   State<Media3PlayerScreen> createState() => _Media3PlayerScreenState();
@@ -30,11 +35,8 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-    _controller = widget.controller;
+    _controller = AppPlayerController();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
     _controller.playerStateStream.listen((e) async {
       if (e.activityReady == true && mounted == true && isClose == false) {
         isClose = true;
@@ -42,9 +44,9 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future.delayed(Duration(milliseconds: 600));
+      await Future.delayed(const Duration(milliseconds: 600));
       try {
-        await widget.controller.openNativePlayer();
+        await _controller.openNativePlayer(playlist: widget.playlist, initialIndex: widget.initialIndex);
       } catch (e) {
         if (mounted) {
           _showErrorSnackBar(context, e.toString());
@@ -70,14 +72,14 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
         content: Row(
           spacing: 12,
           children: [
-            Icon(Icons.error_outline, color: Colors.white),
-            Expanded(child: Text(message, style: TextStyle(color: Colors.white))),
+            const Icon(Icons.error_outline, color: Colors.white),
+            Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
           ],
         ),
         backgroundColor: AppTheme.errColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadius),
-        duration: Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
