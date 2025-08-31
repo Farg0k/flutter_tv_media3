@@ -495,9 +495,22 @@ class AppPlayerController {
     OverlayLocalizations.load(_localeStrings);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Media3PlayerScreen(controller: this, playerLabel: playerLabel)),
+      MaterialPageRoute(
+        builder:
+            (context) => Media3PlayerScreen(
+              playerLabel: playerLabel,
+              playlist: playlist,
+              initialIndex: initialIndex,
+            ),
+      ),
     );
-    Future.delayed(Duration(milliseconds: 500));
+  }
+
+  /// Triggers the native Android player activity to open.
+  ///
+  /// This method serializes the playlist and settings and sends them to the
+  /// native side via the method channel to launch the player activity.
+  Future<void> openNativePlayer({required List<PlaylistMediaItem> playlist, int initialIndex = 0}) async {
     _playerState = PlayerState();
     if (playlist.isEmpty) {
       _updateState(_playerState.copyWith(lastError: "Cannot open empty playlist."));
@@ -512,19 +525,7 @@ class AppPlayerController {
       return;
     }
     _updateState(_playerState.copyWith(playlist: playlist, playIndex: initialIndex));
-  }
 
-  /// Triggers the native Android player activity to open.
-  ///
-  /// This method serializes the playlist and settings and sends them to the
-  /// native side via the method channel to launch the player activity.
-  Future<void> openNativePlayer() async {
-    final playlist = _playerState.playlist;
-    if (playlist.isEmpty) {
-      _updateState(_playerState.copyWith(lastError: "Cannot open empty playlist."));
-      return;
-    }
-    final initialIndex = _playerState.playIndex;
     final playlistMap = playlist.map((e) => e.toMap()).toList();
     final playlistStr = jsonEncode(playlistMap);
     final clockSettingsStr = _clockSettings != null ? jsonEncode(_clockSettings?.toMap()) : null;

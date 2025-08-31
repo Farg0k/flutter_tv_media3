@@ -3,6 +3,7 @@ import "dart:math";
 
 import "package:flutter/material.dart";
 import "package:flutter_tv_media3/flutter_tv_media3.dart";
+import "package:flutter_tv_media3/src/main_app/screens/media3_player_screen.dart";
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +43,7 @@ Future<List<MediaItemSubtitle>?> _mockSearchSubtitles({required String id}) asyn
   await Future.delayed(const Duration(seconds: 2));
 
   final random = Random();
-  final outcome =  random.nextInt(3); // Generates 0, 1, or 2
+  final outcome = random.nextInt(3); // Generates 0, 1, or 2
 
   switch (outcome) {
     case 0:
@@ -94,7 +95,6 @@ class _MyHomePageState extends State<MyHomePage> {
           language: 'en',
           label: 'English (external)',
         ),
-
       ],
       audioTracks: [
         MediaItemAudioTrack(
@@ -214,8 +214,8 @@ class _MyHomePageState extends State<MyHomePage> {
       sleepTimerExec: sleepTimerExec,
       searchExternalSubtitle: _mockSearchSubtitles,
       findSubtitlesLabel: 'Find on MockSubtitles.com',
-      findSubtitlesStateInfoLabel:'10/10' ,
-      labelSearchExternalSubtitle: labelSearchExternalSubtitle
+      findSubtitlesStateInfoLabel: '10/10',
+      labelSearchExternalSubtitle: labelSearchExternalSubtitle,
     );
 
     //This listener is required to update the playlist screen.
@@ -233,9 +233,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<String> labelSearchExternalSubtitle()async{
-      return '9/10';
-    }
+  Future<String> labelSearchExternalSubtitle() async {
+    return '9/10';
+  }
 
   @override
   void dispose() {
@@ -266,7 +266,17 @@ class _MyHomePageState extends State<MyHomePage> {
               foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
               child: Text('${index + 1}'),
             ),
-            onTap: () => controller.openPlayer(context: context, playlist: mediaItems, initialIndex: index),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (context) => Media3PlayerScreen(
+                          playlist: mediaItems,
+                          initialIndex: index,
+                          playerLabel: null,
+                        ),
+                  ),
+                ),
           );
         },
       ),
