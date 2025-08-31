@@ -266,6 +266,9 @@ class _MyHomePageState extends State<MyHomePage> {
               foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
               child: Text('${index + 1}'),
             ),
+            onTap: () => controller.openPlayer(context: context, playlist: mediaItems, initialIndex: index),
+/*
+            or Using Flutter's Navigator directly
             onTap:
                 () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -277,6 +280,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                   ),
                 ),
+              or This method does not use Flutter's `Navigator`. It's a direct call to the native side.
+              onTap: () => controller.openNativePlayer(
+                playlist: mediaItems,
+                initialIndex: 0,
+              );
+*/
           );
         },
       ),
