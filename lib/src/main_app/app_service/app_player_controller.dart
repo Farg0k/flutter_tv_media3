@@ -71,7 +71,6 @@ class AppPlayerController {
   ClockSettings? _clockSettings;
   PlayerSettings? _playerSettings;
   bool _isSearchingSubtitles = false;
-  bool _isInitialized = false;
 
   /// The current overall state of the player.
   PlayerState _playerState = PlayerState();
@@ -132,7 +131,7 @@ class AppPlayerController {
     _setPluginMethodCallHandler(_handleMethodCall);
   }
 
-  void init({
+  void setConfig({
     Map<String, String>? localeStrings,
     SubtitleStyle? subtitleStyle,
     PlayerSettings? playerSettings,
@@ -147,7 +146,6 @@ class AppPlayerController {
     String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
   }) {
-    if (_isInitialized) return;
     if (localeStrings != null) this.localeStrings = localeStrings;
     _subtitleStyle = subtitleStyle;
     _playerSettings = playerSettings;
@@ -161,7 +159,6 @@ class AppPlayerController {
     _findSubtitlesLabel = findSubtitlesLabel;
     _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
     _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
-    _isInitialized = true;
   }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.

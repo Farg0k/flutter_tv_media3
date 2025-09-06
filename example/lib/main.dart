@@ -202,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     final clockSettings = ClockSettings(clockPosition: ClockPosition.random);
 
-    controller.init(
+        controller.setConfig(
       localeStrings: localeStrings,
       subtitleStyle: subtitleStyle,
       saveSubtitleStyle: saveSubtitleStyle,

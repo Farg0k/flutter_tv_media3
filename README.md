@@ -322,8 +322,9 @@ void initState() {
   
   final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
 
-  // Call init() with all desired configurations
-  controller.init(
+
+  // Call setConfig() with all desired configurations
+  controller.setConfig(
     // 1. Localize strings
     localeStrings: const { 'loading': 'Loading...', 'error_title': 'Error' },
 
@@ -437,7 +438,7 @@ A singleton for controlling the player.
 
 **Key Methods:**
 
-*   `init()`: **(Lifecycle)** Initializes the controller. Must be called once before any other methods.
+*   **`setConfig()`**: **(Lifecycle)** Configures the controller. This method **must be called before launching the player** to ensure your settings are applied. Once the native player window is open, any subsequent calls to `setConfig` will only take effect the next time the player is launched.
 *   `openPlayer()`: **(Core)** Opens the player with a playlist using a built-in loading screen (`Media3PlayerScreen`). This method handles Flutter navigation and is the recommended way to launch the player for most use cases.
 *   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer`. It directly triggers the native player activity, bypassing the Flutter loading screen. This is useful if you want to implement a custom loading UI. This method does not manage Flutter navigation.
 *   `close()`: **(Lifecycle)** Releases the controller's resources. Must be called in your widget's `dispose` method to prevent memory leaks.
@@ -462,7 +463,7 @@ All subsequent methods and streams are **optional** and are primarily intended f
 
 **UI and Display Control:**
 *   `setZoom({required PlayerZoom zoom})`: Sets the video zoom/resize mode (e.g., fit, fill).
-*   `setScale({required double scaleX, required double scaleY})`: Applies a custom scale to the video, allowing for fine-grained zoom control.
+*   `setScale({required double scaleX, required double scaleY})`: Applies a custom scale to the v allowing for fine-grained zoom control.
 *   `sendCustomInfoToOverlay(String text)`: Displays a custom string in the player's timeline panel. Useful for showing dynamic information like network speed or connection status.
 
 **Information Retrieval:**
@@ -471,7 +472,7 @@ All subsequent methods and streams are **optional** and are primarily intended f
 *   `getRefreshRateInfo()`: Gets information about the display's supported and active refresh rates.
 
 **Key Streams (Optional):**
-*   `playerStateStream`: A stream that emits `PlayerState` objects on any significant state change (e.g., play/pause, track change, error).
+*   `playerStateStateStream`: A stream that emits `PlayerState` objects on any significant state change (e.g., play/pause, track change, error).
 *   `playbackStateStream`: A stream that emits `PlaybackState` objects (position, duration) several times per second during playback.
 *   `mediaMetadataStream`: A stream that emits `MediaMetadata` objects when the current media item changes.
 
@@ -593,7 +594,7 @@ This document describes the mechanism for searching and integrating external sub
 
 ### Overview
 
-The feature allows a user to initiate a search for subtitles for the current media file. The search is performed by an external service (implemented in the main application), and the results are dynamically added to the list of available subtitle tracks in the player.
+Thture allows a user to initiate a search for subtitles for the current media file. The search is performed by an external service (implemented in the main application), and the results are dynamically added to the list of available subtitle tracks in the player.
 
 ### Key Components
 
@@ -698,7 +699,7 @@ The core logic resides in the `FrameRateManager.kt` class.
 2.  **Finding a Compatible Mode:** The class retrieves a list of all display modes supported by the device and searches for the best option that is compatible with the video's frame rate. Compatibility is determined by multiplicity or minimal difference between the rates (taking into account standard TV frequencies).
 3.  **Switching the Refresh Rate:**
     *   **On Android 11 (API 30) and above:** It uses `Surface.setFrameRate()` to precisely set the refresh rate for the surface on which the video is being rendered. This is the modern and recommended approach.
-    *   **On older Android versions (API 23-29):** It changes the overall display mode (`preferredDisplayModeId`), which results in a brief black screen during the switch.
+    *   **On older Android versions (API 23-29):** It chIt changes the overall display mode (`preferredDisplayModeId`), which results in a brief black screen during the switch.
 4.  **Resetting:** When playback stops or the AFR feature is disabled, `FrameRateManager` reverts the display's refresh rate to the default value.
 
 The `PlayerActivity.kt` class manages the lifecycle of `FrameRateManager` and enables/disables it according to the settings received from Flutter.
@@ -729,6 +730,11 @@ On the Flutter side, the feature is managed through the UI and controllers.
     *   Ensure the "Auto Frame Rate (AFR)" switch is **disabled**.
     *   An active option for manual rate selection will appear in the settings menu.
     *   Call `getRefreshRateInfo()` to get a list of available rates and provide the user with a choice.
+    *   Call `setManualFrameRate(rate)` to set the selected rate.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.ails.le rates and provide the user with a choice.
     *   Call `setManualFrameRate(rate)` to set the selected rate.
 
 ## License
