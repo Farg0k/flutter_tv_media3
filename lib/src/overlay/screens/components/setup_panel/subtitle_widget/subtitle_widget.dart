@@ -105,16 +105,16 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
       );
 
       final newTracksCount = _subtitleTracks.where((t) => t.id != '-1' && t.id != '-2').length;
+      final bool newTracksAdded = !isInitial && newTracksCount > oldTracksCount;
 
-      // If new tracks were added, show a success notification.
-      if (!isInitial && newTracksCount > oldTracksCount) {
+      if (newTracksAdded) {
         _showOverlayNotification(
           message: OverlayLocalizations.get('subtitles_found_and_added'),
           type: NotificationType.success,
         );
       }
 
-      if (focusedTrackId != null) {
+      if (focusedTrackId != null && !newTracksAdded) {
         final newIndex = _subtitleTracks.indexWhere((t) => t.id == focusedTrackId);
         if (newIndex != -1) {
           _selectedIndex = newIndex;
@@ -123,6 +123,14 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
         }
       } else {
         _selectedIndex = _getInitialSelectedIndex();
+      }
+
+      if (newTracksAdded) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _scrollToIndex(_selectedIndex);
+          }
+        });
       }
     });
   }
