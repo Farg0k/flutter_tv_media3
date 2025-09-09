@@ -26,9 +26,10 @@ class SubtitleItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isSelected = track.isSelected == true;
-    final Color backgroundColor = isFocused
-        ? AppTheme.focusColor
-        : isSelected
+    final Color backgroundColor =
+        isFocused
+            ? AppTheme.focusColor
+            : isSelected
             ? AppTheme.focusColor.withValues(alpha: 0.3)
             : Colors.transparent;
     return GestureDetector(
@@ -39,11 +40,7 @@ class SubtitleItemWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             children: [
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: _buildIcon(track, isSelected, isFocused),
-              ),
+              SizedBox(width: 40, height: 40, child: _buildIcon(track, isSelected, isFocused)),
               const SizedBox(width: 16),
               Expanded(
                 child: MarqueeWidget(
@@ -61,11 +58,13 @@ class SubtitleItemWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Text(
                     stateInfoLabel!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isFocused ? Colors.white : Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 14, color: isFocused ? Colors.white : Colors.white70),
                   ),
+                ),
+              if (track.isExternal == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2.0),
+                  child: Icon(Icons.file_download, color: Colors.white70),
                 ),
             ],
           ),
@@ -84,10 +83,7 @@ class SubtitleItemWidget extends StatelessWidget {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(color)),
             ),
           );
         case SubtitleSearchStatus.error:

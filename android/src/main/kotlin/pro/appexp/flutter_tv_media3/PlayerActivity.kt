@@ -1158,6 +1158,10 @@ class PlayerActivity : AppCompatActivity() {
         val tracksList = mutableListOf<Map<String, Any?>>()
         if (!this::player.isInitialized) return tracksList
 
+        val externalSubtitleUrls = currentSubtitleTracks
+            ?.mapNotNull { it["url"] as? String }
+            ?.toSet() ?: emptySet()
+
         val currentTracks = player.currentTracks
         val activeVideoFormat = player.videoFormat
         debugTracksShort(currentTracks)
@@ -1251,8 +1255,7 @@ class PlayerActivity : AppCompatActivity() {
                         val formatId = format.id
                         val isPossiblyExternal = (
                                 (format.label == null && format.language == null) &&
-                                        (formatId != null && formatId.matches(Regex("\\d+:")))
-                                )
+                                        (formatId != null && formatId.matches(Regex("\\d+:"))))
 
                         if (isPossiblyExternal && currentAudioTracks != null) {
                             val index = externalAudioTrackIndex
@@ -1279,6 +1282,9 @@ class PlayerActivity : AppCompatActivity() {
                                 "sampleMimeType" to format.sampleMimeType
                             )
                         )
+                        if (format.id != null && externalSubtitleUrls.any { format.id!!.contains(it) }) {
+                            trackInfo["isExternal"] = true
+                        }
                     }
                 }
 
@@ -2089,6 +2095,7 @@ class PlayerActivity : AppCompatActivity() {
                 .setLanguage(language)
                 .setLabel(label)
                 .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                .setId(url)
                 .build()
         } ?: emptyList()
 
