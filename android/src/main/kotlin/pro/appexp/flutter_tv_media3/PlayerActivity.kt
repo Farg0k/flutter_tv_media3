@@ -879,8 +879,17 @@ class PlayerActivity : AppCompatActivity() {
             "setExternalSubtitles" -> {
                 val newSubtitles = call.argument<List<Map<String, Any>>>("subtitleTracks")
                 if (newSubtitles != null) {
-                    currentSubtitleTracks = (currentSubtitleTracks ?: emptyList()) + newSubtitles
-                    rebuildMediaSourceAndResume()
+                    val existingTracks = currentSubtitleTracks ?: emptyList()
+                    val existingUrls = existingTracks.mapNotNull { it["url"] as? String }.toSet()
+                    val uniqueNewSubtitles = newSubtitles.filter {
+                        val url = it["url"] as? String
+                        url != null && !existingUrls.contains(url)
+                    }
+
+                    if (uniqueNewSubtitles.isNotEmpty()) {
+                        currentSubtitleTracks = existingTracks + uniqueNewSubtitles
+                        rebuildMediaSourceAndResume()
+                    }
                     result.success(null)
                 } else {
                     reportErrorToOther(
@@ -1391,7 +1400,7 @@ class PlayerActivity : AppCompatActivity() {
                 val override = TrackSelectionOverride(trackGroup, listOf(trackIndex))
 
                 if (trackType == C.TRACK_TYPE_TEXT) {
-                    parametersBuilder.addOverride(override)
+                    parametersBuilder.setOverrideForType(override)
                     val mappedTrackInfo = trackSelector.currentMappedTrackInfo
                     if (mappedTrackInfo != null) {
                         for (rendererIndex in 0 until mappedTrackInfo.rendererCount) {
