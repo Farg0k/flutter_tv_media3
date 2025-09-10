@@ -287,6 +287,12 @@ class AppPlayerController {
         }
         break;
 
+      case 'onExternalSubtitleSelected':
+        if (_findSubtitlesStateInfoLabel != null) {
+          await updateFindSubtitlesStateInfoLabel();
+        }
+        break;
+
       case 'onWatchTimeMarked':
         if (_saveWatchTime == null) return;
         final index = call.arguments['playlist_index'] as int?;
@@ -871,6 +877,19 @@ class AppPlayerController {
   Future<void> _updateFindSubtitlesState(FindSubtitlesState state) async {
     if (_playerState.activityReady != true) return;
     await _invokeMethodGuarded<void>(_activityChannel, 'onSubtitleSearchStateChanged', state.toMap());
+  }
+
+  /// Updates the info label for the subtitle search state and notifies the UI.
+  Future<void> updateFindSubtitlesStateInfoLabel() async {
+    _findSubtitlesStateInfoLabel =
+        _labelSearchExternalSubtitle != null ? await _labelSearchExternalSubtitle!() : _findSubtitlesStateInfoLabel;
+    final updatedState = FindSubtitlesState(
+      isVisible: _searchExternalSubtitle != null,
+      label: _findSubtitlesLabel,
+      stateInfoLabel: _findSubtitlesStateInfoLabel,
+      status: SubtitleSearchStatus.idle,
+    );
+    await _updateFindSubtitlesState(updatedState);
   }
 
   /// Retrieves the supported and active refresh rates from the display.

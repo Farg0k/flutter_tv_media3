@@ -132,6 +132,7 @@ class PlayerActivity : AppCompatActivity() {
     private var currentVideoHeight: Int = 0
     private var currentMediaRequestToken: Any? = null
     private var isAfrEnabled: Boolean = false
+    private var lastActiveSubtitleId: String? = null
 
     /**
      * Called when the Activity is first created.
@@ -1073,6 +1074,31 @@ class PlayerActivity : AppCompatActivity() {
 
             override fun onTracksChanged(tracks: Tracks) {
                 sendCurrentTracksToDart()
+                /////////////////////////////////////////////////
+                val currentSubtitle = tracks.groups
+                    .firstOrNull { it.type == C.TRACK_TYPE_TEXT && it.isSelected }
+                    ?.let { group ->
+                        val selectedIndex = (0 until group.length).firstOrNull { group.isTrackSelected(it) }
+                        if (selectedIndex != null) group.getTrackFormat(selectedIndex) else null
+                    }
+
+                val currentSubtitleId = currentSubtitle?.id
+
+                if (currentSubtitleId != lastActiveSubtitleId) {
+                    if (currentSubtitle != null) {
+                        val externalUrls = currentSubtitleTracks?.mapNotNull { it["url"] as? String }?.toSet() ?: emptySet()
+                        val isExternal = externalUrls.any { url ->
+                            currentSubtitle.id?.contains(url) == true
+                        }
+
+                        if (isExternal) {
+                            methodChannel.invokeMethod("onExternalSubtitleSelected", null)
+                        }
+                    }
+                }
+                
+                lastActiveSubtitleId = currentSubtitleId
+                ////////////////////////////////////////////////////////////////
                 if (isAfrEnabled) {
                     frameRateManager.onPossibleFrameRateChange()
                 }
