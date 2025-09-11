@@ -375,7 +375,7 @@ class AppPlayerController {
         );
         break;
       case 'onActivityDestroyed':
-        newState = newState.copyWith(activityReady: false);
+        newState = newState.copyWith(activityReady: false, activityDestroyed: true);
         break;
       case 'onBack':
         break;

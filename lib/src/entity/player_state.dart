@@ -32,6 +32,7 @@ class PlayerState {
     SubtitleStyle? subtitleStyle,
     ClockSettings? clockSettings,
     PlayerSettings? playerSettings,
+    this.activityDestroyed = false,
     this.customInfoText,
   })  : subtitleStyle = subtitleStyle ?? SubtitleStyle(),
         clockSettings = clockSettings ?? ClockSettings(),
@@ -100,6 +101,8 @@ class PlayerState {
   /// A custom string to be displayed in the info panel.
   final String? customInfoText;
 
+  final bool activityDestroyed;
+
   PlayerState copyWith({
     bool? activityReady,
     StateValue? stateValue,
@@ -123,6 +126,7 @@ class PlayerState {
     PlayerSettings? playerSettings,
     bool? resetError,
     String? customInfoText,
+    bool? activityDestroyed,
   }) {
     return PlayerState(
       activityReady: activityReady ?? this.activityReady,
@@ -146,6 +150,7 @@ class PlayerState {
       clockSettings: clockSettings ?? this.clockSettings,
       playerSettings: playerSettings ?? this.playerSettings,
       customInfoText: customInfoText ?? this.customInfoText,
+      activityDestroyed: activityDestroyed ?? this.activityDestroyed,
     );
   }
 }
