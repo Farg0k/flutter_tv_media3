@@ -107,7 +107,7 @@ class InfoPanel extends StatelessWidget {
                                       if (playItem.title != null || playItem.label != null)
                                         Text(
                                           playItem.title ?? playItem.label!,
-                                          style: Theme.of(context).textTheme.headlineMedium,
+                                          style: Theme.of(context).textTheme.titleLarge,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -130,7 +130,16 @@ class InfoPanel extends StatelessWidget {
                                             playItem.subTitle!,
                                             style: Theme.of(
                                               context,
-                                            ).textTheme.headlineSmall?.merge(AppTheme.extraLightTextStyle),
+                                            ).textTheme.titleMedium?.merge(AppTheme.extraLightTextStyle),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        if (playItem.title != null  && playItem.label != null)
+                                          Text(
+                                            playItem.label!,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall?.merge(AppTheme.extraLightTextStyle),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
