@@ -3,7 +3,6 @@ import "dart:math";
 
 import "package:flutter/material.dart";
 import "package:flutter_tv_media3/flutter_tv_media3.dart";
-import "package:flutter_tv_media3/src/main_app/screens/media3_player_screen.dart";
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -202,7 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     final clockSettings = ClockSettings(clockPosition: ClockPosition.random);
 
-        controller.setConfig(
+    controller.setConfig(
       localeStrings: localeStrings,
       subtitleStyle: subtitleStyle,
       saveSubtitleStyle: saveSubtitleStyle,
@@ -267,7 +266,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('${index + 1}'),
             ),
             onTap: () => controller.openPlayer(context: context, playlist: mediaItems, initialIndex: index),
-/*
+            /*
             or Using Flutter's Navigator directly
             onTap:
                 () => Navigator.of(context).push(
