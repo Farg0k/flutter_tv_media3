@@ -387,7 +387,7 @@ class PlayerActivity : AppCompatActivity() {
         methodUIChannel.setMethodCallHandler(null)
 
         if (this::playerView.isInitialized) {
-            if (isAfrEnabled) {
+            if (this::frameRateManager.isInitialized) {
                 frameRateManager.release()
             }
             playerView.player = null
