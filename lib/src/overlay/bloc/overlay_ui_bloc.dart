@@ -58,9 +58,9 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
     if (state.playerPanel == PlayerPanel.placeholder && event.playerState.stateValue == StateValue.playing) {
       add(SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true));
     }
-    // Show a placeholder when the track changes or on initial load.
-    if (state.playIndex != event.playerState.playIndex || event.playerState.stateValue == StateValue.initial) {
-      add(SetActivePanel(playerPanel: PlayerPanel.placeholder));
+    // Show a placeholder when the track changes.
+    if (state.playIndex != event.playerState.playIndex) {
+      add(const SetActivePanel(playerPanel: PlayerPanel.placeholder));
     }
     // Show the error panel if an error has occurred.
     if (state.playerPanel != PlayerPanel.placeholder && event.playerState.lastError != null) {

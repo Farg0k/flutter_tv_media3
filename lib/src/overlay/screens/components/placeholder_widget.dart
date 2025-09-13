@@ -5,52 +5,94 @@ import '../../../app_theme/app_theme.dart';
 import '../../media_ui_service/media3_ui_controller.dart';
 import 'widgets/player_error_widget.dart';
 
-class PlaceholderWidget extends StatelessWidget {
+class PlaceholderWidget extends StatefulWidget {
   const PlaceholderWidget({super.key, required this.controller});
   final Media3UiController controller;
+
+  @override
+  State<PlaceholderWidget> createState() => _PlaceholderWidgetState();
+}
+
+class _PlaceholderWidgetState extends State<PlaceholderWidget> {
+  PlaylistMediaItem? _lastValidItem;
+
+  @override
+  void initState() {
+    super.initState();
+    // Prime the last valid item with the initial data from the controller.
+    // This handles the case where the first video is launched.
+    final playerState = widget.controller.playerState;
+    final initialItem = playerState.playIndex != -1 && playerState.playlist.isNotEmpty
+        ? playerState.playlist[playerState.playIndex]
+        : null;
+    if (initialItem?.title != null) {
+      _lastValidItem = initialItem;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black,
       child: StreamBuilder<PlayerState>(
-        initialData: controller.playerState,
-        stream: controller.playerStateStream,
+        initialData: widget.controller.playerState,
+        stream: widget.controller.playerStateStream,
         builder: (context, snapshot) {
           final playerState = snapshot.data;
 
-          if (playerState == null || playerState.activityReady == false) {
-            return const _Content(item: null);
+          if (playerState == null) {
+            return const Center(child: CircularProgressIndicator());
           }
-          final PlaylistMediaItem? item =
-              playerState.playIndex != -1 && playerState.playlist.isNotEmpty
-                  ? playerState.playlist[playerState.playIndex]
-                  : null;
-          if (item == null) {
+
+          final currentItem = playerState.playIndex != -1 && playerState.playlist.isNotEmpty
+              ? playerState.playlist[playerState.playIndex]
+              : null;
+
+          // Update last valid item only when we get a new item with a title.
+          // This prevents showing an empty item during transition.
+          if (currentItem?.title != null) {
+            _lastValidItem = currentItem;
+          }
+          
+          final itemToDisplay = _lastValidItem ?? currentItem;
+
+
+          // Show error if item is invalid, regardless of activity state
+          if (itemToDisplay == null) {
             return PlayerErrorWidget(
               lastError: OverlayLocalizations.get('playbackError'),
               errorCode: OverlayLocalizations.get('playlistIndexError'),
-              onExit: controller.stop,
+              onExit: widget.controller.stop,
             );
           }
-          if (item.coverImg != null) {
-            precacheImage(NetworkImage(item.coverImg!), context, onError: (exception, stackTrace) {});
+          
+          if (itemToDisplay.coverImg != null) {
+            precacheImage(NetworkImage(itemToDisplay.coverImg!), context, onError: (exception, stackTrace) {});
           }
+
+          final bool showLoadingIndicator = !playerState.activityReady || 
+                                            playerState.stateValue == StateValue.buffering || 
+                                            playerState.stateValue == StateValue.initial;
+
           return Stack(
             alignment: Alignment.center,
             children: [
-              if (item.placeholderImg != null) _BackgroundImage(imageUrl: item.placeholderImg!),
+              if (itemToDisplay.placeholderImg != null) _BackgroundImage(imageUrl: itemToDisplay.placeholderImg!),
               Container(color: AppTheme.backgroundColor),
+              
+              // Always show the content (of the last valid item)
+              _Content(item: itemToDisplay),
+
               if (playerState.lastError != null)
                 PlayerErrorWidget(
                   lastError: playerState.lastError!,
                   errorCode: playerState.errorCode,
-                  onExit: () => controller.stop(),
-                  onNext: () => controller.playNext(),
-                )
-              else
-                _Content(item: item),
-              if (playerState.lastError == null)
+                  onExit: () => widget.controller.stop(),
+                  onNext: () => widget.controller.playNext(),
+                ),
+              
+              // Show loading indicator when buffering or activity is not ready
+              if (showLoadingIndicator && playerState.lastError == null)
                 Positioned(
                   bottom: 50,
                   left: 200,
@@ -62,15 +104,17 @@ class PlaceholderWidget extends StatelessWidget {
                         Text(
                           OverlayLocalizations.get('loading'),
                           textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(color: Colors.white70, fontWeight: FontWeight.w300),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(color: Colors.white70, fontWeight: FontWeight.w300),
                         ),
                         LinearProgressIndicator(value: playerState.loadingProgress),
                       ],
                     ),
                   ),
                 ),
+
               if (snapshot.data?.loadingStatus != null && playerState.lastError == null)
                 Positioned(
                   bottom: 25,
@@ -81,9 +125,10 @@ class PlaceholderWidget extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontStyle: FontStyle.italic),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.white70, fontStyle: FontStyle.italic),
                   ),
                 ),
             ],
