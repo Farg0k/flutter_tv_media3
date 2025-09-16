@@ -24,7 +24,7 @@ class VideoInfoItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
         children: [
-          Icon(icon, color: Colors.white70, size: 16),
+          Icon(icon, color: Colors.white70, size: 14),
           if (title != null) ...[
             Text(title!, style: AppTheme.infoTextStyle),
           ],

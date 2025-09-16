@@ -34,75 +34,75 @@ class InfoPanel extends StatelessWidget {
                   final playItem = controller.playerState.playlist[state.playIndex];
                   final hasEpg = playItem.programs != null;
                   final programs = playItem.programs ?? [];
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (playItem.coverImg != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0, top: 8, bottom: 8),
-                          child: Container(
-                            clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
-                              color: AppTheme.backgroundColor,
-                              borderRadius: AppTheme.borderRadius,
-                              boxShadow: [
-                                BoxShadow(color: AppTheme.backgroundColor, blurRadius: 15, offset: const Offset(0, 5)),
-                              ],
-                            ),
-                            constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
-                            child: Image.network(
-                              playItem.coverImg!,
-                              fit: BoxFit.cover,
-                              height: 170,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    value:
-                                        loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(child: Icon(Icons.image, color: Colors.white38));
-                              },
-                            ),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(top: 8, bottom: 6, left: 16, right: 16),
+                      constraints: BoxConstraints(
+                        minHeight: playItem.coverImg != null ? 170 : 120,
+                        maxHeight: 350,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundColor,
+                        borderRadius: AppTheme.borderRadius,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
                           ),
-                        ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.only(top: 8, bottom: 6, left: 16, right: 16),
-                            constraints: BoxConstraints(
-                              minHeight: playItem.coverImg != null ? 170 : 120,
-                              maxHeight: 350,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.backgroundColor,
-                              borderRadius: AppTheme.borderRadius,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            child: Row(
                               children: [
-                                Flexible(
+                                if (playItem.coverImg != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 16.0, top: 8, bottom: 8),
+                                    child: Container(
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.backgroundColor,
+                                        borderRadius: AppTheme.borderRadius,
+                                        boxShadow: [
+                                          BoxShadow(color: AppTheme.divider, blurRadius: 12, offset: const Offset(0, 5)),
+                                        ],
+                                      ),
+                                      constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
+                                      child: Image.network(
+                                        playItem.coverImg!,
+                                        fit: BoxFit.cover,
+                                        height: 170,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              value:
+                                              loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Center(child: Icon(Icons.image, color: Colors.white38));
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                Expanded(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                    spacing: 3,
                                     children: [
                                       if (playItem.title != null || playItem.label != null)
                                         Text(
@@ -151,18 +151,17 @@ class InfoPanel extends StatelessWidget {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                       ],
-
                                       VideoInfoWidget(controller: controller, state: state),
                                     ],
                                   ),
                                 ),
-                                TimeLinePanel(controller: controller),
                               ],
                             ),
                           ),
-                        ),
+                          TimeLinePanel(controller: controller),
+                        ],
                       ),
-                    ],
+                    ),
                   );
                 },
               ),
