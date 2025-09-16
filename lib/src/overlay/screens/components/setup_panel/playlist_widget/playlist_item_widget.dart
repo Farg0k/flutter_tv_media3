@@ -124,7 +124,7 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
                                     color: AppTheme.fullFocusColor,
                                     backgroundColor: AppTheme.divider,
                                   ),
-                                  duration == position
+                                  duration == 0 && position == 0
                                       ? SizedBox.shrink()
                                       : Text(
                                         '${StringUtils.formatDuration(seconds: position ?? 0)} / ${duration == null ? '--:--:--' : StringUtils.formatDuration(seconds: duration)}',

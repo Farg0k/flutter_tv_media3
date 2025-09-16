@@ -89,12 +89,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _selectedIndex--;
               _scrollToIndex(_selectedIndex);
               context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
+            }else{
+              _selectedIndex = items.length - 1;
+              _scrollToIndex(_selectedIndex);
+              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
             }
           }),
       const SingleActivator(LogicalKeyboardKey.arrowDown):
           () => _handleKeyEvent(() {
             if (_selectedIndex < items.length - 1) {
               _selectedIndex++;
+              _scrollToIndex(_selectedIndex);
+              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
+            }else{
+              _selectedIndex = 0;
               _scrollToIndex(_selectedIndex);
               context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
             }
