@@ -179,6 +179,8 @@ class PlayerActivity : AppCompatActivity() {
         httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setUserAgent(defaultUserAgent)
+            .setConnectTimeoutMs(20000)
+            .setReadTimeoutMs(20000)
         dataSourceFactory = DefaultDataSource.Factory(this, httpDataSourceFactory)
 
         extractorsFactory = DefaultExtractorsFactory()
@@ -201,8 +203,14 @@ class PlayerActivity : AppCompatActivity() {
         trackSelector.parameters = parameters
 
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(5000, 60000, 2500, 5000)
-            .setTargetBufferBytes(50 * 1024 * 1024)
+            .setBufferDurationsMs(
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS * 4, // 60 seconds
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 4, // 200 seconds
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS * 4, // 10 seconds
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS * 4 // 20 seconds
+            )
+            .setTargetBufferBytes(DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES * 2) // ~125MB
+            .setPrioritizeTimeOverSizeThresholds(true)
             .build()
 
         val renderersFactory = DefaultRenderersFactory(this)
