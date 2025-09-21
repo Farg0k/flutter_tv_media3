@@ -23,7 +23,7 @@ The main difference of this plugin is that the player is launched in a separate 
     *   [Full Configuration and Callbacks](#full-configuration-and-callbacks)
     *   [External Control (IP Control)](#external-control-ip-control)
 *   [API Reference](#api-reference)
-    *   [`AppPlayerController`](#appplayercontroller)
+    *   [`FtvMedia3PlayerController`](#ftvmedia3playercontroller)
     *   [`PlaylistMediaItem`](#playlistmediaitem)
     *   [`PlayerSettings`](#playersettings)
 *   [Optional Native Libraries (Decoders)](#optional-native-libraries-decoders)
@@ -38,7 +38,7 @@ Understanding the architecture is key to using this plugin correctly:
 
 *   **Native Window:** The player runs in a separate Android `Activity`. This ensures the best possible performance and access to low-level system features.
 *   **Separate UI Engine:** The user interface (UI) for the player is written in Flutter and runs in a separate, isolated `FlutterEngine`.
-*   **Programmatic Control:** Interaction with the player from your main application is done exclusively programmatically via the `AppPlayerController` singleton.
+*   **Programmatic Control:** Interaction with the player from your main application is done exclusively programmatically via the `FtvMedia3PlayerController` singleton.
 *   **D-pad and Touch Control:** The player UI is designed for D-pad (remote control's directional pad) navigation and also supports touch input(mouse). 
 ### Important Limitations
 
@@ -104,7 +104,7 @@ To play videos from `http` links (not `https`):
 
 ### 1. Controller Lifecycle: `init()` and `close()`
 
-Properly managing the lifecycle of the `AppPlayerController` is crucial for the stability of your application.
+Properly managing the lifecycle of the `FtvMedia3PlayerController` is crucial for the stability of your application.
 
 *   **`init()`**: This method must be called **once** before any other interaction with the controller. It configures all the necessary callbacks, initial settings, and localization strings. A good place to call it is in the `initState` of your main widget. The configuration cannot be changed after initialization.
 *   **`close()`**: This method should be called when the controller is no longer needed, typically in the `dispose` method of your widget. It closes all internal streams and releases resources, preventing memory leaks.
@@ -125,7 +125,7 @@ void dispose() {
 
 ### 2. Plugin and Controller Initialization
 
-First, get the singleton instance of the `AppPlayerController`. It's best to do this in a `StatefulWidget`.
+First, get the singleton instance of the `FtvMedia3PlayerController`. It's best to do this in a `StatefulWidget`.
 
 The controller must be configured **once** before launching the player for the first time. This is done exclusively through the `init()` method, typically in your widget's `initState`. All configuration properties are private and cannot be changed after initialization.
 
@@ -158,7 +158,7 @@ These parameters enable and configure the external subtitle search feature, whic
 
 ```dart
 // In your widget's state
-final controller = AppPlayerController();
+final controller = FtvMedia3PlayerController();
 
 @override
 void initState() {
@@ -231,7 +231,7 @@ This approach provides visual feedback to the user while the native player initi
 
 **A) Using the `openPlayer` helper method:**
 
-This is the most convenient way. The `AppPlayerController` handles the navigation for you.
+This is the most convenient way. The `FtvMedia3PlayerController` handles the navigation for you.
 
 ```dart
 controller.openPlayer(
@@ -307,7 +307,7 @@ Here is a full example of configuration:
 
 ```dart
 // In your widget's state
-final controller = AppPlayerController();
+final controller = FtvMedia3PlayerController();
 
 // It's good practice to define callback functions separately
 Future<void> _saveSubtitleStyle({required SubtitleStyle subtitleStyle}) async { /* ... */ }
@@ -349,7 +349,7 @@ void initState() {
 
 ### External Control (IP Control)
 
-The `AppPlayerController` is not just for launching the player. Its methods and streams are ideal for implementing **external control**. For example, you could create a remote control in a mobile app that sends commands to the player over the network (IP Control).
+The `FtvMedia3PlayerController` is not just for launching the player. Its methods and streams are ideal for implementing **external control**. For example, you could create a remote control in a mobile app that sends commands to the player over the network (IP Control).
 
 This is a two-way communication:
 1.  **Sending Commands:** Use controller methods like `playPause()`, `seekTo()`, etc., to control playback.
@@ -432,7 +432,7 @@ This approach allows for centralized error management and ensures the stable ope
 
 ## API Reference
 
-### `AppPlayerController`
+### `FtvMedia3PlayerController`
 
 A singleton for controlling the player.
 
@@ -600,7 +600,7 @@ Thture allows a user to initiate a search for subtitles for the current media fi
 
 1.  **Main App:**
     *   Responsible for implementing the subtitle search logic (e.g., via a third-party service API).
-    *   Provides the `AppPlayerController` with a `searchExternalSubtitle` handler function.
+    *   Provides the `FtvMedia3PlayerController` with a `searchExternalSubtitle` handler function.
     *   Passes initial settings (like the search button label) when launching the player.
 
 2.  **Native Player (`PlayerActivity.kt`):**
@@ -617,7 +617,7 @@ Thture allows a user to initiate a search for subtitles for the current media fi
 
 ### Configuration in the Main Application
 
-To activate the subtitle search functionality, you must pass the following parameters during the initialization of `AppPlayerController`:
+To activate the subtitle search functionality, you must pass the following parameters during the initialization of `FtvMedia3PlayerController`:
 
 *   **`searchExternalSubtitle`**:
     *   **Type:** `Future<List<MediaItemSubtitle>?> Function({required String id})`
@@ -638,7 +638,7 @@ To activate the subtitle search functionality, you must pass the following param
 ### Data Flow
 
 1.  **Initialization:**
-    *   The main app, when configuring `AppPlayerController`, passes the `searchExternalSubtitle` function and, optionally, `findSubtitlesLabel`, `findSubtitlesStateInfoLabel`, and `labelSearchExternalSubtitle`.
+    *   The main app, when configuring `FtvMedia3PlayerController`, passes the `searchExternalSubtitle` function and, optionally, `findSubtitlesLabel`, `findSubtitlesStateInfoLabel`, and `labelSearchExternalSubtitle`.
     *   This data is serialized to JSON and passed to `PlayerActivity` as `subtitle_search` on launch.
     *   `PlayerActivity` forwards this data to the UI overlay, where `Media3UiController` initializes `findSubtitlesStateNotifier`.
 
@@ -649,15 +649,15 @@ To activate the subtitle search functionality, you must pass the following param
     *   `PlayerActivity` receives the call, sees the `findSubtitles` method, and forwards the request by calling `onFindSubtitlesRequested` on the `methodChannel` leading to the main app, passing the `mediaId` as an argument.
 
 3.  **Processing in the Main App:**
-    *   `AppPlayerController` receives the `onFindSubtitlesRequested` request.
+    *   `FtvMedia3PlayerController` receives the `onFindSubtitlesRequested` request.
     *   It calls the user-provided `_searchExternalSubtitle` function, passing it the `mediaId`.
-    *   Throughout the process, `AppPlayerController` can send intermediate states (e.g., "error", "not found") back to `PlayerActivity` via the `_updateFindSubtitlesState` method.
+    *   Throughout the process, `FtvMedia3PlayerController` can send intermediate states (e.g., "error", "not found") back to `PlayerActivity` via the `_updateFindSubtitlesState` method.
 
 4.  **State and Result Updates:**
     *   `PlayerActivity` receives these updates via the `onSubtitleSearchStateChanged` method and broadcasts them to the UI overlay.
     *   `Media3UiController` in the overlay receives these states and updates `findSubtitlesStateNotifier`. The `SubtitleWidget` listens to this `ValueNotifier` and rebuilds, showing a loading indicator, error message, etc.
-    *   After the search is complete (successful or not), `AppPlayerController` calls the `_labelSearchExternalSubtitle` function (if provided) to update the info label's text (`findSubtitlesStateInfoLabel`).
-    *   If the search is successful, `AppPlayerController` calls `setExternalSubtitles`, passing the list of found `MediaItemSubtitle`.
+    *   After the search is complete (successful or not), `FtvMedia3PlayerController` calls the `_labelSearchExternalSubtitle` function (if provided) to update the info label's text (`findSubtitlesStateInfoLabel`).
+    *   If the search is successful, `FtvMedia3PlayerController` calls `setExternalSubtitles`, passing the list of found `MediaItemSubtitle`.
     *   `PlayerActivity` receives this list, adds it to `currentSubtitleTracks`, and rebuilds the player's `MediaSource` to make the new subtitles available for selection.
 
 5.  **Displaying Results:**
@@ -715,7 +715,7 @@ On the Flutter side, the feature is managed through the UI and controllers.
     *   When `isAfrEnabled` is `true`, `FrameRateManager` on the native side operates in automatic mode.
     *   When `isAfrEnabled` is `false`, automatic switching is disabled, and the user gets the option to **manually** select the screen's refresh rate.
 3.  **Developer API:**
-    *   The `AppPlayerController` and `Media3UiController` controllers provide two methods for interacting with AFR:
+    *   The `FtvMedia3PlayerController` and `Media3UiController` controllers provide two methods for interacting with AFR:
         *   `Future<RefreshRateInfo> getRefreshRateInfo()`: Asynchronously returns a `RefreshRateInfo` object containing a list of supported refresh rates (`supportedRates`) and the currently active rate (`activeRate`).
         *   `Future<void> setManualFrameRate(double rate)`: Allows you to manually set the refresh rate. **This method will only work if AFR is disabled.**
 

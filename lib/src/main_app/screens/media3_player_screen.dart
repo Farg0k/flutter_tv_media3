@@ -29,13 +29,13 @@ class Media3PlayerScreen extends StatefulWidget {
 }
 
 class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
-  late final AppPlayerController _controller;
+  late final FtvMedia3PlayerController _controller;
   bool isClose = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AppPlayerController();
+    _controller = FtvMedia3PlayerController();
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
     _controller.playerStateStream.listen((e) async {
       if (e.activityReady == true && mounted == true && isClose == false) {

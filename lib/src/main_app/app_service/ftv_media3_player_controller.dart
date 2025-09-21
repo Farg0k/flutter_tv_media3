@@ -51,7 +51,7 @@ typedef LabelSearchExternalSubtitle = Future<String> Function();
 /// - [playerStateStream]: For the overall state of the player ([PlayerState]).
 /// - [playbackStateStream]: For playback-specific state like position and duration ([PlaybackState]).
 /// - [mediaMetadataStream]: For the metadata of the currently playing media ([MediaMetadata]).
-class AppPlayerController {
+class FtvMedia3PlayerController {
   /// The method channel used for communication from the native plugin to Flutter.
   static const MethodChannel _pluginChannel = MethodChannel('app_player_plugin');
 
@@ -120,13 +120,13 @@ class AppPlayerController {
   }
 
   /// The singleton instance of the controller.
-  static final AppPlayerController _instance = AppPlayerController._internal();
+  static final FtvMedia3PlayerController _instance = FtvMedia3PlayerController._internal();
 
   /// Factory constructor to return the singleton instance.
-  factory AppPlayerController() => _instance;
+  factory FtvMedia3PlayerController() => _instance;
 
   /// Internal constructor to initialize the method call handlers.
-  AppPlayerController._internal() {
+  FtvMedia3PlayerController._internal() {
     _setMethodCallHandler(_handleMethodCall);
     _setPluginMethodCallHandler(_handleMethodCall);
   }
@@ -912,7 +912,7 @@ class AppPlayerController {
   }
 }
 
-/// A custom exception for errors originating from the AppPlayerController.
+/// A custom exception for errors originating from the FtvMedia3PlayerController.
 class AppPlayerException implements Exception {
   final String message;
   final dynamic originalException;

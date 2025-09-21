@@ -70,7 +70,7 @@ Future<List<MediaItemSubtitle>?> _mockSearchSubtitles({required String id}) asyn
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final controller = AppPlayerController();
+  final controller = FtvMedia3PlayerController();
   int lastPlayedIndex = 0;
   late StreamSubscription<PlayerState> _playerStateSubscription;
   Timer? _infoTimer;

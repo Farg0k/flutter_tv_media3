@@ -15,8 +15,8 @@
 /// - The player UI is an internal part of the plugin and cannot be customized
 ///   by the developer without modifying the plugin's code.
 ///
-/// ### AppPlayerController
-/// Interaction with the plugin is done through the [AppPlayerController], which
+/// ### FtvMedia3PlayerController
+/// Interaction with the plugin is done through the [FtvMedia3PlayerController], which
 /// has a dual purpose:
 /// 1.  **Launching the Player:** The `openPlayer` method is the primary way
 ///     to launch the player from your app with the desired playlist.
@@ -38,7 +38,7 @@ library;
 
 export 'src/overlay/overlay_main.dart';
 
-export 'src/main_app/app_service/app_player_controller.dart';
+export 'src/main_app/app_service/ftv_media3_player_controller.dart';
 export 'src/main_app/screens/media3_player_screen.dart';
 export 'src/overlay/screens/overlay_screen.dart';
 export 'src/entity/playlist_media_item.dart';
@@ -57,10 +57,10 @@ import 'flutter_tv_media3.dart';
 
 /// The main class for accessing the media player controller.
 class FlutterTvMedia3 {
-  /// Provides access to the singleton instance of the [AppPlayerController].
+  /// Provides access to the singleton instance of the [FtvMedia3PlayerController].
   ///
-  /// The [AppPlayerController] is the primary entry point for interacting with
+  /// The [FtvMedia3PlayerController] is the primary entry point for interacting with
   /// the player from the main application. It is used to open the player,
   /// manage playlists, and control playback externally.
-  static AppPlayerController get controller => AppPlayerController();
+  static FtvMedia3PlayerController get controller => FtvMedia3PlayerController();
 }
