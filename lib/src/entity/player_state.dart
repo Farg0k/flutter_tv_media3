@@ -153,6 +153,105 @@ class PlayerState {
       activityDestroyed: activityDestroyed ?? this.activityDestroyed,
     );
   }
+
+  String toString() {
+    return '''PlayerState{
+      activityReady: $activityReady, 
+      stateValue: $stateValue, 
+      playlist: $playlist, 
+      playIndex: $playIndex, 
+      lastError: $lastError, 
+      errorCode: $errorCode, 
+      isLive: $isLive, 
+      isSeekable: $isSeekable, 
+      loadingStatus: $loadingStatus, 
+      loadingProgress: $loadingProgress, 
+      videoTracks: $videoTracks, 
+      audioTracks: $audioTracks, 
+      subtitleTracks: $subtitleTracks, 
+      zoom: $zoom, 
+      speed: $speed, 
+      repeatMode: $repeatMode, 
+      isShuffleModeEnabled: $isShuffleModeEnabled, 
+      subtitleStyle: $subtitleStyle, 
+      clockSettings: $clockSettings, 
+      playerSettings: $playerSettings, 
+      customInfoText: $customInfoText, 
+      activityDestroyed: $activityDestroyed
+    }''';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'activityReady': activityReady,
+      'stateValue': stateValue.index,
+      'playlist': playlist.map((item) => item.toMap()).toList(),
+      'playIndex': playIndex,
+      'lastError': lastError,
+      'errorCode': errorCode,
+      'isLive': isLive,
+      'isSeekable': isSeekable,
+      'loadingStatus': loadingStatus,
+      'loadingProgress': loadingProgress,
+      'videoTracks': videoTracks.map((track) => track.toMap()).toList(),
+      'audioTracks': audioTracks.map((track) => track.toMap()).toList(),
+      'subtitleTracks': subtitleTracks.map((track) => track.toMap()).toList(),
+      'zoom': zoom.index,
+      'speed': speed,
+      'repeatMode': repeatMode.index,
+      'isShuffleModeEnabled': isShuffleModeEnabled,
+      'subtitleStyle': subtitleStyle.toMap(),
+      'clockSettings': clockSettings.toMap(),
+      'playerSettings': playerSettings.toMap(),
+      'customInfoText': customInfoText,
+      'activityDestroyed': activityDestroyed,
+    };
+  }
+
+  factory PlayerState.fromMap(Map<String, dynamic> map) {
+    return PlayerState(
+      activityReady: map['activityReady'] as bool? ?? false,
+      stateValue: StateValue.values[map['stateValue'] as int? ?? 0],
+      playlist: (map['playlist'] as List<dynamic>?)
+              ?.map((item) => PlaylistMediaItem.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      playIndex: map['playIndex'] as int? ?? -1,
+      lastError: map['lastError'] as String?,
+      errorCode: map['errorCode'] as String?,
+      isLive: map['isLive'] as bool? ?? false,
+      isSeekable: map['isSeekable'] as bool? ?? false,
+      loadingStatus: map['loadingStatus'] as String?,
+      loadingProgress: map['loadingProgress'] as double?,
+      videoTracks: (map['videoTracks'] as List<dynamic>?)
+              ?.map((track) => VideoTrack.fromMap(track as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      audioTracks: (map['audioTracks'] as List<dynamic>?)
+              ?.map((track) => AudioTrack.fromMap(track as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      subtitleTracks: (map['subtitleTracks'] as List<dynamic>?)
+              ?.map((track) => SubtitleTrack.fromMap(track as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      zoom: PlayerZoom.values[map['zoom'] as int? ?? 0],
+      speed: map['speed'] as double? ?? 1.0,
+      repeatMode: RepeatMode.values[map['repeatMode'] as int? ?? 0],
+      isShuffleModeEnabled: map['isShuffleModeEnabled'] as bool? ?? false,
+      subtitleStyle: map['subtitleStyle'] != null
+          ? SubtitleStyle.fromMap(map['subtitleStyle'] as Map<String, dynamic>)
+          : null,
+      clockSettings: map['clockSettings'] != null
+          ? ClockSettings.fromMap(map['clockSettings'] as Map<String, dynamic>)
+          : null,
+      playerSettings: map['playerSettings'] != null
+          ? PlayerSettings.fromMap(map['playerSettings'] as Map<String, dynamic>)
+          : null,
+      customInfoText: map['customInfoText'] as String?,
+      activityDestroyed: map['activityDestroyed'] as bool? ?? false,
+    );
+  }
 }
 
 /// Defines the main states of the player lifecycle.

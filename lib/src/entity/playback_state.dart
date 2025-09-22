@@ -33,4 +33,29 @@ class PlaybackState {
     duration: duration ?? this.duration,
     bufferedPosition: bufferedPosition ?? this.bufferedPosition,
   );
+
+  @override
+  String toString() {
+    return '''PlaybackState{
+      position: $position, 
+      duration: $duration, 
+      bufferedPosition: $bufferedPosition
+    }''';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'position': position,
+      'duration': duration,
+      'bufferedPosition': bufferedPosition,
+    };
+  }
+
+  factory PlaybackState.fromMap(Map<String, dynamic> map) {
+    return PlaybackState(
+      position: map['position'] as int,
+      duration: map['duration'] as int,
+      bufferedPosition: map['bufferedPosition'] as int,
+    );
+  }
 }

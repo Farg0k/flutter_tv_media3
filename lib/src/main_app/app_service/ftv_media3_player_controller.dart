@@ -918,6 +918,7 @@ class AppPlayerException implements Exception {
   final dynamic originalException;
   final StackTrace? originalStackTrace;
   AppPlayerException(this.message, [this.originalException, this.originalStackTrace]);
+
   @override
   String toString() {
     String result = 'AppPlayerException: $message';

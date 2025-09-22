@@ -55,6 +55,18 @@ abstract class MediaTrack {
         throw UnsupportedError('Unsupported trackType: $trackType');
     }
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'index': index,
+      'groupIndex': groupIndex,
+      'id': id,
+      'trackType': trackType,
+      'isSelected': isSelected,
+      'isExternal': isExternal,
+      'label': label,
+    };
+  }
 }
 
 /// Represents a single video track.
@@ -154,6 +166,28 @@ class VideoTrack extends MediaTrack {
       colorInfo: map['colorInfo'] != null ? Map<String, dynamic>.from(map['colorInfo']) : null,
       url: map['url'],
     );
+  }
+
+  @override
+  Map<String, dynamic> toMap() {
+    return super.toMap()
+      ..addAll({
+        'width': width,
+        'height': height,
+        'bitrate': bitrate,
+        'frameRate': frameRate,
+        'sampleMimeType': sampleMimeType,
+        'codecs': codecs,
+        'selectionFlags': selectionFlags,
+        'roleFlags': roleFlags,
+        'pixelWidthHeightRatio': pixelWidthHeightRatio,
+        'containerMimeType': containerMimeType,
+        'averageBitrate': averageBitrate,
+        'peakBitrate': peakBitrate,
+        'stereoMode': stereoMode,
+        'colorInfo': colorInfo,
+        'url': url,
+      });
   }
 
   @override
@@ -260,6 +294,23 @@ class AudioTrack extends MediaTrack {
   }
 
   @override
+  Map<String, dynamic> toMap() {
+    return super.toMap()
+      ..addAll({
+        'language': language,
+        'codec': codec,
+        'mimeType': mimeType,
+        'bitrate': bitrate,
+        'averageBitrate': averageBitrate,
+        'peakBitrate': peakBitrate,
+        'sampleRate': sampleRate,
+        'channelCount': channelCount,
+        'selectionFlags': selectionFlags,
+        'roleFlags': roleFlags,
+      });
+  }
+
+  @override
   String toString() {
     return '''AudioTrack{
       index: $index, 
@@ -335,6 +386,19 @@ class SubtitleTrack extends MediaTrack {
       containerMimeType: map['containerMimeType'],
       sampleMimeType: map['sampleMimeType'],
     );
+  }
+
+  @override
+  Map<String, dynamic> toMap() {
+    return super.toMap()
+      ..addAll({
+        'language': language,
+        'selectionFlags': selectionFlags,
+        'roleFlags': roleFlags,
+        'codecs': codecs,
+        'containerMimeType': containerMimeType,
+        'sampleMimeType': sampleMimeType,
+      });
   }
 
   @override
