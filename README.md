@@ -438,7 +438,7 @@ A singleton for controlling the player.
 
 **Key Methods:**
 
-*   **`setConfig()`**: **(Lifecycle)** Configures the controller. This method **must be called before launching the player** to ensure your settings are applied. Once the native player window is open, any subsequent calls to `setConfig` will only take effect the next time the player is launched.
+*   **`setConfig()`**: **(Lifecycle)** Configures the controller. This method can be called multiple times to set or update configurations incrementally. Each call only modifies the parameters you provide, leaving previously set values intact. For all settings to be applied correctly on the initial launch, ensure this method is called **before launching the player**. Once the native player window is open, any subsequent configuration changes will only take effect the next time the player is launched.
 *   `openPlayer()`: **(Core)** Opens the player with a playlist using a built-in loading screen (`Media3PlayerScreen`). This method handles Flutter navigation and is the recommended way to launch the player for most use cases.
 *   `openNativePlayer()`: **(Core)** A lower-level alternative to `openPlayer`. It directly triggers the native player activity, bypassing the Flutter loading screen. This is useful if you want to implement a custom loading UI. This method does not manage Flutter navigation.
 *   `close()`: **(Lifecycle)** Releases the controller's resources. Must be called in your widget's `dispose` method to prevent memory leaks.

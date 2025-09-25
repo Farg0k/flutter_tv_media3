@@ -147,18 +147,18 @@ class FtvMedia3PlayerController {
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
-    _subtitleStyle = subtitleStyle;
-    _playerSettings = playerSettings;
-    _clockSettings = clockSettings;
-    _saveSubtitleStyle = saveSubtitleStyle;
-    _saveClockSettings = saveClockSettings;
-    _savePlayerSettings = savePlayerSettings;
-    _saveWatchTime = saveWatchTime;
-    _sleepTimerExec = sleepTimerExec;
-    _searchExternalSubtitle = searchExternalSubtitle;
-    _findSubtitlesLabel = findSubtitlesLabel;
-    _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
-    _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
+    if (subtitleStyle != null) _subtitleStyle = subtitleStyle;
+    if (playerSettings != null) _playerSettings = playerSettings;
+    if (clockSettings != null) _clockSettings = clockSettings;
+    if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
+    if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
+    if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
+    if (saveWatchTime != null) _saveWatchTime = saveWatchTime;
+    if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
+    if (searchExternalSubtitle != null) _searchExternalSubtitle = searchExternalSubtitle;
+    if (findSubtitlesLabel != null) _findSubtitlesLabel = findSubtitlesLabel;
+    if (findSubtitlesStateInfoLabel != null) _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
+    if (labelSearchExternalSubtitle != null) _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
   }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.
