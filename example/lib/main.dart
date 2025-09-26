@@ -171,8 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
     debugPrint(clockSettings.toString());
   }
 
-  Future<void> saveWatchTime({required String id, required int duration, required int position}) async {
-    debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position');
+  Future<void> saveWatchTime({required String id, required int duration, required int position, required int playIndex}) async {
+    debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
   }
 
   Future<void> savePlayerSettings({required PlayerSettings playerSettings}) async {

@@ -178,7 +178,7 @@ void initState() {
 }
 
 // Define your callback functions elsewhere
-Future<void> _mySaveWatchTimeFunction({required String id, required int duration, required int position}) async {
+Future<void> _mySaveWatchTimeFunction({required String id, required int duration, required int position, required int playIndex}) async {
   // ... logic to save watch time
 }
 
@@ -313,7 +313,7 @@ final controller = FtvMedia3PlayerController();
 Future<void> _saveSubtitleStyle({required SubtitleStyle subtitleStyle}) async { /* ... */ }
 Future<void> _savePlayerSettings({required PlayerSettings playerSettings}) async { /* ... */ }
 Future<void> _saveClockSettings({required ClockSettings clockSettings}) async { /* ... */ }
-Future<void> _saveWatchTime({required String id, required int duration, required int position}) async { /* ... */ }
+Future<void> _saveWatchTime({required String id, required int duration, required int position, required int playIndex}) async { /* ... */ }
 void _sleepTimerExec() { /* ... */ }
 
 @override

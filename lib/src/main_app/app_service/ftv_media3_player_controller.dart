@@ -19,7 +19,7 @@ typedef SavePlayerSettings = Future<void> Function({required PlayerSettings play
 
 /// A callback to save the watch time (progress) for a specific media item.
 typedef SaveWatchTimeSeconds =
-    Future<void> Function({required String id, required int duration, required int position});
+    Future<void> Function({required String id, required int duration, required int position, required int playIndex});
 
 /// Defines the signature for the function that searches for external subtitles.
 ///
@@ -306,7 +306,7 @@ class FtvMedia3PlayerController {
             int positionSec = (positionMs / 1000).round().toInt();
             if (durationSec == 0) return;
             if (positionSec > durationSec) positionSec = durationSec;
-            await _saveWatchTime!(id: item.id, duration: durationSec, position: positionSec);
+            await _saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
           }
         }
         break;
