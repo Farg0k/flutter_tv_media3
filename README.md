@@ -106,7 +106,7 @@ To play videos from `http` links (not `https`):
 
 Properly managing the lifecycle of the `FtvMedia3PlayerController` is crucial for the stability of your application.
 
-*   **`init()`**: This method must be called **once** before any other interaction with the controller. It configures all the necessary callbacks, initial settings, and localization strings. A good place to call it is in the `initState` of your main widget. The configuration cannot be changed after initialization.
+*   **`init()`**: This method must be called **once** before any other interaction with the controller. It configures all the necessary callbacks, initial settings, and localization strings. A good place to call it is in the `initState` of your main widget. The configuration can be changed after initialization.
 *   **`close()`**: This method should be called when the controller is no longer needed, typically in the `dispose` method of your widget. It closes all internal streams and releases resources, preventing memory leaks.
 
 ```dart
