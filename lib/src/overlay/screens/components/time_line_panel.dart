@@ -74,19 +74,18 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
                           children: [
                             isLive
                                 ? const SizedBox.shrink()
-                                : Text('${((_sliderPositionOnDrag ?? positionPercentage) * 100).round()}%', style: style),
-                            const CustomInfoTextWidget(),
+                                : Text(
+                                  '${((_sliderPositionOnDrag ?? positionPercentage) * 100).round()}%',
+                                  style: style,
+                                ),
+                            Expanded(child: const CustomInfoTextWidget()),
                             const ClockWidget(),
                           ],
                         ),
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             trackHeight: 10.0,
-                            thumbShape: const CustomThumbShape(
-                              thumbRadius: 8.0,
-                              borderWidth: 3.0,
-                              cornerRadius: 4.0,
-                            ),
+                            thumbShape: const CustomThumbShape(thumbRadius: 8.0, borderWidth: 3.0, cornerRadius: 4.0),
                             overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
                             trackShape: const RectangularSliderTrackShape(),
                           ),
@@ -118,18 +117,18 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
                         isLive
                             ? const SizedBox.shrink()
                             : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(timeLeft, style: style),
-                            RichText(
-                              text: TextSpan(
-                                text: currentPosition,
-                                style: style,
-                                children: [const TextSpan(text: ' / '), TextSpan(text: totalDuration)],
-                              ),
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(timeLeft, style: style),
+                                RichText(
+                                  text: TextSpan(
+                                    text: currentPosition,
+                                    style: style,
+                                    children: [const TextSpan(text: ' / '), TextSpan(text: totalDuration)],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
                       ],
                     );
                   },
@@ -148,11 +147,7 @@ class CustomThumbShape extends SliderComponentShape {
   final double borderWidth;
   final double cornerRadius;
 
-  const CustomThumbShape({
-    this.thumbRadius = 10.0,
-    this.borderWidth = 3.0,
-    this.cornerRadius = 4.0,
-  });
+  const CustomThumbShape({this.thumbRadius = 10.0, this.borderWidth = 3.0, this.cornerRadius = 4.0});
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
@@ -161,34 +156,32 @@ class CustomThumbShape extends SliderComponentShape {
 
   @override
   void paint(
-      PaintingContext context,
-      Offset center, {
-        required Animation<double> activationAnimation,
-        required Animation<double> enableAnimation,
-        required bool isDiscrete,
-        required TextPainter labelPainter,
-        required RenderBox parentBox,
-        required SliderThemeData sliderTheme,
-        required TextDirection textDirection,
-        required double value,
-        required double textScaleFactor,
-        required Size sizeWithOverflow,
-      }) {
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
     final Canvas canvas = context.canvas;
 
-    final outerPaint = Paint()
-      ..color = AppTheme.fullFocusColor
-      ..style = PaintingStyle.fill;
+    final outerPaint =
+        Paint()
+          ..color = AppTheme.fullFocusColor
+          ..style = PaintingStyle.fill;
 
-    final innerPaint = Paint()
-      ..color = AppTheme.colorPrimary
-      ..style = PaintingStyle.fill;
+    final innerPaint =
+        Paint()
+          ..color = AppTheme.colorPrimary
+          ..style = PaintingStyle.fill;
 
-    final outerRect = Rect.fromCenter(
-      center: center,
-      width: thumbRadius * 2,
-      height: thumbRadius * 2,
-    );
+    final outerRect = Rect.fromCenter(center: center, width: thumbRadius * 2, height: thumbRadius * 2);
     final outerRRect = RRect.fromRectAndRadius(outerRect, Radius.circular(cornerRadius));
 
     final innerRect = outerRect.deflate(borderWidth);
