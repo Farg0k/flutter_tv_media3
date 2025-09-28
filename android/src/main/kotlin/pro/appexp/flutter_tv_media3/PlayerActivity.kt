@@ -340,6 +340,7 @@ class PlayerActivity : AppCompatActivity() {
                 "subtitle_search" to subtitleSearch,
             )
         )
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /** Intercepts the system back button press and notifies Flutter. */

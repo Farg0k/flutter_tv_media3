@@ -62,6 +62,11 @@ class _OverlayScreenState extends State<OverlayScreen> {
         return;
       }
 
+      if (panel == PlayerPanel.placeholder) {
+        widget.controller.stop();
+        return;
+      }
+
       if (panel == PlayerPanel.none) {
         widget.controller.stop();
         return;
