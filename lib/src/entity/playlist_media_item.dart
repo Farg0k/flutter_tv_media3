@@ -17,6 +17,15 @@ typedef GetDirectLinkCallback =
       required int requestId,
     });
 
+/// A callback to save the watch time (progress) for a specific media item.
+///
+/// - [id]: The unique identifier of the media item.
+/// - [duration]: The total duration of the media in seconds.
+/// - [position]: The last playback position in seconds.
+/// - [playIndex]: The index of the item in the playlist.
+typedef SaveWatchTimeSeconds = Future<void> Function(
+    {required String id, required int duration, required int position, required int playIndex});
+
 /// Represents a single playable item in a playlist.
 ///
 /// This class contains all the necessary information for the native player
@@ -91,8 +100,13 @@ class PlaylistMediaItem {
   /// If `null`, the [url] is considered direct.
   final GetDirectLinkCallback? getDirectLink;
 
-  /// A flag indicating whether to save the watch time for this item.
-  final bool saveWatchTime;
+  /// A callback function to save the playback progress for this specific media item.
+  ///
+  /// If this is `null`, the watch time for this item will not be saved.
+  /// This allows for per-item control over the save logic, enabling different
+  /// storage strategies (e.g., local DB, cloud sync) for different items or
+  /// disabling saving for certain content like live streams.
+  final SaveWatchTimeSeconds? saveWatchTime;
 
   /// The type of the media item. Used in the UI to display a corresponding icon.
   final MediaItemType mediaItemType;
@@ -121,7 +135,7 @@ class PlaylistMediaItem {
     this.resolutions,
     this.subtitles,
     this.audioTracks,
-    this.saveWatchTime = true,
+    this.saveWatchTime,
     this.getDirectLink,
     this.mediaItemType = MediaItemType.video,
     this.programs,
@@ -148,7 +162,7 @@ class PlaylistMediaItem {
       'userAgent': userAgent,
       'subtitles': subtitles?.map((sub) => sub.toMap()).toList(),
       'audioTracks': audioTracks?.map((audio) => audio.toMap()).toList(),
-      'saveWatchTime': saveWatchTime,
+      'saveWatchTime': saveWatchTime != null,
       'mediaItemType': mediaItemType.index,
       'programs': programs?.map(((program) => program.toMap())).toList(),
     };
@@ -179,7 +193,7 @@ class PlaylistMediaItem {
           (json['audioTracks'] as List?)
               ?.map((audio) => MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>))
               .toList(),
-      saveWatchTime: json['saveWatchTime'] as bool? ?? true,
+      // saveWatchTime is not deserialized as it's a function.
       mediaItemType: MediaItemType.fromIndex(json['mediaItemType'] as int? ?? 0),
       programs:
           (json['programs'] as List?)?.map((program) => EpgProgram.fromMap(program as Map<String, dynamic>)).toList(),
@@ -207,7 +221,7 @@ class PlaylistMediaItem {
     List<MediaItemSubtitle>? subtitles,
     List<MediaItemAudioTrack>? audioTracks,
     GetDirectLinkCallback? getDirectLink,
-    bool? saveWatchTime,
+    SaveWatchTimeSeconds? saveWatchTime,
     MediaItemType? mediaItemType,
   }) {
     return PlaylistMediaItem(

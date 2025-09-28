@@ -313,16 +313,12 @@ final controller = FtvMedia3PlayerController();
 Future<void> _saveSubtitleStyle({required SubtitleStyle subtitleStyle}) async { /* ... */ }
 Future<void> _savePlayerSettings({required PlayerSettings playerSettings}) async { /* ... */ }
 Future<void> _saveClockSettings({required ClockSettings clockSettings}) async { /* ... */ }
-Future<void> _saveWatchTime({required String id, required int duration, required int position, required int playIndex}) async { /* ... */ }
 void _sleepTimerExec() { /* ... */ }
 
 @override
 void initState() {
   super.initState();
   
-  final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
-
-
   // Call setConfig() with all desired configurations
   controller.setConfig(
     // 1. Localize strings
@@ -338,13 +334,50 @@ void initState() {
     clockSettings: ClockSettings(clockPosition: ClockPosition.topLeft),
     
     // 5. Assign callbacks
-    saveWatchTime: _saveWatchTime,
     savePlayerSettings: _savePlayerSettings,
     saveSubtitleStyle: _saveSubtitleStyle,
     saveClockSettings: _saveClockSettings,
     sleepTimerExec: _sleepTimerExec,
   );
 }
+```
+
+### Saving Watch Time (Progress)
+
+Unlike other settings, the logic for saving playback progress is configured **per media item**. This provides maximum flexibility, allowing you to use different saving mechanisms for different types of content (e.g., save to a local database for local files, or send an API request for streaming content).
+
+To enable watch time saving for an item, provide a callback function to the `saveWatchTime` property of a `PlaylistMediaItem`.
+
+**Example:**
+
+```dart
+// 1. Define your save function
+Future<void> _mySaveWatchTimeFunction({
+  required String id,
+  required int duration,
+  required int position,
+  required int playIndex,
+}) async {
+  print('Saving progress for item $id: $position/$duration seconds.');
+  // Add your logic here to save the progress to a database or remote server.
+}
+
+// 2. Create a PlaylistMediaItem with the callback
+final mediaItem = PlaylistMediaItem(
+  id: 'video_123',
+  url: 'https://.../video.mp4',
+  title: 'My Awesome Video',
+  // Assign the save function to this specific item
+  saveWatchTime: _mySaveWatchTimeFunction,
+);
+
+// If you set saveWatchTime to null, progress for that item will not be saved.
+final liveStreamItem = PlaylistMediaItem(
+  id: 'live_stream_1',
+  url: 'https://.../live.m3u8',
+  title: 'Live TV Channel',
+  saveWatchTime: null, // Disable saving for live streams
+);
 ```
 
 ### External Control (IP Control)
@@ -515,7 +548,7 @@ A class to describe a single item in a playlist. Objects of this class are immut
 **Advanced Features:**
 
 *   `getDirectLink` (`GetDirectLinkCallback`?): An asynchronous callback to get a direct playback link.
-*   `saveWatchTime` (bool): A flag indicating whether to save the watch time for this item. Defaults to `true`.
+*   `saveWatchTime` (`SaveWatchTimeSeconds`?): An asynchronous callback to save the playback progress for this specific item. If `null`, progress is not saved.
 *   `programs` (List<`EpgProgram`>?): A list of programs for the EPG. If this field is not `null`, the EPG functionality is enabled for this media item.
 
 ### `PlayerSettings`

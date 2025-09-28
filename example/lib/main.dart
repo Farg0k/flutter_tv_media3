@@ -30,13 +30,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-/// Mock function to simulate searching for external subtitles.
-///
-/// This function introduces a 2-second delay to mimic a network request.
-/// It then randomly returns one of three outcomes:
-/// 1. A list of two subtitle tracks (success).
-/// 2. An empty list (success, but no subtitles found).
-/// 3. Throws an exception (failure).
+/// Throws an exception (failure).
 Future<List<MediaItemSubtitle>?> _mockSearchSubtitles({required String id}) async {
   debugPrint('Searching subtitles for media ID: $id');
   await Future.delayed(const Duration(seconds: 2));
@@ -88,6 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
       headers: {'Referer': 'https://example.com/player'},
       placeholderImg: 'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
       coverImg: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/636px-Sintel_poster.jpg',
+      saveWatchTime: ({required String id, required int duration, required int position, required int playIndex}) async {
+        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
+      },
       subtitles: [
         MediaItemSubtitle(
           url: 'https://raw.githubusercontent.com/mtoczko/hls-test-streams/refs/heads/master/test-vtt/text/1.vtt',
@@ -109,6 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
       label: 'getDirectLink (success)',
       url: 'myapp://needs_resolving/video1',
       startPosition: 0,
+      saveWatchTime: ({required String id, required int duration, required int position, required int playIndex}) async {
+        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
+      },
       getDirectLink: ({
         required PlaylistMediaItem item,
         Function({required String state, double? progress, required int requestId})? onProgress,
@@ -140,6 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
       id: 'bbb_mp4_res_error',
       label: 'getDirectLink (error)',
       url: 'myapp://resolving_error/video2',
+      saveWatchTime: ({required String id, required int duration, required int position, required int playIndex}) async {
+        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
+      },
       getDirectLink: ({
         required PlaylistMediaItem item,
         Function({required String state, double? progress, required int requestId})? onProgress,
@@ -153,6 +156,9 @@ class _MyHomePageState extends State<MyHomePage> {
       id: 'bbb_mp4_res',
       label: 'MP4 (BBB with Resolutions) MP4 (BBB with Resolutions)',
       url: 'https://www.sample-videos.com/video321/mp4/360/big_buck_bunny_360p_30mb.mp4',
+      saveWatchTime: ({required String id, required int duration, required int position, required int playIndex}) async {
+        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
+      },
       resolutions: {
         '480p': 'https://www.sample-videos.com/video321/mp4/480/big_buck_bunny_480p_30mb.mp4',
         '720p': 'https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_30mb.mp4',
@@ -169,10 +175,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> saveClockSettings({required ClockSettings clockSettings}) async {
     debugPrint(clockSettings.toString());
-  }
-
-  Future<void> saveWatchTime({required String id, required int duration, required int position, required int playIndex}) async {
-    debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
   }
 
   Future<void> savePlayerSettings({required PlayerSettings playerSettings}) async {
@@ -208,7 +210,6 @@ class _MyHomePageState extends State<MyHomePage> {
       playerSettings: playerSettings,
       clockSettings: clockSettings,
       saveClockSettings: saveClockSettings,
-      saveWatchTime: saveWatchTime,
       savePlayerSettings: savePlayerSettings,
       sleepTimerExec: sleepTimerExec,
       searchExternalSubtitle: _mockSearchSubtitles,

@@ -17,10 +17,6 @@ typedef SaveClockSettings = Future<void> Function({required ClockSettings clockS
 /// A callback to save the current player settings.
 typedef SavePlayerSettings = Future<void> Function({required PlayerSettings playerSettings});
 
-/// A callback to save the watch time (progress) for a specific media item.
-typedef SaveWatchTimeSeconds =
-    Future<void> Function({required String id, required int duration, required int position, required int playIndex});
-
 /// Defines the signature for the function that searches for external subtitles.
 ///
 /// It receives the [id] of the current media item and should return a list
@@ -36,7 +32,7 @@ typedef LabelSearchExternalSubtitle = Future<String> Function();
 /// The primary responsibilities of this controller are:
 /// - **Launching the player:** Initiating the player activity with a specific playlist and settings.
 /// - **Saving settings:** Persisting user preferences like subtitle styles, player settings, and clock settings that are configured within the player UI.
-/// - **Saving watch time:** Saving playback progress for media items.
+/// - **Triggering watch time saves:** Invoking callbacks provided by individual media items to save their playback progress.
 ///
 /// All the primary user interactions (like pressing play/pause on the remote) are handled by the UI
 /// running in the separate Flutter Engine.
@@ -66,7 +62,6 @@ class FtvMedia3PlayerController {
   LabelSearchExternalSubtitle? _labelSearchExternalSubtitle;
   String? _findSubtitlesLabel;
   String? _findSubtitlesStateInfoLabel;
-  SaveWatchTimeSeconds? _saveWatchTime;
   SubtitleStyle? _subtitleStyle;
   ClockSettings? _clockSettings;
   PlayerSettings? _playerSettings;
@@ -139,7 +134,6 @@ class FtvMedia3PlayerController {
     SaveSubtitleStyle? saveSubtitleStyle,
     SaveClockSettings? saveClockSettings,
     SavePlayerSettings? savePlayerSettings,
-    SaveWatchTimeSeconds? saveWatchTime,
     VoidCallback? sleepTimerExec,
     SearchExternalSubtitle? searchExternalSubtitle,
     String? findSubtitlesLabel,
@@ -153,7 +147,6 @@ class FtvMedia3PlayerController {
     if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
-    if (saveWatchTime != null) _saveWatchTime = saveWatchTime;
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
     if (searchExternalSubtitle != null) _searchExternalSubtitle = searchExternalSubtitle;
     if (findSubtitlesLabel != null) _findSubtitlesLabel = findSubtitlesLabel;
@@ -294,19 +287,18 @@ class FtvMedia3PlayerController {
         break;
 
       case 'onWatchTimeMarked':
-        if (_saveWatchTime == null) return;
         final index = call.arguments['playlist_index'] as int?;
         final int durationMs = call.arguments['duration_ms'] as int? ?? 0;
         final int positionMs = call.arguments['position_ms'] as int? ?? 0;
 
         if (index != null && index >= 0 && index < _playerState.playlist.length) {
           PlaylistMediaItem item = _playerState.playlist[index];
-          if (item.saveWatchTime == true) {
+          if (item.saveWatchTime != null) {
             final durationSec = (durationMs / 1000).round().toInt();
             int positionSec = (positionMs / 1000).round().toInt();
             if (durationSec == 0) return;
             if (positionSec > durationSec) positionSec = durationSec;
-            await _saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+            await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
           }
         }
         break;
