@@ -147,7 +147,7 @@ class PlayerActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         flutterEngineId = intent.getStringExtra("flutter_engine_id") ?: run {
             Log.e(aTag, "FATAL: FlutterEngine ID not found!")
             finish()
@@ -340,7 +340,6 @@ class PlayerActivity : AppCompatActivity() {
                 "subtitle_search" to subtitleSearch,
             )
         )
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /** Intercepts the system back button press and notifies Flutter. */
@@ -360,7 +359,7 @@ class PlayerActivity : AppCompatActivity() {
             val hasVideo = player.currentTracks.groups.any { group ->
                 group.type == C.TRACK_TYPE_VIDEO && group.isSelected
             }
-            if (player.isPlaying && hasVideo) {
+            if (hasVideo) {
                 markWatchTime(playlistIndex)
                 player.pause()
             }
@@ -465,7 +464,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun requestMediaInfo(index: Int) {
         val requestToken = Any()
         currentMediaRequestToken = requestToken
-
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         try {
             methodUIChannel.invokeMethod(
                 "loadMediaInfo", mapOf("playlist_index" to index)
