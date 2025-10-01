@@ -765,10 +765,6 @@ On the Flutter side, the feature is managed through the UI and controllers.
     *   Call `getRefreshRateInfo()` to get a list of available rates and provide the user with a choice.
     *   Call `setManualFrameRate(rate)` to set the selected rate.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.ails.le rates and provide the user with a choice.
-    *   Call `setManualFrameRate(rate)` to set the selected rate.
 
 ## License
 
