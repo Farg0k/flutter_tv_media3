@@ -1,6 +1,9 @@
 package pro.appexp.flutter_tv_media3
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.database.ContentObserver
 import android.graphics.Color
 import android.graphics.Typeface
@@ -100,6 +103,19 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var frameRateManager: FrameRateManager
     private lateinit var audioManager: AudioManager
     private var volumeObserver: ContentObserver? = null
+    private var lastSentVolumeState: Map<String, Any>? = null
+
+    private val volumeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (action == "android.media.STREAM_MUTE_CHANGED_ACTION" || action == "android.media.VOLUME_CHANGED_ACTION") {
+                val streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
+                if (streamType == AudioManager.STREAM_MUSIC) {
+                    sendCurrentVolumeState()
+                }
+            }
+        }
+    }
 
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
     private lateinit var mediaSourceFactory: DefaultMediaSourceFactory
@@ -377,6 +393,7 @@ class PlayerActivity : AppCompatActivity() {
         volumeObserver?.let {
             contentResolver.unregisterContentObserver(it)
         }
+        unregisterReceiver(volumeReceiver)
         if (this::player.isInitialized) {
             val hasVideo = player.currentTracks.groups.any { group ->
                 group.type == C.TRACK_TYPE_VIDEO && group.isSelected
@@ -404,6 +421,11 @@ class PlayerActivity : AppCompatActivity() {
                 volumeObserver!!
             )
         }
+        val filter = IntentFilter().apply {
+            addAction("android.media.STREAM_MUTE_CHANGED_ACTION")
+            addAction("android.media.VOLUME_CHANGED_ACTION")
+        }
+        registerReceiver(volumeReceiver, filter)
         sendCurrentVolumeState()
         if (this::player.isInitialized && player.playWhenReady) {
             if (player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_BUFFERING) {
@@ -2079,10 +2101,13 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             currentVolume == 0
         }
-        invokeOnBothChannels(
-            "onVolumeChanged",
-            mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted)
-        )
+        val currentVolumeState = mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted)
+
+        if (currentVolumeState != lastSentVolumeState) {
+            Log.e(aTag, "AL:N!")
+            lastSentVolumeState = currentVolumeState
+            invokeOnBothChannels("onVolumeChanged", currentVolumeState)
+        }
     }
 
     private inner class VolumeObserver(handler: Handler) : ContentObserver(handler) {
