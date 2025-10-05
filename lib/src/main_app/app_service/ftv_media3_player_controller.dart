@@ -358,12 +358,25 @@ class FtvMedia3PlayerController {
         final Map<dynamic, dynamic>? playerSettingsMap = call.arguments['player_settings'];
         PlayerSettings playerSettings =
             playerSettingsMap != null ? PlayerSettings.fromMap(playerSettingsMap) : PlayerSettings();
+
+        final Map<dynamic, dynamic>? volumeStateMap = call.arguments['volume_state'];
+        VolumeState? volumeState;
+        if (volumeStateMap != null) {
+          final current = volumeStateMap['current'] as int?;
+          final max = volumeStateMap['max'] as int?;
+          final isMute = volumeStateMap['isMute'] as bool?;
+          if (current != null && max != null && isMute != null) {
+            volumeState = VolumeState(current: current, max: max, isMute: isMute);
+          }
+        }
+
         newState = newState.copyWith(
           activityReady: true,
           playIndex: playIndex,
           subtitleStyle: subtitleStyle,
           clockSettings: clockSettings,
           playerSettings: playerSettings,
+          volumeState: volumeState,
         );
         break;
       case 'onActivityDestroyed':
@@ -462,6 +475,16 @@ class FtvMedia3PlayerController {
           repeatMode: RepeatMode.fromString(repeatMode),
           isShuffleModeEnabled: shuffleEnabled,
         );
+        break;
+      case 'onVolumeChanged':
+        final current = call.arguments['current'] as int?;
+        final max = call.arguments['max'] as int?;
+        final isMute = call.arguments['isMute'] as bool?;
+        if (current != null && max != null && isMute != null) {
+          newState = newState.copyWith(
+            volumeState: VolumeState(current: current, max: max, isMute: isMute),
+          );
+        }
         break;
       default:
         final err = "UNKNOWN_NATIVE_METHOD: ${call.method} with args: ${call.arguments}";
@@ -901,6 +924,41 @@ class FtvMedia3PlayerController {
   /// - [rate]: The desired refresh rate.
   Future<void> setManualFrameRate(double rate) async {
     await _invokeMethodGuarded<void>(_activityChannel, 'setManualFrameRate', {'rate': rate});
+  }
+
+  /// Fetches the current volume state from the native player.
+  Future<VolumeState> getVolume() async {
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'getVolume');
+    final current = result['current'] as int?;
+    final max = result['max'] as int?;
+    final isMute = result['isMute'] as bool?;
+    if (current != null && max != null && isMute != null) {
+      final volumeState = VolumeState(current: current, max: max, isMute: isMute);
+      _updateState(_playerState.copyWith(volumeState: volumeState));
+      return volumeState;
+    }
+    throw AppPlayerException('Failed to parse volume data from native.');
+  }
+
+  /// Sets the volume on the native player.
+  /// [volume] The volume level to set.
+  Future<void> setVolume({required int volume}) async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {'volume': volume});
+  }
+
+  /// Mutes or unmutes the audio on the native player.
+  /// [mute] True to mute, false to unmute.
+  Future<void> setMute({required bool mute}) async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'setMute', {'mute': mute});
+  }
+
+  /// Toggles the mute state on the native player.
+  Future<void> toggleMute() async {
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'toggleMute');
+    final isMute = result['isMute'] as bool?;
+    if (isMute != null) {
+      _updateState(_playerState.copyWith(volumeState: _playerState.volumeState.copyWith(isMute: isMute)));
+    }
   }
 }
 

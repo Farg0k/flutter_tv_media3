@@ -242,6 +242,27 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 child: Stack(
                   children: [
                     ClockPanel(controller: widget.controller),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 32.0),
+                        child: StreamBuilder<PlayerState>(
+                          stream: widget.controller.playerStateStream,
+                          initialData: widget.controller.playerState,
+                          builder: (context, snapshot) {
+                            final playerState = snapshot.data;
+                            if (playerState == null || !playerState.volumeState.isMute) {
+                              return const SizedBox.shrink();
+                            }
+                            return const Icon(
+                              Icons.volume_off,
+                              color: Colors.white,
+                              size: 48,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                     Visibility(
                       visible:
                           widget.controller.playerState.stateValue == StateValue.paused &&

@@ -388,6 +388,46 @@ This is a two-way communication:
 1.  **Sending Commands:** Use controller methods like `playPause()`, `seekTo()`, etc., to control playback.
 2.  **Listening to State:** Use controller streams like `playerStateStream` to monitor the player's state and update your external UI accordingly.
 
+### Volume Control
+
+The plugin provides full control over the system's media volume. This includes both programmatic control and tracking changes made using the physical volume buttons on the device or remote.
+
+#### Programmatic Volume Control
+
+You can manage the volume by calling methods on the `FtvMedia3PlayerController` or `Media3UiController` instance:
+
+*   `getVolume()`: Fetches the current volume state (`VolumeState`), which includes the current level, maximum level, and mute status.
+*   `setVolume({required int volume})`: Sets the absolute volume level.
+*   `setMute({required bool mute})`: Explicitly mutes or unmutes the audio.
+*   `toggleMute()`: Toggles the current mute state.
+
+**Example of Programmatic Control:**
+
+```dart
+// Get the controller instance
+final controller = FtvMedia3PlayerController();
+
+// Set volume to 50%
+final volumeState = await controller.getVolume();
+final targetVolume = (volumeState.max * 0.5).round();
+await controller.setVolume(volume: targetVolume);
+
+// Mute the audio
+await controller.setMute(mute: true);
+
+// Toggle the mute state
+await controller.toggleMute();
+```
+
+#### Tracking Volume Changes
+
+The plugin automatically tracks system volume changes. You can listen to the `playerStateStream` to receive real-time updates. The volume state is stored in the `VolumeState` object within `PlayerState`.
+
+The `VolumeState` object has the following fields:
+*   `current` (int): The current volume level.
+*   `max` (int): The maximum possible volume level.
+*   `isMute` (bool): `true` if the audio is muted.
+
 **Listening to State Example:**
 
 The controller provides several streams to track the player's state.

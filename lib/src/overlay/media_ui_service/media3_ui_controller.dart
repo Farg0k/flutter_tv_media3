@@ -122,6 +122,17 @@ class Media3UiController {
         final FindSubtitlesState findSubtitlesState = FindSubtitlesState.fromMap(subtitleSearchMap);
         findSubtitlesStateNotifier.value = findSubtitlesState;
 
+        final Map<dynamic, dynamic>? volumeStateMap = call.arguments['volume_state'];
+        VolumeState? volumeState;
+        if (volumeStateMap != null) {
+          final current = volumeStateMap['current'] as int?;
+          final max = volumeStateMap['max'] as int?;
+          final isMute = volumeStateMap['isMute'] as bool?;
+          if (current != null && max != null && isMute != null) {
+            volumeState = VolumeState(current: current, max: max, isMute: isMute);
+          }
+        }
+
         OverlayLocalizations.load(newStrings);
         newState = newState.copyWith(
           activityReady: true,
@@ -130,6 +141,7 @@ class Media3UiController {
           subtitleStyle: subtitleStyle,
           clockSettings: clockSettings,
           playerSettings: playerSettings,
+          volumeState: volumeState,
         );
         break;
 
@@ -309,6 +321,16 @@ class Media3UiController {
         final Map<String, dynamic> subtitleSearchMap = Map<String, dynamic>.from(call.arguments);
         final FindSubtitlesState findSubtitlesState = FindSubtitlesState.fromMap(subtitleSearchMap);
         findSubtitlesStateNotifier.value = findSubtitlesState;
+        break;
+      case 'onVolumeChanged':
+        final current = call.arguments['current'] as int?;
+        final max = call.arguments['max'] as int?;
+        final isMute = call.arguments['isMute'] as bool?;
+        if (current != null && max != null && isMute != null) {
+          newState = newState.copyWith(
+            volumeState: VolumeState(current: current, max: max, isMute: isMute),
+          );
+        }
         break;
       default:
         newState = newState.copyWith(
@@ -634,5 +656,40 @@ class Media3UiController {
   /// - [rate]: The desired refresh rate.
   Future<void> setManualFrameRate(double rate) async {
     await _invokeMethodGuarded<void>(_activityChannel, 'setManualFrameRate', {'rate': rate});
+  }
+
+  /// Fetches the current volume state from the native player.
+  Future<VolumeState> getVolume() async {
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'getVolume');
+    final current = result?['current'] as int?;
+    final max = result?['max'] as int?;
+    final isMute = result?['isMute'] as bool?;
+    if (current != null && max != null && isMute != null) {
+      final volumeState = VolumeState(current: current, max: max, isMute: isMute);
+      _updateState(_playerState.copyWith(volumeState: volumeState));
+      return volumeState;
+    }
+    throw Exception('Failed to parse volume data from native.');
+  }
+
+  /// Sets the volume on the native player.
+  /// [volume] The volume level to set.
+  Future<void> setVolume({required int volume}) async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {'volume': volume});
+  }
+
+  /// Mutes or unmutes the audio on the native player.
+  /// [mute] True to mute, false to unmute.
+  Future<void> setMute({required bool mute}) async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'setMute', {'mute': mute});
+  }
+
+  /// Toggles the mute state on the native player.
+  Future<void> toggleMute() async {
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'toggleMute');
+    final isMute = result?['isMute'] as bool?;
+    if (isMute != null) {
+      _updateState(_playerState.copyWith(volumeState: _playerState.volumeState.copyWith(isMute: isMute)));
+    }
   }
 }

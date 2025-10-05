@@ -1,5 +1,50 @@
 import '../../flutter_tv_media3.dart';
 
+class VolumeState {
+  final int current;
+  final int max;
+  final bool isMute;
+
+  VolumeState({
+    this.current = 0,
+    this.max = 0,
+    this.isMute = false,
+  });
+
+  VolumeState copyWith({
+    int? current,
+    int? max,
+    bool? isMute,
+  }) {
+    return VolumeState(
+      current: current ?? this.current,
+      max: max ?? this.max,
+      isMute: isMute ?? this.isMute,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'VolumeState{current: $current, max: $max, isMute: $isMute}';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'current': current,
+      'max': max,
+      'isMute': isMute,
+    };
+  }
+
+  factory VolumeState.fromMap(Map<String, dynamic> map) {
+    return VolumeState(
+      current: map['current'] as int? ?? 0,
+      max: map['max'] as int? ?? 0,
+      isMute: map['isMute'] as bool? ?? false,
+    );
+  }
+}
+
 /// Represents the complete current state of the player.
 ///
 /// This class is the main internal data model for the UI, aggregating all
@@ -32,10 +77,12 @@ class PlayerState {
     SubtitleStyle? subtitleStyle,
     ClockSettings? clockSettings,
     PlayerSettings? playerSettings,
+    VolumeState? volumeState,
     this.activityDestroyed = false,
     this.customInfoText,
   })  : subtitleStyle = subtitleStyle ?? SubtitleStyle(),
         clockSettings = clockSettings ?? ClockSettings(),
+        volumeState = volumeState ?? VolumeState(),
         playerSettings = playerSettings ?? PlayerSettings();
 
   /// A flag indicating whether the native player Activity is ready.
@@ -103,6 +150,8 @@ class PlayerState {
 
   final bool activityDestroyed;
 
+  final VolumeState volumeState;
+
   PlayerState copyWith({
     bool? activityReady,
     StateValue? stateValue,
@@ -124,6 +173,7 @@ class PlayerState {
     SubtitleStyle? subtitleStyle,
     ClockSettings? clockSettings,
     PlayerSettings? playerSettings,
+    VolumeState? volumeState,
     bool? resetError,
     String? customInfoText,
     bool? activityDestroyed,
@@ -149,11 +199,13 @@ class PlayerState {
       subtitleStyle: subtitleStyle ?? this.subtitleStyle,
       clockSettings: clockSettings ?? this.clockSettings,
       playerSettings: playerSettings ?? this.playerSettings,
+      volumeState: volumeState ?? this.volumeState,
       customInfoText: customInfoText ?? this.customInfoText,
       activityDestroyed: activityDestroyed ?? this.activityDestroyed,
     );
   }
 
+  @override
   String toString() {
     return '''PlayerState{
       activityReady: $activityReady, 
@@ -176,6 +228,7 @@ class PlayerState {
       subtitleStyle: $subtitleStyle, 
       clockSettings: $clockSettings, 
       playerSettings: $playerSettings, 
+      volumeState: $volumeState,
       customInfoText: $customInfoText, 
       activityDestroyed: $activityDestroyed
     }''';
@@ -203,6 +256,7 @@ class PlayerState {
       'subtitleStyle': subtitleStyle.toMap(),
       'clockSettings': clockSettings.toMap(),
       'playerSettings': playerSettings.toMap(),
+      'volumeState': volumeState.toMap(),
       'customInfoText': customInfoText,
       'activityDestroyed': activityDestroyed,
     };
@@ -247,6 +301,9 @@ class PlayerState {
           : null,
       playerSettings: map['playerSettings'] != null
           ? PlayerSettings.fromMap(map['playerSettings'] as Map<String, dynamic>)
+          : null,
+      volumeState: map['volumeState'] != null
+          ? VolumeState.fromMap(map['volumeState'] as Map<String, dynamic>)
           : null,
       customInfoText: map['customInfoText'] as String?,
       activityDestroyed: map['activityDestroyed'] as bool? ?? false,

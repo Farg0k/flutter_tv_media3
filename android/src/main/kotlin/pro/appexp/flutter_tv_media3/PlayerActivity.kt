@@ -1,10 +1,15 @@
 package pro.appexp.flutter_tv_media3
 
+import android.content.Context
+import android.database.ContentObserver
 import android.graphics.Color
 import android.graphics.Typeface
+import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -93,6 +98,8 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var methodUIChannel: MethodChannel
     private lateinit var playerListener: Player.Listener
     private lateinit var frameRateManager: FrameRateManager
+    private lateinit var audioManager: AudioManager
+    private var volumeObserver: ContentObserver? = null
 
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
     private lateinit var mediaSourceFactory: DefaultMediaSourceFactory
@@ -234,6 +241,8 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
         findViewById<FrameLayout>(R.id.media3_player_container).addView(playerView)
 
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
         try {
             if (!flutterEngine.dartExecutor.isExecutingDart) {
                 Log.e(aTag, "FlutterEngine is not executing Dart code!")
@@ -328,6 +337,16 @@ class PlayerActivity : AppCompatActivity() {
         val localeStrings = intent.getStringExtra("locale_strings")
         val subtitleSearch = intent.getStringExtra("subtitle_search")
 
+        val initialVolumeState = mapOf(
+            "current" to audioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
+            "max" to audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
+            "isMute" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+            } else {
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0
+            }
+        )
+
         invokeOnBothChannels(
             "onActivityReady", mapOf(
                 "playlist" to playlist,
@@ -337,6 +356,7 @@ class PlayerActivity : AppCompatActivity() {
                 "player_settings" to playerSettings,
                 "locale_strings" to localeStrings,
                 "subtitle_search" to subtitleSearch,
+                "volume_state" to initialVolumeState,
             )
         )
     }
@@ -354,6 +374,9 @@ class PlayerActivity : AppCompatActivity() {
      */
     override fun onPause() {
         super.onPause()
+        volumeObserver?.let {
+            contentResolver.unregisterContentObserver(it)
+        }
         if (this::player.isInitialized) {
             val hasVideo = player.currentTracks.groups.any { group ->
                 group.type == C.TRACK_TYPE_VIDEO && group.isSelected
@@ -373,6 +396,15 @@ class PlayerActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
+        if (volumeObserver == null) {
+            volumeObserver = VolumeObserver(Handler(Looper.getMainLooper()))
+            contentResolver.registerContentObserver(
+                Settings.System.CONTENT_URI,
+                true,
+                volumeObserver!!
+            )
+        }
+        sendCurrentVolumeState()
         if (this::player.isInitialized && player.playWhenReady) {
             if (player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_BUFFERING) {
                 positionHandler.post(positionRunnable)
@@ -956,6 +988,51 @@ class PlayerActivity : AppCompatActivity() {
                     }
                 } else {
                     reportErrorToOther(from, result, "AFR_ENABLED", "Cannot set manual rate when AFR is enabled")
+                }
+            }
+            "getVolume" -> {
+                val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                val isMuted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+                } else {
+                    currentVolume == 0
+                }
+                result.success(mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted))
+            }
+            "setVolume" -> {
+                val volume = call.argument<Int>("volume")
+                if (volume != null) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+                    result.success(null)
+                } else {
+                    reportErrorToOther(from, result, "INVALID_VOLUME", "Volume is null")
+                }
+            }
+            "setMute" -> {
+                val mute = call.argument<Boolean>("mute")
+                if (mute != null) {
+                    audioManager.adjustStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        if (mute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE,
+                        0
+                    )
+                    result.success(null)
+                } else {
+                    reportErrorToOther(from, result, "INVALID_MUTE", "Mute is null")
+                }
+            }
+            "toggleMute" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val isMuted = audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+                    audioManager.adjustStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        if (isMuted) AudioManager.ADJUST_UNMUTE else AudioManager.ADJUST_MUTE,
+                        0
+                    )
+                    result.success(mapOf("isMute" to !isMuted))
+                } else {
+                    reportErrorToOther(from, result, "UNSUPPORTED_API", "Mute toggle is not supported on API < 23")
                 }
             }
             else -> {
@@ -1992,6 +2069,27 @@ class PlayerActivity : AppCompatActivity() {
             )
         )
         return state
+    }
+
+    private fun sendCurrentVolumeState() {
+        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val isMuted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+        } else {
+            currentVolume == 0
+        }
+        invokeOnBothChannels(
+            "onVolumeChanged",
+            mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted)
+        )
+    }
+
+    private inner class VolumeObserver(handler: Handler) : ContentObserver(handler) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            sendCurrentVolumeState()
+        }
     }
 
     private fun getPlayerStateString(): String {
