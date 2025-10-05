@@ -2104,7 +2104,6 @@ class PlayerActivity : AppCompatActivity() {
         val currentVolumeState = mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted)
 
         if (currentVolumeState != lastSentVolumeState) {
-            Log.e(aTag, "AL:N!")
             lastSentVolumeState = currentVolumeState
             invokeOnBothChannels("onVolumeChanged", currentVolumeState)
         }
