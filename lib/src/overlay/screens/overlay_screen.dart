@@ -119,11 +119,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
           listener: (BuildContext context, OverlayUiState state) {
             if (state.playerPanel == PlayerPanel.sleep) {
               _openPanel(playerPanel: PlayerPanel.none);
-              showSideSheet(
-                context: context,
-                bloc: bloc,
-                body: SleepTimerWidget(bloc: bloc, isAuto: true),
-              );
+              showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc, isAuto: true));
             }
             if (state.playerPanel == PlayerPanel.epg) {
               _openPanel(playerPanel: PlayerPanel.none);
@@ -239,49 +235,54 @@ class _OverlayScreenState extends State<OverlayScreen> {
               bindings: _generalBindings(),
               child: Focus(
                 autofocus: true,
-                child: Stack(
-                  children: [
-                    ClockPanel(controller: widget.controller),
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 32.0),
-                        child: StreamBuilder<PlayerState>(
-                          stream: widget.controller.playerStateStream,
-                          initialData: widget.controller.playerState,
-                          builder: (context, snapshot) {
-                            final playerState = snapshot.data;
-                            if (playerState == null || !playerState.volumeState.isMute) {
-                              return const SizedBox.shrink();
-                            }
-                            return const Icon(
-                              Icons.volume_off,
+                child: StreamBuilder<PlayerState>(
+                  stream: widget.controller.playerStateStream,
+                  initialData: widget.controller.playerState,
+                  builder: (context, snapshot) {
+                    final playerState = snapshot.data;
+                    if (playerState == null) return const SizedBox.shrink();
+                    return Stack(
+                      children: [
+                        ClockPanel(controller: widget.controller),
+                        Visibility(
+                          visible: playerState.volumeState.isMute == true,
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 32.0),
+                              child: const Icon(
+                                Icons.volume_off,
+                                color: Colors.white,
+                                size: 48,
+                                shadows: [
+                                  Shadow(color: Colors.black, offset: Offset(2, 2)),
+                                  Shadow(color: Colors.black, offset: Offset(-2, -2)),
+                                  Shadow(color: Colors.black, offset: Offset(-2, 2)),
+                                  Shadow(color: Colors.black, offset: Offset(2, -2)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: playerState.stateValue == StateValue.paused && playerState.videoTracks.isNotEmpty,
+                          child: Center(
+                            child: Icon(
+                              Icons.pause,
                               color: Colors.white,
-                              size: 48,
-                            );
-                          },
+                              size: 140,
+                              shadows: [
+                                Shadow(color: Colors.black, offset: Offset(2, 2)),
+                                Shadow(color: Colors.black, offset: Offset(-2, -2)),
+                                Shadow(color: Colors.black, offset: Offset(-2, 2)),
+                                Shadow(color: Colors.black, offset: Offset(2, -2)),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Visibility(
-                      visible:
-                          widget.controller.playerState.stateValue == StateValue.paused &&
-                          widget.controller.playerState.videoTracks.isNotEmpty,
-                      child: Center(
-                        child: Icon(
-                          Icons.pause,
-                          color: Colors.white,
-                          size: 140,
-                          shadows: [
-                            Shadow(color: Colors.black, offset: Offset(2, 2)),
-                            Shadow(color: Colors.black, offset: Offset(-2, -2)),
-                            Shadow(color: Colors.black, offset: Offset(-2, 2)),
-                            Shadow(color: Colors.black, offset: Offset(2, -2)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             );
@@ -307,10 +308,10 @@ class _OverlayScreenState extends State<OverlayScreen> {
       return true;
     }
 
-
     // 2. Fallback check: for undefined or missing mimeType
     // Check that the player is in a stable state (not loading, buffering, or in error)
-    final isPlayerStable = playerState.stateValue != StateValue.buffering &&
+    final isPlayerStable =
+        playerState.stateValue != StateValue.buffering &&
         playerState.stateValue != StateValue.initial &&
         playerState.loadingStatus == null &&
         playerState.lastError == null;
