@@ -396,8 +396,8 @@ The plugin provides full control over the system's media volume. This includes b
 
 You can manage the volume by calling methods on the `FtvMedia3PlayerController` or `Media3UiController` instance:
 
-*   `getVolume()`: Fetches the current volume state (`VolumeState`), which includes the current level, maximum level, and mute status.
-*   `setVolume({required int volume})`: Sets the absolute volume level.
+*   `getVolume()`: Fetches the current volume state (`VolumeState`), which includes the current level, maximum level, mute status, and the current volume as a double between 0.0 and 1.0.
+*   `setVolume({required double volume})`: Sets the volume level. The `volume` parameter must be a value between **0.0 (mute)** and **1.0 (maximum)**.
 *   `setMute({required bool mute})`: Explicitly mutes or unmutes the audio.
 *   `toggleMute()`: Toggles the current mute state.
 
@@ -408,9 +408,7 @@ You can manage the volume by calling methods on the `FtvMedia3PlayerController` 
 final controller = FtvMedia3PlayerController();
 
 // Set volume to 50%
-final volumeState = await controller.getVolume();
-final targetVolume = (volumeState.max * 0.5).round();
-await controller.setVolume(volume: targetVolume);
+await controller.setVolume(volume: 0.5);
 
 // Mute the audio
 await controller.setMute(mute: true);
@@ -424,8 +422,9 @@ await controller.toggleMute();
 The plugin automatically tracks system volume changes. You can listen to the `playerStateStream` to receive real-time updates. The volume state is stored in the `VolumeState` object within `PlayerState`.
 
 The `VolumeState` object has the following fields:
-*   `current` (int): The current volume level.
-*   `max` (int): The maximum possible volume level.
+*   `volume` (double): The current volume level, from 0.0 to 1.0.
+*   `current` (int): The current absolute volume level.
+*   `max` (int): The maximum possible absolute volume level.
 *   `isMute` (bool): `true` if the audio is muted.
 
 **Listening to State Example:**

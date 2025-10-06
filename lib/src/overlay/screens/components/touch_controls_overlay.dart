@@ -161,10 +161,10 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                                     child: RotatedBox(
                                                       quarterTurns: 3,
                                                       child: Slider(
-                                                        value: volumeState.current.toDouble(),
-                                                        max: volumeState.max.toDouble(),
+                                                        value: volumeState.volume,
+                                                        max: 1.0,
                                                         onChanged: (value) {
-                                                          widget.controller.setVolume(volume: value.toInt());
+                                                          widget.controller.setVolume(volume: value);
                                                           _startHideTimer();
                                                         },
                                                         activeColor: AppTheme.fullFocusColor,

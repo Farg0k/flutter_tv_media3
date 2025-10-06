@@ -326,9 +326,10 @@ class Media3UiController {
         final current = call.arguments['current'] as int?;
         final max = call.arguments['max'] as int?;
         final isMute = call.arguments['isMute'] as bool?;
-        if (current != null && max != null && isMute != null) {
+        final volume = (call.arguments['volume'] as num?)?.toDouble();
+        if (current != null && max != null && isMute != null && volume != null) {
           newState = newState.copyWith(
-            volumeState: VolumeState(current: current, max: max, isMute: isMute),
+            volumeState: VolumeState(current: current, max: max, isMute: isMute, volume: volume),
           );
         }
         break;
@@ -664,8 +665,9 @@ class Media3UiController {
     final current = result?['current'] as int?;
     final max = result?['max'] as int?;
     final isMute = result?['isMute'] as bool?;
-    if (current != null && max != null && isMute != null) {
-      final volumeState = VolumeState(current: current, max: max, isMute: isMute);
+    final volume = (result?['volume'] as num?)?.toDouble();
+    if (current != null && max != null && isMute != null && volume != null) {
+      final volumeState = VolumeState(current: current, max: max, isMute: isMute, volume: volume);
       _updateState(_playerState.copyWith(volumeState: volumeState));
       return volumeState;
     }
@@ -673,9 +675,9 @@ class Media3UiController {
   }
 
   /// Sets the volume on the native player.
-  /// [volume] The volume level to set.
-  Future<void> setVolume({required int volume}) async {
-    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {'volume': volume});
+  /// [volume] The volume level to set, from 0.0 to 1.0.
+  Future<void> setVolume({required double volume}) async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {'volume': volume.clamp(0.0, 1.0)});
   }
 
   /// Mutes or unmutes the audio on the native player.

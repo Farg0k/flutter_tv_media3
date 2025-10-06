@@ -1020,12 +1020,15 @@ class PlayerActivity : AppCompatActivity() {
                 } else {
                     currentVolume == 0
                 }
-                result.success(mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted))
+                val volume = if (maxVolume > 0) currentVolume.toDouble() / maxVolume.toDouble() else 0.0
+                result.success(mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted, "volume" to volume))
             }
             "setVolume" -> {
-                val volume = call.argument<Int>("volume")
+                val volume = call.argument<Double>("volume")
                 if (volume != null) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+                    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    val absoluteVolume = (volume * maxVolume).toInt()
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, absoluteVolume, 0)
                     result.success(null)
                 } else {
                     reportErrorToOther(from, result, "INVALID_VOLUME", "Volume is null")
@@ -2101,11 +2104,18 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             currentVolume == 0
         }
-        val currentVolumeState = mapOf("current" to currentVolume, "max" to maxVolume, "isMute" to isMuted)
+        val volume = if (maxVolume > 0) currentVolume.toDouble() / maxVolume.toDouble() else 0.0
 
-        if (currentVolumeState != lastSentVolumeState) {
-            lastSentVolumeState = currentVolumeState
-            invokeOnBothChannels("onVolumeChanged", currentVolumeState)
+        val volumeState = mapOf(
+            "current" to currentVolume,
+            "max" to maxVolume,
+            "isMute" to isMuted,
+            "volume" to volume
+        )
+
+        if (volumeState != lastSentVolumeState) {
+            invokeOnBothChannels("onVolumeChanged", volumeState)
+            lastSentVolumeState = volumeState
         }
     }
 

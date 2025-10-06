@@ -4,28 +4,32 @@ class VolumeState {
   final int current;
   final int max;
   final bool isMute;
+  final double volume;
 
   VolumeState({
     this.current = 0,
     this.max = 0,
     this.isMute = false,
+    this.volume = 0.0,
   });
 
   VolumeState copyWith({
     int? current,
     int? max,
     bool? isMute,
+    double? volume,
   }) {
     return VolumeState(
       current: current ?? this.current,
       max: max ?? this.max,
       isMute: isMute ?? this.isMute,
+      volume: volume ?? this.volume,
     );
   }
 
   @override
   String toString() {
-    return 'VolumeState{current: $current, max: $max, isMute: $isMute}';
+    return 'VolumeState{current: $current, max: $max, isMute: $isMute, volume: $volume}';
   }
 
   Map<String, dynamic> toMap() {
@@ -33,6 +37,7 @@ class VolumeState {
       'current': current,
       'max': max,
       'isMute': isMute,
+      'volume': volume,
     };
   }
 
@@ -41,6 +46,7 @@ class VolumeState {
       current: map['current'] as int? ?? 0,
       max: map['max'] as int? ?? 0,
       isMute: map['isMute'] as bool? ?? false,
+      volume: (map['volume'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
