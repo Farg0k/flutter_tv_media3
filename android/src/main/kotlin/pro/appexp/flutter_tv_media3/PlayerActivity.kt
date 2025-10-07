@@ -70,7 +70,7 @@ import io.flutter.plugin.common.MethodChannel
 import android.view.WindowManager
 import android.net.Uri
 import com.google.common.collect.ImmutableList
-
+import android.os.PowerManager
 /**
  * The main Activity responsible for video playback and displaying the UI.
  *
@@ -104,6 +104,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var audioManager: AudioManager
     private var volumeObserver: ContentObserver? = null
     private var lastSentVolumeState: Map<String, Any>? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     private val volumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -390,6 +391,7 @@ class PlayerActivity : AppCompatActivity() {
      */
     override fun onPause() {
         super.onPause()
+        releaseWakeLock()
         volumeObserver?.let {
             contentResolver.unregisterContentObserver(it)
         }
@@ -442,6 +444,7 @@ class PlayerActivity : AppCompatActivity() {
      */
     override fun onDestroy() {
         super.onDestroy()
+        releaseWakeLock()
         methodChannel.invokeMethod("onActivityDestroyed", null)
         positionHandler.removeCallbacks(positionRunnable)
         methodChannel.setMethodCallHandler(null)
@@ -1136,6 +1139,9 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (playWhenReady) {
+                    dismissScreensaver()
+                }
                 notifyStateChanged(player)
                 if (playWhenReady && (player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_BUFFERING)) {
                     positionHandler.removeCallbacks(positionRunnable)
@@ -2290,5 +2296,24 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             videoWithSubtitlesSource
         }
+    }
+
+    private fun dismissScreensaver() {
+        releaseWakeLock()
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "MyApp:PlayerWakeLock"
+        )
+        wakeLock?.acquire(3000)
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+        }
+        wakeLock = null
     }
 }
