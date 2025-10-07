@@ -1031,7 +1031,7 @@ class PlayerActivity : AppCompatActivity() {
                 if (volume != null) {
                     val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                     val absoluteVolume = (volume * maxVolume).toInt()
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, absoluteVolume, 0)
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, absoluteVolume,  AudioManager.FLAG_SHOW_UI)
                     result.success(null)
                 } else {
                     reportErrorToOther(from, result, "INVALID_VOLUME", "Volume is null")
