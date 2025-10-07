@@ -72,18 +72,39 @@ Understanding the architecture is key to using this plugin correctly:
 
 ### 1. Installation
 
-Add the dependency to your `pubspec.yaml`:
+You can add `flutter_tv_media3` to your project in one of the following ways.
+
+**A) From the command line (recommended):**
+
+Run this command in your project's terminal:
+
+```bash
+flutter pub add flutter_tv_media3
+```
+
+**B) Manually from `pub.dev`:**
+
+Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_tv_media3: ^0.0.1 # Replace with the latest version
+  flutter_tv_media3: ^0.0.1 # Make sure to use the latest version
 ```
-or 
+
+**C) Manually from GitHub (for development versions):**
+
+To use the latest code from the repository, add this to your `pubspec.yaml`:
+
 ```yaml
 dependencies:
   flutter_tv_media3:
-   git: https://github.com/Farg0k/flutter_tv_media3
+    git:
+      url: https://github.com/Farg0k/flutter_tv_media3.git
+      # You can also specify a branch, e.g.:
+      # ref: main
 ```
+
+After adding the dependency manually (options B or C), run `flutter pub get` in your terminal.
 
 ### 2. Android Configuration
 
