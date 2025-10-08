@@ -380,7 +380,7 @@ class FtvMedia3PlayerController {
         );
         break;
       case 'onActivityDestroyed':
-        newState = newState.copyWith(activityReady: false, activityDestroyed: true);
+        newState = PlayerState(activityDestroyed: true);
         break;
       case 'onBack':
         break;
