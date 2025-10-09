@@ -66,6 +66,7 @@ class FtvMedia3PlayerController {
   ClockSettings? _clockSettings;
   PlayerSettings? _playerSettings;
   bool _isSearchingSubtitles = false;
+  bool _isSavingWatchTime = false;
 
   /// The current overall state of the player.
   PlayerState _playerState = PlayerState();
@@ -287,23 +288,53 @@ class FtvMedia3PlayerController {
         break;
 
       case 'onWatchTimeMarked':
-        final index = call.arguments['playlist_index'] as int?;
-        final int durationMs = call.arguments['duration_ms'] as int? ?? 0;
-        final int positionMs = call.arguments['position_ms'] as int? ?? 0;
+        if (_isSavingWatchTime) break;
+        _isSavingWatchTime = true;
+        try {
+          final index = call.arguments['playlist_index'] as int?;
+          final int durationMs = call.arguments['duration_ms'] as int? ?? 0;
+          final int positionMs = call.arguments['position_ms'] as int? ?? 0;
 
-        if (index != null && index >= 0 && index < _playerState.playlist.length) {
-          PlaylistMediaItem item = _playerState.playlist[index];
-          if (item.saveWatchTime != null) {
-            final durationSec = (durationMs / 1000).round().toInt();
-            int positionSec = (positionMs / 1000).round().toInt();
-            if (durationSec == 0) return;
-            if (positionSec > durationSec) positionSec = durationSec;
-            await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+          if (index != null && index >= 0 && index < _playerState.playlist.length) {
+            PlaylistMediaItem item = _playerState.playlist[index];
+            if (item.saveWatchTime != null) {
+              final durationSec = (durationMs / 1000).round().toInt();
+              int positionSec = (positionMs / 1000).round().toInt();
+              if (durationSec == 0) return;
+              if (positionSec > durationSec) positionSec = durationSec;
+              await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+            }
           }
+        } finally {
+          _isSavingWatchTime = false;
         }
         break;
       case 'sleepTimerExec':
-        if (_sleepTimerExec != null) _sleepTimerExec!();
+        if (_isSavingWatchTime) {
+          if (_sleepTimerExec != null) _sleepTimerExec!();
+          break;
+        }
+        _isSavingWatchTime = true;
+        try {
+          final index = _playerState.playIndex;
+          if (index >= 0 && index < _playerState.playlist.length) {
+            PlaylistMediaItem item = _playerState.playlist[index];
+            if (item.saveWatchTime != null) {
+              final durationSec = _playbackState.duration;
+              int? positionSec = _playbackState.position;
+              if (durationSec > 0) {
+                if (_playerState.stateValue == StateValue.ended) {
+                  positionSec = durationSec;
+                }
+                if (positionSec > durationSec) positionSec = durationSec;
+                await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+              }
+            }
+          }
+        } finally {
+          _isSavingWatchTime = false;
+          if (_sleepTimerExec != null) _sleepTimerExec!();
+        }
         break;
       case 'onError':
         newState = newState.copyWith(
