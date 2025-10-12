@@ -6,7 +6,7 @@ import '../../../../../utils/string_utils.dart';
 import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 import '../../widgets/marquee_title_widget.dart';
-import '../../widgets/video_info_Item.dart';
+import '../../widgets/video_info_item.dart';
 
 class AudioItemWidget extends StatelessWidget {
   const AudioItemWidget({
