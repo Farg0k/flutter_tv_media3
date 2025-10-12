@@ -6,7 +6,7 @@ import '../../../../../utils/string_utils.dart';
 import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 import '../../widgets/marquee_title_widget.dart';
-import '../../widgets/video_info_Item.dart';
+import '../../widgets/video_info_item.dart';
 
 class VideoItemWidget extends StatelessWidget {
   const VideoItemWidget({super.key, required this.controller, required this.track, required this.isFocused});

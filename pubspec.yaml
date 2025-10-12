@@ -1,7 +1,7 @@
 name: flutter_tv_media3
 description: "Flutter TV Media3 plugin A Flutter plugin for playing video on Android TV using the native Media3 player, which runs in its own `Activity`. "
 
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/Farg0k/flutter_tv_media3
 
 environment:
