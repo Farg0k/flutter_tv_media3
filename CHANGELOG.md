@@ -1,3 +1,6 @@
+## 0.0.4
+
+- fix release v3
 ## 0.0.3
 
 - fix release v2

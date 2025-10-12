@@ -7,7 +7,7 @@ import 'package:sprintf/sprintf.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../bloc/overlay_ui_bloc.dart';
 import '../../../media_ui_service/media3_ui_controller.dart';
-import 'video_info_Item.dart';
+import 'video_info_item.dart';
 
 class VideoInfoWidget extends StatelessWidget {
   const VideoInfoWidget({super.key, required this.controller, required this.state});
