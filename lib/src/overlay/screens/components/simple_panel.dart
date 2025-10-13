@@ -18,13 +18,20 @@ class SimplePanel extends StatelessWidget {
             left: 8,
             right: 8,
             child: Container(
-              constraints: BoxConstraints(minHeight: 60, maxWidth: MediaQuery.of(context).size.width),
+              constraints: BoxConstraints(
+                minHeight: 60,
+                maxWidth: MediaQuery.of(context).size.width,
+              ),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppTheme.backgroundColor,
                 borderRadius: AppTheme.borderRadius,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 15, offset: const Offset(0, 5)),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
                 ],
               ),
               child: TimeLinePanel(controller: controller),

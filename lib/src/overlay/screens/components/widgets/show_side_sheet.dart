@@ -42,7 +42,10 @@ void showSideSheet({
         );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final offsetAnimation = Tween<Offset>(begin: Offset(fromLeft ? -1 : 1, 0), end: Offset.zero).animate(animation);
+        final offsetAnimation = Tween<Offset>(
+          begin: Offset(fromLeft ? -1 : 1, 0),
+          end: Offset.zero,
+        ).animate(animation);
         return SlideTransition(position: offsetAnimation, child: child);
       },
     ).then((_) {

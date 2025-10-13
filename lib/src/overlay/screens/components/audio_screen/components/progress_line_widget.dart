@@ -20,13 +20,22 @@ class ProgressLineWidget extends StatelessWidget {
         final data = asyncSnapshot.data!;
         final currentPosition = data.position;
         final currentDuration = data.duration;
-        final positionPercentage = StringUtils.getPercentage(duration: data.duration, position: data.position);
-        final bufferedPercentage = StringUtils.getPercentage(duration: data.duration, position: data.bufferedPosition);
+        final positionPercentage = StringUtils.getPercentage(
+          duration: data.duration,
+          position: data.position,
+        );
+        final bufferedPercentage = StringUtils.getPercentage(
+          duration: data.duration,
+          position: data.bufferedPosition,
+        );
         return Row(
           spacing: 6,
           children: [
             if (controller.playerState.isLive != true)
-            Text(StringUtils.formatDuration(seconds: currentPosition), style: theme.textTheme.bodyMedium),
+              Text(
+                StringUtils.formatDuration(seconds: currentPosition),
+                style: theme.textTheme.bodyMedium,
+              ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -51,11 +60,13 @@ class ProgressLineWidget extends StatelessWidget {
               ),
             ),
             if (controller.playerState.isLive != true)
-            Text(StringUtils.formatDuration(seconds: currentDuration), style: theme.textTheme.bodyMedium),
+              Text(
+                StringUtils.formatDuration(seconds: currentDuration),
+                style: theme.textTheme.bodyMedium,
+              ),
           ],
         );
       },
     );
   }
 }
-

@@ -48,8 +48,12 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
   void _updateScrollability() {
     if (!_scrollController.hasClients) return;
 
-    final canScrollUp = _scrollController.position.pixels > _scrollController.position.minScrollExtent;
-    final canScrollDown = _scrollController.position.pixels < _scrollController.position.maxScrollExtent;
+    final canScrollUp =
+        _scrollController.position.pixels >
+        _scrollController.position.minScrollExtent;
+    final canScrollDown =
+        _scrollController.position.pixels <
+        _scrollController.position.maxScrollExtent;
 
     if (canScrollUp != _canScrollUp) {
       setState(() {
@@ -80,12 +84,15 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
     final program = state.selectedProgram;
 
     if (channel == null || program == null) {
-      return Center(child: Text(OverlayLocalizations.get("program_not_selected")));
+      return Center(
+        child: Text(OverlayLocalizations.get("program_not_selected")),
+      );
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollability());
 
-    final bool isTheActiveProgram = state.activeProgramIndex == state.selectedProgramIndex;
+    final bool isTheActiveProgram =
+        state.activeProgramIndex == state.selectedProgramIndex;
 
     return Focus(
       focusNode: widget.focusNode,
@@ -103,7 +110,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
         return KeyEventResult.ignored;
       },
       child: Padding(
-        padding:  EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           spacing: 16,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,7 +140,9 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                       Image.network(
                         program.posterUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(color: AppTheme.backgroundColor),
+                        errorBuilder:
+                            (context, error, stackTrace) =>
+                                Container(color: AppTheme.backgroundColor),
                       ),
                     Container(
                       decoration: AppTheme.programDetailsGradientDecoration,
@@ -158,19 +167,22 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
               children: [
                 Text(
                   OverlayLocalizations.dateFormat(date: program.startTime),
-                  style: AppTheme.detailsProgramTimeStyle
-                      .copyWith(fontWeight: FontWeight.bold),
+                  style: AppTheme.detailsProgramTimeStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 isTheActiveProgram
                     ? ProgramTimelineWidget(
-                        startTime: program.startTime,
-                        endTime: program.endTime,
-                      )
+                      startTime: program.startTime,
+                      endTime: program.endTime,
+                    )
                     : Text(
-                        OverlayLocalizations.formatShortTimeRange(
-                            program.startTime, program.endTime),
-                        style: AppTheme.detailsProgramTimeStyle,
+                      OverlayLocalizations.formatShortTimeRange(
+                        program.startTime,
+                        program.endTime,
                       ),
+                      style: AppTheme.detailsProgramTimeStyle,
+                    ),
               ],
             ),
             Expanded(

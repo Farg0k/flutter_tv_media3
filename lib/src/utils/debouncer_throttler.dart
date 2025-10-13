@@ -13,7 +13,10 @@ class DebouncerThrottler {
     });
   }
 
-  Future<void> throttle(Duration duration, Future<void> Function() callback) async {
+  Future<void> throttle(
+    Duration duration,
+    Future<void> Function() callback,
+  ) async {
     if (!_isThrottling && !_isProcessing) {
       _isThrottling = true;
       _isProcessing = true;

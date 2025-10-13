@@ -68,10 +68,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -88,11 +93,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_selectedIndex > 0) {
               _selectedIndex--;
               _scrollToIndex(_selectedIndex);
-              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
-            }else{
+              context.read<OverlayUiBloc>().add(
+                SetSettingsItemIndex(index: _selectedIndex),
+              );
+            } else {
               _selectedIndex = items.length - 1;
               _scrollToIndex(_selectedIndex);
-              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
+              context.read<OverlayUiBloc>().add(
+                SetSettingsItemIndex(index: _selectedIndex),
+              );
             }
           }),
       const SingleActivator(LogicalKeyboardKey.arrowDown):
@@ -100,11 +109,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_selectedIndex < items.length - 1) {
               _selectedIndex++;
               _scrollToIndex(_selectedIndex);
-              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
-            }else{
+              context.read<OverlayUiBloc>().add(
+                SetSettingsItemIndex(index: _selectedIndex),
+              );
+            } else {
               _selectedIndex = 0;
               _scrollToIndex(_selectedIndex);
-              context.read<OverlayUiBloc>().add(SetSettingsItemIndex(index: _selectedIndex));
+              context.read<OverlayUiBloc>().add(
+                SetSettingsItemIndex(index: _selectedIndex),
+              );
             }
           }),
       const SingleActivator(LogicalKeyboardKey.enter):
@@ -112,7 +125,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_selectedIndex < items.length) {
               items[_selectedIndex].onTap?.call(context);
               if (items[_selectedIndex].onPlayerTap != null) {
-                items[_selectedIndex].onPlayerTap!(context, widget.controller.playerState);
+                items[_selectedIndex].onPlayerTap!(
+                  context,
+                  widget.controller.playerState,
+                );
               }
             }
           }),
@@ -121,7 +137,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_selectedIndex < items.length) {
               items[_selectedIndex].onTap?.call(context);
               if (items[_selectedIndex].onPlayerTap != null) {
-                items[_selectedIndex].onPlayerTap!(context, widget.controller.playerState);
+                items[_selectedIndex].onPlayerTap!(
+                  context,
+                  widget.controller.playerState,
+                );
               }
             }
           }),
@@ -150,7 +169,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 itemExtent: _itemExtent,
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return item.build(context, isFocused: index == _selectedIndex, controller: widget.controller);
+                  return item.build(
+                    context,
+                    isFocused: index == _selectedIndex,
+                    controller: widget.controller,
+                  );
                 },
               ),
             ),
@@ -180,7 +203,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailingBuilder:
           (context) => BlocBuilder<OverlayUiBloc, OverlayUiState>(
             bloc: bloc,
-            buildWhen: (old, now) => old.sleepTime != now.sleepTime || old.sleepAfter != now.sleepAfter,
+            buildWhen:
+                (old, now) =>
+                    old.sleepTime != now.sleepTime ||
+                    old.sleepAfter != now.sleepAfter,
             builder: (context, state) {
               final textTheme = Theme.of(context).textTheme.headlineSmall!;
               if (state.sleepTime != Duration.zero) {
@@ -188,8 +214,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   spacing: 5,
                   children: [
-                    const Icon(Icons.access_time_filled_outlined, color: Colors.grey),
-                    Text(state.sleepTime.toString().durationClear(), style: textTheme),
+                    const Icon(
+                      Icons.access_time_filled_outlined,
+                      color: Colors.grey,
+                    ),
+                    Text(
+                      state.sleepTime.toString().durationClear(),
+                      style: textTheme,
+                    ),
                   ],
                 );
               }
@@ -207,15 +239,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: (context) {
         final bloc = context.read<OverlayUiBloc>();
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-        showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc));
+        showSideSheet(
+          context: context,
+          bloc: bloc,
+          body: SleepTimerWidget(bloc: bloc),
+        );
       },
     ),
     SettingsItem(
       icon: Icons.zoom_in,
       title: OverlayLocalizations.get('zoom'),
       trailingBuilder:
-          (context) =>
-              Text(widget.controller.playerState.zoom.nativeValue, style: Theme.of(context).textTheme.headlineSmall),
+          (context) => Text(
+            widget.controller.playerState.zoom.nativeValue,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
       onTap: (context) {
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
@@ -229,8 +267,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.speed,
       title: OverlayLocalizations.get('speed'),
       trailingBuilder:
-          (context) =>
-              Text('${widget.controller.playerState.speed}x', style: Theme.of(context).textTheme.headlineSmall),
+          (context) => Text(
+            '${widget.controller.playerState.speed}x',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
       onTap: (context) {
         bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
         showSideSheet(
@@ -255,17 +295,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
       onPlayerTap: (context, playerState) {
-        widget.controller.setRepeatMode(repeatMode: RepeatMode.nextValue(playerState.repeatMode.index));
+        widget.controller.setRepeatMode(
+          repeatMode: RepeatMode.nextValue(playerState.repeatMode.index),
+        );
       },
     ),
     SettingsItem(
       iconStreamBuilder:
           (context, playerState) =>
-              playerState.isShuffleModeEnabled ? const Icon(Icons.shuffle) : const Icon(Icons.list),
+              playerState.isShuffleModeEnabled
+                  ? const Icon(Icons.shuffle)
+                  : const Icon(Icons.list),
       title: OverlayLocalizations.get('random'),
       trailingStreamBuilder:
           (context, playerState) => Text(
-            playerState.isShuffleModeEnabled ? OverlayLocalizations.get('on') : OverlayLocalizations.get('off'),
+            playerState.isShuffleModeEnabled
+                ? OverlayLocalizations.get('on')
+                : OverlayLocalizations.get('off'),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
       onPlayerTap: (context, playerState) {
@@ -282,7 +328,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           bloc: bloc,
           barrierColor: Colors.transparent,
           widthFactor: 0.35,
-          body: SubtitleSettingsWidget(controller: widget.controller, bloc: bloc),
+          body: SubtitleSettingsWidget(
+            controller: widget.controller,
+            bloc: bloc,
+          ),
         );
       },
     ),
@@ -308,7 +357,8 @@ class SettingsItem {
   final String title;
   final Widget Function(BuildContext context)? trailingBuilder;
   final Icon Function(BuildContext context, PlayerState)? iconStreamBuilder;
-  final Widget Function(BuildContext context, PlayerState)? trailingStreamBuilder;
+  final Widget Function(BuildContext context, PlayerState)?
+  trailingStreamBuilder;
   final void Function(BuildContext context)? onTap;
   final void Function(BuildContext context, PlayerState)? onPlayerTap;
 
@@ -322,10 +372,14 @@ class SettingsItem {
     this.onPlayerTap,
   });
 
-  Widget build(BuildContext context, {required bool isFocused, required Media3UiController controller}) {
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.headlineSmall?.copyWith(color: isFocused ? Colors.white : Colors.white70);
+  Widget build(
+    BuildContext context, {
+    required bool isFocused,
+    required Media3UiController controller,
+  }) {
+    final textStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
+      color: isFocused ? Colors.white : Colors.white70,
+    );
     final iconColor = isFocused ? Colors.white : Colors.white70;
 
     void handleTap() {

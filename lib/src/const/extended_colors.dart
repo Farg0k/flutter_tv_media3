@@ -46,7 +46,9 @@ enum ExtendedColors {
   }
 
   static Map<Color, String> get colorMap {
-    return Map.fromEntries(ExtendedColors.values.map((e) => MapEntry(e.color, e.hexString)));
+    return Map.fromEntries(
+      ExtendedColors.values.map((e) => MapEntry(e.color, e.hexString)),
+    );
   }
 
   static List<Color> get allColors {

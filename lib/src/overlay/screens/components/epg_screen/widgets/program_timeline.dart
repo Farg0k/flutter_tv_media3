@@ -5,7 +5,6 @@ import 'package:sprintf/sprintf.dart';
 
 import '../../../../../app_theme/app_theme.dart';
 
-
 class ProgramTimelineWidget extends StatefulWidget {
   final DateTime startTime;
   final DateTime endTime;
@@ -28,7 +27,7 @@ class _ProgramTimelineWidgetState extends State<ProgramTimelineWidget> {
   void initState() {
     super.initState();
     _updateProgress();
-    
+
     _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
         _updateProgress();
@@ -60,9 +59,12 @@ class _ProgramTimelineWidgetState extends State<ProgramTimelineWidget> {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final remaining = widget.endTime.difference(now);
-    final remainingText = remaining.isNegative
-        ? OverlayLocalizations.get('programCompleted')
-        : sprintf(OverlayLocalizations.get('programRemaining'), [remaining.inMinutes]);
+    final remainingText =
+        remaining.isNegative
+            ? OverlayLocalizations.get('programCompleted')
+            : sprintf(OverlayLocalizations.get('programRemaining'), [
+              remaining.inMinutes,
+            ]);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,10 +77,7 @@ class _ProgramTimelineWidgetState extends State<ProgramTimelineWidget> {
               '${widget.startTime.hour}:${widget.startTime.minute.toString().padLeft(2, '0')}',
               style: AppTheme.timelineTimeStyle,
             ),
-            Text(
-              remainingText,
-              style: AppTheme.timelineTimeStyle,
-            ),
+            Text(remainingText, style: AppTheme.timelineTimeStyle),
             Text(
               '${widget.endTime.hour}:${widget.endTime.minute.toString().padLeft(2, '0')}',
               style: AppTheme.timelineTimeStyle,

@@ -40,7 +40,8 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
   @override
   void didUpdateWidget(covariant PlaylistItemWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.autofocus != oldWidget.autofocus || widget.item.startPosition != oldWidget.item.startPosition) {
+    if (widget.autofocus != oldWidget.autofocus ||
+        widget.item.startPosition != oldWidget.item.startPosition) {
       setState(() {
         isFocus = widget.autofocus;
       });
@@ -82,15 +83,26 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
                 Icon(
                   _getIconForMediaType(),
                   size: 38,
-                  color: widget.isActive || isFocus ? Colors.white : Colors.white70,
+                  color:
+                      widget.isActive || isFocus
+                          ? Colors.white
+                          : Colors.white70,
                 ),
                 Expanded(
                   child: MarqueeWidget(
-                    text: widget.item.label ?? widget.item.title ?? sprintf(OverlayLocalizations.get('itemNumber'), [widget.index]),
+                    text:
+                        widget.item.label ??
+                        widget.item.title ??
+                        sprintf(OverlayLocalizations.get('itemNumber'), [
+                          widget.index,
+                        ]),
                     focus: isFocus,
                     style: TextStyle(
                       fontSize: 19,
-                      fontWeight: widget.isActive || isFocus ? FontWeight.w500 : FontWeight.w300,
+                      fontWeight:
+                          widget.isActive || isFocus
+                              ? FontWeight.w500
+                              : FontWeight.w300,
                       color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
@@ -113,14 +125,22 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 spacing: 3,
                                 children: [
-                                  duration == position || duration == null || percent > 0.95
+                                  duration == position ||
+                                          duration == null ||
+                                          percent > 0.95
                                       ? Icon(Icons.remove_red_eye)
                                       : Text(
                                         "${(percent * 100).toInt()}%",
-                                        style: const TextStyle(fontSize: 13, color: Colors.white70),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white70,
+                                        ),
                                       ),
                                   LinearProgressIndicator(
-                                    value: duration == 0 && position == 0 ? 1 : percent,
+                                    value:
+                                        duration == 0 && position == 0
+                                            ? 1
+                                            : percent,
                                     color: AppTheme.fullFocusColor,
                                     backgroundColor: AppTheme.divider,
                                   ),
@@ -128,7 +148,10 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
                                       ? SizedBox.shrink()
                                       : Text(
                                         '${StringUtils.formatDuration(seconds: position ?? 0)} / ${duration == null ? '--:--:--' : StringUtils.formatDuration(seconds: duration)}',
-                                        style: const TextStyle(fontSize: 12, color: Colors.white70),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white70,
+                                        ),
                                       ),
                                 ],
                               ),

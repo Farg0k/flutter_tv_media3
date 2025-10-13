@@ -22,11 +22,17 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   Timer? _timer;
 
   OverlayUiBloc({required this.controller})
-      : super(OverlayUiState(playIndex: controller.playerState.playIndex, clockPosition: ClockPosition.none)) {
+    : super(
+        OverlayUiState(
+          playIndex: controller.playerState.playIndex,
+          clockPosition: ClockPosition.none,
+        ),
+      ) {
     // Subscribe to player state changes.
     _streamSubscription = controller.playerStateStream.listen((playerState) {
       // Logic for the sleep timer after track completion.
-      if (playerState.stateValue == StateValue.ended && state.sleepAfter == true) {
+      if (playerState.stateValue == StateValue.ended &&
+          state.sleepAfter == true) {
         if (state.sleepAfterNext == true) {
           add(SetSleepTimer(sleepAfter: true, sleepAfterNext: false));
         } else {
@@ -40,7 +46,10 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
     on<SetPlayerState>(_setPlayerState);
     on<SetPlayIndex>(_setPlayIndex);
     on<SetActivePanel>(_setActivePanel);
-    on<DebounceActivePanel>(_debounceActivePanel, transformer: debounce(const Duration(seconds: 2)));
+    on<DebounceActivePanel>(
+      _debounceActivePanel,
+      transformer: debounce(const Duration(seconds: 2)),
+    );
     on<SetSetupTabIndex>(_setSetupTabIndex);
     on<SetSettingsItemIndex>(_setSettingsItemIndex);
     on<SetSideSheetState>(_setSideSheetState);
@@ -55,7 +64,8 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   /// Handles updates to the full player state.
   void _setPlayerState(SetPlayerState event, Emitter<OverlayUiState> emit) {
     // Automatically show the simple panel when playback starts.
-    if (state.playerPanel == PlayerPanel.placeholder && event.playerState.stateValue == StateValue.playing) {
+    if (state.playerPanel == PlayerPanel.placeholder &&
+        event.playerState.stateValue == StateValue.playing) {
       add(SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true));
     }
     // Show a placeholder when the track changes.
@@ -63,24 +73,34 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
       add(const SetActivePanel(playerPanel: PlayerPanel.placeholder));
     }
     // Show the error panel if an error has occurred.
-    if (state.playerPanel != PlayerPanel.placeholder && event.playerState.lastError != null) {
+    if (state.playerPanel != PlayerPanel.placeholder &&
+        event.playerState.lastError != null) {
       add(SetActivePanel(playerPanel: PlayerPanel.error));
     }
     // Update clock settings if they have changed.
     if (state.clockSettings != event.playerState.clockSettings) {
       add(SetClockSettings(clockSettings: event.playerState.clockSettings));
     }
-    emit(state.copyWith(
-      playIndex: event.playerState.playIndex,
-      customInfoText: event.playerState.customInfoText,
-    ));
+    emit(
+      state.copyWith(
+        playIndex: event.playerState.playIndex,
+        customInfoText: event.playerState.customInfoText,
+      ),
+    );
   }
 
   /// Handles a change in the playback index.
   void _setPlayIndex(SetPlayIndex event, Emitter<OverlayUiState> emit) {
-    emit(state.copyWith(playIndex: event.playIndex, playerPanel: PlayerPanel.info));
+    emit(
+      state.copyWith(playIndex: event.playIndex, playerPanel: PlayerPanel.info),
+    );
     if (event.debounce == true) {
-      add(const DebounceActivePanel(playerPanel: PlayerPanel.none, debouncePanel: PlayerPanel.info));
+      add(
+        const DebounceActivePanel(
+          playerPanel: PlayerPanel.none,
+          debouncePanel: PlayerPanel.info,
+        ),
+      );
     }
   }
 
@@ -88,12 +108,20 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   void _setActivePanel(SetActivePanel event, Emitter<OverlayUiState> emit) {
     emit(state.copyWith(playerPanel: event.playerPanel));
     if (event.debounce == true) {
-      add(DebounceActivePanel(playerPanel: PlayerPanel.none, debouncePanel: event.playerPanel));
+      add(
+        DebounceActivePanel(
+          playerPanel: PlayerPanel.none,
+          debouncePanel: event.playerPanel,
+        ),
+      );
     }
   }
 
   /// Hides the panel after a delay if it's still active.
-  void _debounceActivePanel(DebounceActivePanel event, Emitter<OverlayUiState> emit) {
+  void _debounceActivePanel(
+    DebounceActivePanel event,
+    Emitter<OverlayUiState> emit,
+  ) {
     if (event.debouncePanel == state.playerPanel) {
       emit(state.copyWith(playerPanel: event.playerPanel));
     }
@@ -113,18 +141,31 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   }
 
   /// Sets the index of the selected item in a settings menu.
-  void _setSettingsItemIndex(SetSettingsItemIndex event, Emitter<OverlayUiState> emit) =>
-      emit(state.copyWith(settingsItemIndex: event.index));
+  void _setSettingsItemIndex(
+    SetSettingsItemIndex event,
+    Emitter<OverlayUiState> emit,
+  ) => emit(state.copyWith(settingsItemIndex: event.index));
 
   /// Sets the state of the side sheet (open/closed).
-  void _setSideSheetState(SetSideSheetState event, Emitter<OverlayUiState> emit) =>
-      emit(state.copyWith(sideSheetOpen: event.isOpen));
+  void _setSideSheetState(
+    SetSideSheetState event,
+    Emitter<OverlayUiState> emit,
+  ) => emit(state.copyWith(sideSheetOpen: event.isOpen));
 
   /// Manages the sleep timer logic.
   void _setSleepTimer(SetSleepTimer event, Emitter<OverlayUiState> emit) {
     bool sleepAfter = event.sleepAfter ?? false;
-    Duration sleepTime = event.sleepAfter == null ? event.sleepTime ?? Duration.zero : Duration.zero;
-    emit(state.copyWith(sleepTime: sleepTime, sleepAfter: sleepAfter, sleepAfterNext: event.sleepAfterNext ?? false));
+    Duration sleepTime =
+        event.sleepAfter == null
+            ? event.sleepTime ?? Duration.zero
+            : Duration.zero;
+    emit(
+      state.copyWith(
+        sleepTime: sleepTime,
+        sleepAfter: sleepAfter,
+        sleepAfterNext: event.sleepAfterNext ?? false,
+      ),
+    );
     if (sleepTime == Duration.zero) {
       _timer?.cancel();
       _streamSubscription2?.cancel();
@@ -159,12 +200,15 @@ class OverlayUiBloc extends Bloc<OverlayUiEvent, OverlayUiState> {
   }
 
   /// Updates the remaining time until sleep.
-  void _setSleepTimeLeft(SetSleepTimeLeft event, Emitter<OverlayUiState> emit) =>
-      emit(state.copyWith(sleepTime: event.sleepTime));
+  void _setSleepTimeLeft(
+    SetSleepTimeLeft event,
+    Emitter<OverlayUiState> emit,
+  ) => emit(state.copyWith(sleepTime: event.sleepTime));
 
   /// Updates the clock settings.
   void _setClockSettings(SetClockSettings event, Emitter<OverlayUiState> emit) {
-    if (state.clockSettings.clockPosition != event.clockSettings.clockPosition) {
+    if (state.clockSettings.clockPosition !=
+        event.clockSettings.clockPosition) {
       final clockPosition =
           event.clockSettings.clockPosition != ClockPosition.random
               ? event.clockSettings.clockPosition

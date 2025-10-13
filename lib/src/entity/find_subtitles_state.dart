@@ -1,9 +1,4 @@
-enum SubtitleSearchStatus {
-  idle,
-  loading,
-  error,
-  success,
-}
+enum SubtitleSearchStatus { idle, loading, error, success }
 
 /// Represents the complete UI state for the "Find Subtitles" feature.
 class FindSubtitlesState {

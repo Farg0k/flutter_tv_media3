@@ -1,4 +1,3 @@
-
 /// Represents the current playback state of the media.
 ///
 /// This class is an internal data model for the UI that contains information

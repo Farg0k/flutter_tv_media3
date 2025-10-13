@@ -26,11 +26,11 @@ class AudioItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isSelected = track.isSelected == true;
     final Color backgroundColor =
-    isFocused
-        ? AppTheme.focusColor
-        : isSelected
-        ? AppTheme.focusColor.withValues(alpha: 0.3)
-        : Colors.transparent;
+        isFocused
+            ? AppTheme.focusColor
+            : isSelected
+            ? AppTheme.focusColor.withValues(alpha: 0.3)
+            : Colors.transparent;
     return Material(
       color: backgroundColor,
       child: InkWell(
@@ -44,15 +44,26 @@ class AudioItemWidget extends StatelessWidget {
           child: Row(
             spacing: 16,
             children: [
-              Icon(_getIcon(track), size: 40, color: isFocused || isSelected ? Colors.white : Colors.white70),
+              Icon(
+                _getIcon(track),
+                size: 40,
+                color: isFocused || isSelected ? Colors.white : Colors.white70,
+              ),
               Expanded(
                 child: MarqueeWidget(
-                  text: StringUtils.getAudioTrackLabel(track: track, index: index),
+                  text: StringUtils.getAudioTrackLabel(
+                    track: track,
+                    index: index,
+                  ),
                   focus: isFocused,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: isFocused || isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isFocused || isSelected ? Colors.white : Colors.white70,
+                    fontWeight:
+                        isFocused || isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                    color:
+                        isFocused || isSelected ? Colors.white : Colors.white70,
                   ),
                 ),
               ),
@@ -62,15 +73,30 @@ class AudioItemWidget extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   if (track.codec != null)
-                    VideoInfoItem(icon: Icons.audiotrack, title: StringUtils.simplifyCodec(track.codec)),
+                    VideoInfoItem(
+                      icon: Icons.audiotrack,
+                      title: StringUtils.simplifyCodec(track.codec),
+                    ),
                   if (track.mimeType != null)
-                    VideoInfoItem(icon: Icons.multitrack_audio, title: StringUtils.simplifyMimeType(track.mimeType)),
+                    VideoInfoItem(
+                      icon: Icons.multitrack_audio,
+                      title: StringUtils.simplifyMimeType(track.mimeType),
+                    ),
                   if (track.bitrate != null)
-                    VideoInfoItem(icon: Icons.equalizer, title: StringUtils.formatBitrate(track.bitrate)),
+                    VideoInfoItem(
+                      icon: Icons.equalizer,
+                      title: StringUtils.formatBitrate(track.bitrate),
+                    ),
                   if ((track.channelCount ?? 0) > 0)
-                    VideoInfoItem(icon: Icons.surround_sound, title: StringUtils.formatChannels(track.channelCount)),
+                    VideoInfoItem(
+                      icon: Icons.surround_sound,
+                      title: StringUtils.formatChannels(track.channelCount),
+                    ),
                   if ((track.sampleRate ?? 0) > 0)
-                    VideoInfoItem(icon: Icons.waves, title: '${track.sampleRate! ~/ 1000} kHz'),
+                    VideoInfoItem(
+                      icon: Icons.waves,
+                      title: '${track.sampleRate! ~/ 1000} kHz',
+                    ),
                 ],
               ),
             ],
@@ -84,6 +110,8 @@ class AudioItemWidget extends StatelessWidget {
     if (track.index == -1) {
       return Icons.close;
     }
-    return track.isSelected == true ? Icons.audiotrack : Icons.audiotrack_outlined;
+    return track.isSelected == true
+        ? Icons.audiotrack
+        : Icons.audiotrack_outlined;
   }
 }

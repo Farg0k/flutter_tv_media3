@@ -17,20 +17,24 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
   StreamSubscription? _playerStateSubscription;
   Timer? _timer;
 
-  EpgBloc({required Media3UiController media3UiController, required int initialPage})
-      : _media3UiController = media3UiController,
-        super(EpgState(currentPage: initialPage)) {
+  EpgBloc({
+    required Media3UiController media3UiController,
+    required int initialPage,
+  }) : _media3UiController = media3UiController,
+       super(EpgState(currentPage: initialPage)) {
     on<EpgStarted>(_onEpgStarted);
     on<EpgChannelSelected>(_onChannelSelected);
     on<EpgProgramSelected>(_onProgramSelected);
     on<EpgPageChanged>(_onPageChanged);
-    
+
     on<EpgTimerTicked>(_onTimerTicked);
     on<EpgDateChanged>(_onDateChanged);
     on<EpgScrolled>(_onEpgScrolled);
     on<EpgPlayerStateUpdated>(_onPlayerStateUpdated);
     _startTimer();
-    _playerStateSubscription = _media3UiController.playerStateStream.listen((playerState) {
+    _playerStateSubscription = _media3UiController.playerStateStream.listen((
+      playerState,
+    ) {
       add(EpgPlayerStateUpdated(playerState));
     });
   }
@@ -39,21 +43,34 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     emit(state.copyWith(status: EpgStatus.loading));
     try {
       final playerState = _media3UiController.playerState;
-      final tvChannels = playerState.playlist
-          .asMap()
-          .entries
-          .where((entry) => entry.value.programs != null)
-          .map((entry) => EpgChannel.fromPlaylistMediaItem(item: entry.value, index: entry.key))
-          .toList();
+      final tvChannels =
+          playerState.playlist
+              .asMap()
+              .entries
+              .where((entry) => entry.value.programs != null)
+              .map(
+                (entry) => EpgChannel.fromPlaylistMediaItem(
+                  item: entry.value,
+                  index: entry.key,
+                ),
+              )
+              .toList();
 
       if (tvChannels.isEmpty) {
-        emit(state.copyWith(
-            status: EpgStatus.failure, errorMessage: OverlayLocalizations.get('epgNoChannels')));
+        emit(
+          state.copyWith(
+            status: EpgStatus.failure,
+            errorMessage: OverlayLocalizations.get('epgNoChannels'),
+          ),
+        );
         return;
       }
 
-      final initialChannelIndex = tvChannels.indexWhere((c) => c.id == event.initialChannelId);
-      final selectedChannelIndex = initialChannelIndex != -1 ? initialChannelIndex : 0;
+      final initialChannelIndex = tvChannels.indexWhere(
+        (c) => c.id == event.initialChannelId,
+      );
+      final selectedChannelIndex =
+          initialChannelIndex != -1 ? initialChannelIndex : 0;
 
       final newState = state.copyWith(
         status: EpgStatus.success,
@@ -64,7 +81,9 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
       emit(newState);
       _selectInitialProgramForChannel(emit, newState);
     } catch (e) {
-      emit(state.copyWith(status: EpgStatus.failure, errorMessage: e.toString()));
+      emit(
+        state.copyWith(status: EpgStatus.failure, errorMessage: e.toString()),
+      );
     }
   }
 
@@ -83,14 +102,22 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     });
   }
 
-  void _onPlayerStateUpdated(EpgPlayerStateUpdated event, Emitter<EpgState> emit) {
+  void _onPlayerStateUpdated(
+    EpgPlayerStateUpdated event,
+    Emitter<EpgState> emit,
+  ) {
     final playerState = event.playerState;
     final tvChannels =
         playerState.playlist
             .asMap()
             .entries
             .where((entry) => entry.value.programs != null)
-            .map((entry) => EpgChannel.fromPlaylistMediaItem(item: entry.value, index: entry.key))
+            .map(
+              (entry) => EpgChannel.fromPlaylistMediaItem(
+                item: entry.value,
+                index: entry.key,
+              ),
+            )
             .toList();
 
     emit(state.copyWith(allChannels: tvChannels));
@@ -103,22 +130,33 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
 
   void _onProgramSelected(EpgProgramSelected event, Emitter<EpgState> emit) {
     final newDateIndex = _findDateIndexForProgram(event.programIndex, state);
-    emit(state.copyWith(selectedProgramIndex: event.programIndex, selectedDateIndex: newDateIndex));
+    emit(
+      state.copyWith(
+        selectedProgramIndex: event.programIndex,
+        selectedDateIndex: newDateIndex,
+      ),
+    );
   }
 
   void _onDateChanged(EpgDateChanged event, Emitter<EpgState> emit) {
     if (event.dateIndex >= 0 && event.dateIndex < state.availableDates.length) {
       final selectedDate = state.availableDates[event.dateIndex];
       final programIndex = state.selectedChannel?.programs.indexWhere((p) {
-        final programDate = DateTime(p.startTime.year, p.startTime.month, p.startTime.day);
+        final programDate = DateTime(
+          p.startTime.year,
+          p.startTime.month,
+          p.startTime.day,
+        );
         return programDate.isAtSameMomentAs(selectedDate);
       });
 
       if (programIndex != -1) {
-        emit(state.copyWith(
-          selectedDateIndex: event.dateIndex,
-          programIndexToScroll: programIndex,
-        ));
+        emit(
+          state.copyWith(
+            selectedDateIndex: event.dateIndex,
+            programIndexToScroll: programIndex,
+          ),
+        );
       } else {
         emit(state.copyWith(selectedDateIndex: event.dateIndex));
       }
@@ -133,15 +171,15 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     emit(state.copyWith(currentPage: event.pageIndex));
   }
 
-  
-
   void _onTimerTicked(EpgTimerTicked event, Emitter<EpgState> emit) {
     final now = DateTime.now();
     final programs = state.selectedChannel?.programs ?? [];
     if (programs.isEmpty) return;
 
     final newActiveIndex = programs.indexWhere(
-      (p) => (p.startTime.isBefore(now) || p.startTime.isAtSameMomentAs(now)) && p.endTime.isAfter(now),
+      (p) =>
+          (p.startTime.isBefore(now) || p.startTime.isAtSameMomentAs(now)) &&
+          p.endTime.isAfter(now),
     );
 
     if (newActiveIndex != state.activeProgramIndex) {
@@ -149,7 +187,10 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     }
   }
 
-  void _selectInitialProgramForChannel(Emitter<EpgState> emit, EpgState currentState) {
+  void _selectInitialProgramForChannel(
+    Emitter<EpgState> emit,
+    EpgState currentState,
+  ) {
     final now = DateTime.now();
     final programs = currentState.selectedChannel?.programs ?? [];
     int activeProgramIndex = -1;
@@ -157,11 +198,15 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
 
     if (programs.isNotEmpty) {
       activeProgramIndex = programs.indexWhere(
-        (p) => (p.startTime.isBefore(now) || p.startTime.isAtSameMomentAs(now)) && p.endTime.isAfter(now),
+        (p) =>
+            (p.startTime.isBefore(now) || p.startTime.isAtSameMomentAs(now)) &&
+            p.endTime.isAfter(now),
       );
 
       programToSelect =
-          activeProgramIndex != -1 ? activeProgramIndex : programs.indexWhere((p) => p.startTime.isAfter(now));
+          activeProgramIndex != -1
+              ? activeProgramIndex
+              : programs.indexWhere((p) => p.startTime.isAfter(now));
       if (programToSelect == -1) {
         programToSelect = 0;
       }
@@ -187,7 +232,13 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     if (channel == null || channel.programs.isEmpty) return [];
     final dateSet = <DateTime>{};
     for (final program in channel.programs) {
-      dateSet.add(DateTime(program.startTime.year, program.startTime.month, program.startTime.day));
+      dateSet.add(
+        DateTime(
+          program.startTime.year,
+          program.startTime.month,
+          program.startTime.day,
+        ),
+      );
     }
     return dateSet.toList()..sort();
   }
@@ -196,8 +247,14 @@ class EpgBloc extends Bloc<EpgEvent, EpgState> {
     final programs = state.selectedChannel?.programs ?? [];
     if (programIndex < programs.length) {
       final program = programs[programIndex];
-      final focusedDate = DateTime(program.startTime.year, program.startTime.month, program.startTime.day);
-      final newDateIndex = state.availableDates.indexWhere((d) => d.isAtSameMomentAs(focusedDate));
+      final focusedDate = DateTime(
+        program.startTime.year,
+        program.startTime.month,
+        program.startTime.day,
+      );
+      final newDateIndex = state.availableDates.indexWhere(
+        (d) => d.isAtSameMomentAs(focusedDate),
+      );
       return newDateIndex != -1 ? newDateIndex : state.selectedDateIndex;
     }
     return state.selectedDateIndex;

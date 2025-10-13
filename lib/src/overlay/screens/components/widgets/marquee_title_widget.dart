@@ -85,7 +85,7 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
 
     const Duration initialPause = Duration(seconds: 2);
     const Duration endPause = Duration(seconds: 2);
-    const double scrollSpeed = 60.0; 
+    const double scrollSpeed = 60.0;
 
     void scroll() {
       if (!mounted || !_scrollController.hasClients) return;
@@ -101,19 +101,21 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
 
         _scrollController
             .animateTo(
-          maxScroll,
-          duration: scrollDuration,
-          curve: Curves.linear,
-        )
+              maxScroll,
+              duration: scrollDuration,
+              curve: Curves.linear,
+            )
             .then((_) {
-          if (!mounted || !widget.focus) return;
-          _timer = Timer(endPause, () {
-            if (!mounted || !widget.focus || !_scrollController.hasClients) return;
+              if (!mounted || !widget.focus) return;
+              _timer = Timer(endPause, () {
+                if (!mounted || !widget.focus || !_scrollController.hasClients) {
+                  return;
+                }
 
-            _scrollController.jumpTo(0.0);
-            scroll();
-          });
-        });
+                _scrollController.jumpTo(0.0);
+                scroll();
+              });
+            });
       });
     }
 

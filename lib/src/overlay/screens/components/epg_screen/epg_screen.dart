@@ -37,9 +37,10 @@ class EpgScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          EpgBloc(media3UiController: controller, initialPage: initialPage)
-            ..add(EpgStarted(initialChannelId: initialChannelId)),
+      create:
+          (context) =>
+              EpgBloc(media3UiController: controller, initialPage: initialPage)
+                ..add(EpgStarted(initialChannelId: initialChannelId)),
       child: BlocBuilder<EpgBloc, EpgState>(
         builder: (context, state) {
           if (state.status == EpgStatus.loading ||
@@ -48,8 +49,10 @@ class EpgScreen extends StatelessWidget {
           }
           if (state.status == EpgStatus.failure) {
             return Center(
-                child: Text(
-                    '${OverlayLocalizations.get('errorPrefix')}${state.errorMessage}'));
+              child: Text(
+                '${OverlayLocalizations.get('errorPrefix')}${state.errorMessage}',
+              ),
+            );
           }
 
           return EpgView(
@@ -70,12 +73,13 @@ class EpgView extends StatefulWidget {
   final Locale deviceLocale;
   final bool hasPrograms;
   final OverlayUiBloc bloc;
-  const EpgView(
-      {super.key,
-      required this.onChannelLaunch,
-      required this.deviceLocale,
-      required this.hasPrograms,
-      required this.bloc});
+  const EpgView({
+    super.key,
+    required this.onChannelLaunch,
+    required this.deviceLocale,
+    required this.hasPrograms,
+    required this.bloc,
+  });
 
   @override
   State<EpgView> createState() => _EpgViewState();
@@ -99,21 +103,25 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
     final bloc = context.read<EpgBloc>();
 
     _pageCount = widget.hasPrograms ? 3 : 2;
-    _pageTitles = widget.hasPrograms
-        ? [
-            OverlayLocalizations.get('channels_title'),
-            OverlayLocalizations.get('programs_title'),
-            OverlayLocalizations.get('details_title'),
-          ]
-        : [
-            OverlayLocalizations.get('channels_title'),
-            OverlayLocalizations.get('programs_title')
-          ];
+    _pageTitles =
+        widget.hasPrograms
+            ? [
+              OverlayLocalizations.get('channels_title'),
+              OverlayLocalizations.get('programs_title'),
+              OverlayLocalizations.get('details_title'),
+            ]
+            : [
+              OverlayLocalizations.get('channels_title'),
+              OverlayLocalizations.get('programs_title'),
+            ];
     _columnFocusNodes = List.generate(_pageCount, (index) => FocusNode());
 
     _pageController = PageController(initialPage: bloc.state.currentPage);
     _tabController = TabController(
-        length: _pageCount, vsync: this, initialIndex: bloc.state.currentPage);
+      length: _pageCount,
+      vsync: this,
+      initialIndex: bloc.state.currentPage,
+    );
 
     _pageController.addListener(() {
       if (_pageController.page != null) {
@@ -185,8 +193,9 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: BlocConsumer<EpgBloc, EpgState>(
-          listenWhen: (previous, current) =>
-              previous.currentPage != current.currentPage,
+          listenWhen:
+              (previous, current) =>
+                  previous.currentPage != current.currentPage,
           listener: (context, state) {
             if (_pageController.hasClients &&
                 _pageController.page?.round() != state.currentPage) {
@@ -201,10 +210,10 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
           builder: (context, state) {
             return CallbackShortcuts(
               bindings: {
-                LogicalKeySet(LogicalKeyboardKey.arrowLeft): () =>
-                    _move(context, -1),
-                LogicalKeySet(LogicalKeyboardKey.arrowRight): () =>
-                    _move(context, 1),
+                LogicalKeySet(LogicalKeyboardKey.arrowLeft):
+                    () => _move(context, -1),
+                LogicalKeySet(LogicalKeyboardKey.arrowRight):
+                    () => _move(context, 1),
               },
               child: Focus(
                 focusNode: _pageFocusNode,
@@ -216,32 +225,51 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
                           Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.arrow_back,
-                                    color: Colors.white),
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                ),
                                 onPressed: () {
-                                  Navigator.of(context, rootNavigator: true).pop();
+                                  Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).pop();
                                   widget.bloc.add(
-                                      const SetSideSheetState(isOpen: false));
-                                  widget.bloc.add(SetActivePanel(playerPanel: PlayerPanel.touchOverlay));
+                                    const SetSideSheetState(isOpen: false),
+                                  );
+                                  widget.bloc.add(
+                                    SetActivePanel(
+                                      playerPanel: PlayerPanel.touchOverlay,
+                                    ),
+                                  );
                                 },
                               ),
-                              const Expanded(child: Center(child: ClockWidget())),
+                              const Expanded(
+                                child: Center(child: ClockWidget()),
+                              ),
                               IconButton(
-                                icon: const Icon(Icons.close,
-                                    color: Colors.white),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                ),
                                 onPressed: () {
-                                  Navigator.of(context, rootNavigator: true).pop();
-                                      widget.bloc.add(
-                                          const SetSideSheetState(isOpen: false));
+                                  Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).pop();
+                                  widget.bloc.add(
+                                    const SetSideSheetState(isOpen: false),
+                                  );
                                 },
                               ),
                             ],
                           ),
                           EpgPageIndicator(
                             tabController: _tabController,
-                            tabs: _pageTitles
-                                .map((title) => Tab(text: title))
-                                .toList(),
+                            tabs:
+                                _pageTitles
+                                    .map((title) => Tab(text: title))
+                                    .toList(),
                             deviceLocale: widget.deviceLocale,
                             showClock: false,
                           ),
@@ -250,9 +278,10 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
                     else
                       EpgPageIndicator(
                         tabController: _tabController,
-                        tabs: _pageTitles
-                            .map((title) => Tab(text: title))
-                            .toList(),
+                        tabs:
+                            _pageTitles
+                                .map((title) => Tab(text: title))
+                                .toList(),
                         deviceLocale: widget.deviceLocale,
                         showClock: true,
                       ),
@@ -263,15 +292,17 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
                         selectedIndex: state.selectedDateIndex,
                         onPreviousDay: () {
                           if (state.selectedDateIndex > 0) {
-                            epgBloc
-                                .add(EpgDateChanged(state.selectedDateIndex - 1));
+                            epgBloc.add(
+                              EpgDateChanged(state.selectedDateIndex - 1),
+                            );
                           }
                         },
                         onNextDay: () {
                           if (state.selectedDateIndex <
                               state.availableDates.length - 1) {
-                            epgBloc
-                                .add(EpgDateChanged(state.selectedDateIndex + 1));
+                            epgBloc.add(
+                              EpgDateChanged(state.selectedDateIndex + 1),
+                            );
                           }
                         },
                       ),
@@ -293,10 +324,10 @@ class _EpgViewState extends State<EpgView> with TickerProviderStateMixin {
                               state: state,
                               columnFocusNodes: _columnFocusNodes,
                               onChannelLaunch: widget.onChannelLaunch,
-                              onScrollUpChanged: (can) =>
-                                  _canScrollUp.value = can,
-                              onScrollDownChanged: (can) =>
-                                  _canScrollDown.value = can,
+                              onScrollUpChanged:
+                                  (can) => _canScrollUp.value = can,
+                              onScrollDownChanged:
+                                  (can) => _canScrollDown.value = can,
                             ),
                           );
                         },

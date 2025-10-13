@@ -50,7 +50,8 @@ class _EpgDateSelectorState extends State<EpgDateSelector> {
     if (!mounted || !_scrollController.hasClients) return;
 
     final listViewWidth = _scrollController.position.viewportDimension;
-    final targetOffset = (index * _itemWidth) - (listViewWidth / 2) + (_itemWidth / 2);
+    final targetOffset =
+        (index * _itemWidth) - (listViewWidth / 2) + (_itemWidth / 2);
 
     _scrollController.animateTo(
       targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
@@ -97,7 +98,9 @@ class _EpgDateSelectorState extends State<EpgDateSelector> {
                             decoration:
                                 isSelected
                                     ? BoxDecoration(
-                                      color: AppTheme.focusColor.withValues(alpha: 0.2),
+                                      color: AppTheme.focusColor.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       borderRadius: AppTheme.borderRadius,
                                     )
                                     : null,
@@ -105,16 +108,23 @@ class _EpgDateSelectorState extends State<EpgDateSelector> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  OverlayLocalizations.dayFormat(date: date).toUpperCase(),
+                                  OverlayLocalizations.dayFormat(
+                                    date: date,
+                                  ).toUpperCase(),
                                   style:
                                       isSelected
-                                          ? AppTheme.dateSelectorSelectedDayStyle
-                                          : AppTheme.dateSelectorUnselectedDayStyle,
+                                          ? AppTheme
+                                              .dateSelectorSelectedDayStyle
+                                          : AppTheme
+                                              .dateSelectorUnselectedDayStyle,
                                 ),
                                 Text(
                                   OverlayLocalizations.dateFormat(date: date),
                                   style: TextStyle(
-                                    color: isSelected ? AppTheme.colorPrimary : AppTheme.colorSecondary,
+                                    color:
+                                        isSelected
+                                            ? AppTheme.colorPrimary
+                                            : AppTheme.colorSecondary,
                                     fontSize: 10,
                                   ),
                                 ),
@@ -126,7 +136,13 @@ class _EpgDateSelectorState extends State<EpgDateSelector> {
                     ),
                   ),
                   if (widget.bloc.state.isTouch)
-                    IconButton(icon: const Icon(Icons.chevron_right, color: Colors.white), onPressed: widget.onNextDay),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.chevron_right,
+                        color: Colors.white,
+                      ),
+                      onPressed: widget.onNextDay,
+                    ),
                 ],
               ),
     );

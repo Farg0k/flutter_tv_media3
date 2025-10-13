@@ -48,13 +48,13 @@ class ClockSettings extends Equatable {
 
   @override
   List<Object> get props => [
-        clockPosition,
-        showClockBorder,
-        showClockBackground,
-        clockColor,
-        backgroundColor,
-        borderColor,
-      ];
+    clockPosition,
+    showClockBorder,
+    showClockBackground,
+    clockColor,
+    backgroundColor,
+    borderColor,
+  ];
 
   ClockSettings copyWith({
     ClockPosition? clockPosition,
@@ -93,7 +93,8 @@ class ClockSettings extends Equatable {
       showClockBorder: map['showClockBorder'] as bool? ?? true,
       showClockBackground: map['showClockBackground'] as bool? ?? true,
       clockColor: ExtendedColors.values[map['clockColor'] as int? ?? 3],
-      backgroundColor: ExtendedColors.values[map['backgroundColor'] as int? ?? 6],
+      backgroundColor:
+          ExtendedColors.values[map['backgroundColor'] as int? ?? 6],
       borderColor: ExtendedColors.values[map['borderColor'] as int? ?? 5],
     );
   }
@@ -158,7 +159,10 @@ enum ClockPosition {
 
   /// A static method to change the position in the list (forward/backward).
   /// Used in the settings menu.
-  static ClockPosition changeValue({required int index, required int direction}) {
+  static ClockPosition changeValue({
+    required int index,
+    required int direction,
+  }) {
     final length = ClockPosition.values.length;
     final newIndex = (index + direction + length) % length;
     return ClockPosition.values[newIndex];

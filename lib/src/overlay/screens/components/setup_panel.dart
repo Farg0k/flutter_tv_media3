@@ -17,7 +17,11 @@ import 'time_line_panel.dart';
 class SetupPanel extends StatefulWidget {
   final Media3UiController controller;
   final int selSettingsTab;
-  const SetupPanel({super.key, required this.controller, required this.selSettingsTab});
+  const SetupPanel({
+    super.key,
+    required this.controller,
+    required this.selSettingsTab,
+  });
 
   @override
   State<SetupPanel> createState() => _SetupPanelState();
@@ -58,22 +62,32 @@ class _SetupPanelState extends State<SetupPanel> with TickerProviderStateMixin {
       tabs.remove(OverlayLocalizations.get('playlist'));
       screens.removeAt(0);
     }
-    _tabController = TabController(length: screens.length, vsync: this, initialIndex: widget.selSettingsTab);
+    _tabController = TabController(
+      length: screens.length,
+      vsync: this,
+      initialIndex: widget.selSettingsTab,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _arrowFunction(action: 1),
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _arrowFunction(action: -1),
-        const SingleActivator(LogicalKeyboardKey.contextMenu): () => _closeSetupPanel(context),
-        const SingleActivator(LogicalKeyboardKey.keyQ): () => _closeSetupPanel(context),
+        const SingleActivator(LogicalKeyboardKey.arrowRight):
+            () => _arrowFunction(action: 1),
+        const SingleActivator(LogicalKeyboardKey.arrowLeft):
+            () => _arrowFunction(action: -1),
+        const SingleActivator(LogicalKeyboardKey.contextMenu):
+            () => _closeSetupPanel(context),
+        const SingleActivator(LogicalKeyboardKey.keyQ):
+            () => _closeSetupPanel(context),
       },
       child: Stack(
         children: [
           BlocBuilder<OverlayUiBloc, OverlayUiState>(
-            buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
+            buildWhen:
+                (oldState, newState) =>
+                    oldState.playIndex != newState.playIndex,
             builder: (context, state) {
               return Material(
                 color: AppTheme.backgroundColor,
@@ -91,7 +105,10 @@ class _SetupPanelState extends State<SetupPanel> with TickerProviderStateMixin {
                         dividerHeight: 2,
                         labelColor: Colors.white,
                         unselectedLabelColor: Colors.white38,
-                        labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                         unselectedLabelStyle: TextStyle(fontSize: 14),
                         controller: _tabController,
                         tabs:
@@ -100,16 +117,28 @@ class _SetupPanelState extends State<SetupPanel> with TickerProviderStateMixin {
                                   (e) => Tab(
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: [Icon(e.value), const SizedBox(width: 8), Text(e.key)],
+                                      children: [
+                                        Icon(e.value),
+                                        const SizedBox(width: 8),
+                                        Text(e.key),
+                                      ],
                                     ),
                                   ),
                                 )
                                 .toList(),
                       ),
-                      Expanded(child: TabBarView(controller: _tabController, children: screens)),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: screens,
+                        ),
+                      ),
                       Divider(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4.0,
+                          vertical: 8,
+                        ),
                         child: TimeLinePanel(controller: widget.controller),
                       ),
                     ],

@@ -61,9 +61,8 @@ class MediaMetadata {
     if (data == null) return MediaMetadata();
     final rawMap = Map<String, dynamic>.from(data);
     final streamingMap = rawMap['streamingMetadata'];
-    final parsedStreamingMetadata = streamingMap is Map
-        ? StreamingMetadata.fromMap(streamingMap)
-        : null;
+    final parsedStreamingMetadata =
+        streamingMap is Map ? StreamingMetadata.fromMap(streamingMap) : null;
 
     return MediaMetadata(
       title: rawMap['title'],

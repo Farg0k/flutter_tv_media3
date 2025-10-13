@@ -8,7 +8,12 @@ class BackgroundWidget extends StatelessWidget {
   final String? artworkUrl;
   final Uint8List? artworkData;
 
-  const BackgroundWidget({super.key, this.placeholderImg, this.artworkUrl, this.artworkData});
+  const BackgroundWidget({
+    super.key,
+    this.placeholderImg,
+    this.artworkUrl,
+    this.artworkData,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,4 +56,3 @@ class BackgroundWidget extends StatelessWidget {
     );
   }
 }
-

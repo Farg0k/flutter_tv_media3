@@ -14,7 +14,7 @@ class CircularPercentIndicator extends StatelessWidget {
     required this.dimension,
     this.backgroundColor = const Color(0xFF00AABF),
     this.progressColor = const Color(0xFFFFFFFF),
-    this.child
+    this.child,
   });
 
   @override
@@ -30,10 +30,16 @@ class CircularPercentIndicator extends StatelessWidget {
         ),
 
         child: Center(
-          child: child ?? Text(
-            "${(percent * 100).toInt()}%",
-            style: TextStyle(fontSize: dimension * 0.3, color: progressColor, fontWeight: FontWeight.bold),
-          ),
+          child:
+              child ??
+              Text(
+                "${(percent * 100).toInt()}%",
+                style: TextStyle(
+                  fontSize: dimension * 0.3,
+                  color: progressColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         ),
       ),
     );
@@ -59,23 +65,23 @@ class _CirclePainter extends CustomPainter {
     final radius = (size.width / 2) - strokeWidth / 2;
 
     final backgroundPaint =
-    Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.fill;
+        Paint()
+          ..color = backgroundColor
+          ..style = PaintingStyle.fill;
 
     final baseCirclePaint =
-    Paint()
-      ..color = progressColor.withValues(alpha: 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+        Paint()
+          ..color = progressColor.withValues(alpha: 0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round;
 
     final progressPaint =
-    Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+        Paint()
+          ..color = progressColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(center, radius + strokeWidth / 2, backgroundPaint);
 
@@ -83,7 +89,13 @@ class _CirclePainter extends CustomPainter {
 
     final startAngle = -pi / 2;
     final sweepAngle = 2 * pi * percent;
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle, false, progressPaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
   }
 
   @override

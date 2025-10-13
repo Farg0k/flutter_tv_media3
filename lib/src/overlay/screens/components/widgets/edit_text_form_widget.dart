@@ -40,7 +40,8 @@ class _EditJackettSettingsWidgetState extends State<EditTextFormWidget> {
   void initState() {
     focusNodeButton = widget.focusNode;
     defaultValue = widget.defaultValue ?? '';
-    textEditingController.text = widget.newValue != null ? widget.newValue! : defaultValue;
+    textEditingController.text =
+        widget.newValue != null ? widget.newValue! : defaultValue;
     super.initState();
   }
 
@@ -71,11 +72,15 @@ class _EditJackettSettingsWidgetState extends State<EditTextFormWidget> {
                         ? null
                         : Text(
                           widget.keyboardType == TextInputType.visiblePassword
-                              ? textEditingController.text.replaceAll(RegExp(r'.'), '*')
+                              ? textEditingController.text.replaceAll(
+                                RegExp(r'.'),
+                                '*',
+                              )
                               : textEditingController.text,
                           maxLines: widget.maxLines,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: Colors.white),
                         ),
                 onTap:
                     textEditingController.text == defaultValue
@@ -90,12 +95,18 @@ class _EditJackettSettingsWidgetState extends State<EditTextFormWidget> {
               )
               : CallbackShortcuts(
                 bindings: {
-                  const SingleActivator(LogicalKeyboardKey.enter): keyboardFocusChange,
-                  const SingleActivator(LogicalKeyboardKey.space): keyboardFocusChange,
-                  const SingleActivator(LogicalKeyboardKey.select): keyboardFocusChange,
-                  const SingleActivator(LogicalKeyboardKey.mediaPlayPause): keyboardFocusChange,
-                  const SingleActivator(LogicalKeyboardKey.arrowUp): keyboardFocusChange,
-                  const SingleActivator(LogicalKeyboardKey.arrowDown): keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.enter):
+                      keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.space):
+                      keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.select):
+                      keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.mediaPlayPause):
+                      keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.arrowUp):
+                      keyboardFocusChange,
+                  const SingleActivator(LogicalKeyboardKey.arrowDown):
+                      keyboardFocusChange,
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18.0),
@@ -117,7 +128,9 @@ class _EditJackettSettingsWidgetState extends State<EditTextFormWidget> {
   void keyboardFocusChange() {
     setState(() {
       isFocusKeyboard = !isFocusKeyboard;
-      isFocusKeyboard == true ? focusNodeForm.requestFocus() : focusNodeButton.requestFocus();
+      isFocusKeyboard == true
+          ? focusNodeForm.requestFocus()
+          : focusNodeButton.requestFocus();
     });
   }
 }

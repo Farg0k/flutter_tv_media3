@@ -42,9 +42,10 @@ class _ProgramsListViewState extends State<ProgramsListView> {
     }
 
     return BlocListener<EpgBloc, EpgState>(
-      listenWhen: (previous, current) =>
-          previous.programIndexToScroll != current.programIndexToScroll &&
-          current.programIndexToScroll != null,
+      listenWhen:
+          (previous, current) =>
+              previous.programIndexToScroll != current.programIndexToScroll &&
+              current.programIndexToScroll != null,
       listener: (context, state) {
         if (state.programIndexToScroll != null) {
           _listKey.currentState?.scrollToIndex(state.programIndexToScroll!);
@@ -59,7 +60,9 @@ class _ProgramsListViewState extends State<ProgramsListView> {
               spacing: 8,
               children: [
                 ChannelLogoWidget(
-                    logoUrl: selectedChannel.logoUrl, dimension: 40),
+                  logoUrl: selectedChannel.logoUrl,
+                  dimension: 40,
+                ),
                 Expanded(
                   child: Text(
                     selectedChannel.name,
@@ -72,35 +75,34 @@ class _ProgramsListViewState extends State<ProgramsListView> {
             ),
           ),
           Expanded(
-            child: programs.isEmpty
-                ? Center(
-                    child: Text(
-                      OverlayLocalizations.get('live'),
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.merge(AppTheme.boldTextStyle),
+            child:
+                programs.isEmpty
+                    ? Center(
+                      child: Text(
+                        OverlayLocalizations.get('live'),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.merge(AppTheme.boldTextStyle),
+                      ),
+                    )
+                    : CustomListWidget<EpgProgram>(
+                      key: _listKey,
+                      focusNode: widget.focusNode,
+                      items: programs,
+                      initialIndex: state.selectedProgramIndex,
+                      hasFocus: widget.hasFocus,
+                      onSelectedIndexChanged: (newIndex) {
+                        bloc.add(EpgProgramSelected(newIndex));
+                      },
+                      onScrollUpChanged: widget.onScrollUpChanged,
+                      onScrollDownChanged: widget.onScrollDownChanged,
+                      itemBuilder: (program, index, isSelected, isFocused) {
+                        return ProgramListItem(
+                          program: program,
+                          isSelected: isSelected,
+                          isTheActiveProgram: index == state.activeProgramIndex,
+                        );
+                      },
                     ),
-                  )
-                : CustomListWidget<EpgProgram>(
-                    key: _listKey,
-                    focusNode: widget.focusNode,
-                    items: programs,
-                    initialIndex: state.selectedProgramIndex,
-                    hasFocus: widget.hasFocus,
-                    onSelectedIndexChanged: (newIndex) {
-                      bloc.add(EpgProgramSelected(newIndex));
-                    },
-                    onScrollUpChanged: widget.onScrollUpChanged,
-                    onScrollDownChanged: widget.onScrollDownChanged,
-                    itemBuilder: (program, index, isSelected, isFocused) {
-                      return ProgramListItem(
-                        program: program,
-                        isSelected: isSelected,
-                        isTheActiveProgram: index == state.activeProgramIndex,
-                      );
-                    },
-                  ),
           ),
         ],
       ),

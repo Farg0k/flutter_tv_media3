@@ -21,7 +21,11 @@ class TimeLinePanel extends StatefulWidget {
 class _TimeLinePanelState extends State<TimeLinePanel> {
   double? _sliderPositionOnDrag;
 
-  final style = const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18);
+  final style = const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w600,
+    fontSize: 18,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +57,25 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
                 return const Expanded(child: SizedBox.shrink());
               }
 
-              final positionPercentage = StringUtils.getPercentage(duration: data.duration, position: data.position);
+              final positionPercentage = StringUtils.getPercentage(
+                duration: data.duration,
+                position: data.position,
+              );
               final bufferedPercentage = StringUtils.getPercentage(
                 duration: data.duration,
                 position: data.bufferedPosition,
               );
 
-              final timeLeft = StringUtils.getTimeLeft(position: data.position, duration: data.duration);
-              final currentPosition = StringUtils.formatDuration(seconds: data.position);
-              final totalDuration = StringUtils.formatDuration(seconds: data.duration);
+              final timeLeft = StringUtils.getTimeLeft(
+                position: data.position,
+                duration: data.duration,
+              );
+              final currentPosition = StringUtils.formatDuration(
+                seconds: data.position,
+              );
+              final totalDuration = StringUtils.formatDuration(
+                seconds: data.duration,
+              );
 
               return Expanded(
                 child: LayoutBuilder(
@@ -85,8 +99,14 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             trackHeight: 10.0,
-                            thumbShape: const CustomThumbShape(thumbRadius: 8.0, borderWidth: 3.0, cornerRadius: 4.0),
-                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+                            thumbShape: const CustomThumbShape(
+                              thumbRadius: 8.0,
+                              borderWidth: 3.0,
+                              cornerRadius: 4.0,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 16.0,
+                            ),
                             trackShape: const RectangularSliderTrackShape(),
                           ),
                           child: Slider(
@@ -102,7 +122,9 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
 
                             onChangeEnd: (newValue) {
                               final newPosition = data.duration * newValue;
-                              widget.controller.seekTo(positionSeconds: newPosition.toInt());
+                              widget.controller.seekTo(
+                                positionSeconds: newPosition.toInt(),
+                              );
                               setState(() {
                                 _sliderPositionOnDrag = null;
                               });
@@ -124,7 +146,10 @@ class _TimeLinePanelState extends State<TimeLinePanel> {
                                   text: TextSpan(
                                     text: currentPosition,
                                     style: style,
-                                    children: [const TextSpan(text: ' / '), TextSpan(text: totalDuration)],
+                                    children: [
+                                      const TextSpan(text: ' / '),
+                                      TextSpan(text: totalDuration),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -147,7 +172,11 @@ class CustomThumbShape extends SliderComponentShape {
   final double borderWidth;
   final double cornerRadius;
 
-  const CustomThumbShape({this.thumbRadius = 10.0, this.borderWidth = 3.0, this.cornerRadius = 4.0});
+  const CustomThumbShape({
+    this.thumbRadius = 10.0,
+    this.borderWidth = 3.0,
+    this.cornerRadius = 4.0,
+  });
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
@@ -181,13 +210,23 @@ class CustomThumbShape extends SliderComponentShape {
           ..color = AppTheme.colorPrimary
           ..style = PaintingStyle.fill;
 
-    final outerRect = Rect.fromCenter(center: center, width: thumbRadius * 2, height: thumbRadius * 2);
-    final outerRRect = RRect.fromRectAndRadius(outerRect, Radius.circular(cornerRadius));
+    final outerRect = Rect.fromCenter(
+      center: center,
+      width: thumbRadius * 2,
+      height: thumbRadius * 2,
+    );
+    final outerRRect = RRect.fromRectAndRadius(
+      outerRect,
+      Radius.circular(cornerRadius),
+    );
 
     final innerRect = outerRect.deflate(borderWidth);
 
     final innerCornerRadius = max(0.0, cornerRadius - borderWidth);
-    final innerRRect = RRect.fromRectAndRadius(innerRect, Radius.circular(innerCornerRadius));
+    final innerRRect = RRect.fromRectAndRadius(
+      innerRect,
+      Radius.circular(innerCornerRadius),
+    );
 
     canvas.drawRRect(outerRRect, outerPaint);
     canvas.drawRRect(innerRRect, innerPaint);

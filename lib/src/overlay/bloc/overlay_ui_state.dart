@@ -67,20 +67,20 @@ class OverlayUiState extends Equatable {
 
   @override
   List<Object?> get props => [
-        playIndex,
-        playerPanel,
-        tabIndex,
-        settingsItemIndex,
-        sideSheetOpen,
-        sleepTime,
-        sleepAfter,
-        sleepAfterNext,
-        clockSettings,
-        clockPosition,
-        customInfoText,
-        isScreenLocked,
-        isTouch,
-      ];
+    playIndex,
+    playerPanel,
+    tabIndex,
+    settingsItemIndex,
+    sideSheetOpen,
+    sleepTime,
+    sleepAfter,
+    sleepAfterNext,
+    clockSettings,
+    clockPosition,
+    customInfoText,
+    isScreenLocked,
+    isTouch,
+  ];
 
   OverlayUiState copyWith({
     int? playIndex,
@@ -110,7 +110,8 @@ class OverlayUiState extends Equatable {
       tabIndex: tabIndex ?? this.tabIndex,
       settingsItemIndex: settingsItemIndex ?? this.settingsItemIndex,
       endPlaybackAndSleep: endPlaybackAndSleep ?? this.endPlaybackAndSleep,
-      isChangePlayerSettings: isChangePlayerSettings ?? this.isChangePlayerSettings,
+      isChangePlayerSettings:
+          isChangePlayerSettings ?? this.isChangePlayerSettings,
       clockPosition: clockPosition ?? this.clockPosition,
       customInfoText: customInfoText ?? this.customInfoText,
       isScreenLocked: isScreenLocked ?? this.isScreenLocked,
@@ -161,5 +162,5 @@ enum PlayerPanel {
   epg,
 
   /// A panel with touch-friendly controls.
-  touchOverlay
+  touchOverlay,
 }

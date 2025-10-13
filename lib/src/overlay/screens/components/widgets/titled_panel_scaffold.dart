@@ -40,27 +40,39 @@ class TitledPanelScaffold extends StatelessWidget {
               return Column(
                 children: [
                   ListTile(
-                    leading: isTouch
-                        ? IconButton(
-                            // In touch mode, 'back' returns to the main touch overlay.
-                            onPressed: () {
-                              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.touchOverlay));
-                            },
-                            icon: const Icon(Icons.arrow_back),
-                          )
-                        : Icon(icon), // In D-pad mode, show the panel's icon.
-                    trailing: isTouch
-                        ? IconButton(
-                            // The 'close' button hides all panels.
-                            onPressed: () => bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none)),
-                            icon: const Icon(Icons.close))
-                        : null,
+                    leading:
+                        isTouch
+                            ? IconButton(
+                              // In touch mode, 'back' returns to the main touch overlay.
+                              onPressed: () {
+                                bloc.add(
+                                  const SetActivePanel(
+                                    playerPanel: PlayerPanel.touchOverlay,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.arrow_back),
+                            )
+                            : Icon(
+                              icon,
+                            ), // In D-pad mode, show the panel's icon.
+                    trailing:
+                        isTouch
+                            ? IconButton(
+                              // The 'close' button hides all panels.
+                              onPressed:
+                                  () => bloc.add(
+                                    const SetActivePanel(
+                                      playerPanel: PlayerPanel.none,
+                                    ),
+                                  ),
+                              icon: const Icon(Icons.close),
+                            )
+                            : null,
                     title: Text(title),
                     titleTextStyle: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  Expanded(
-                    child: child,
-                  ),
+                  Expanded(child: child),
                 ],
               );
             },

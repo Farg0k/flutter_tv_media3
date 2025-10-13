@@ -17,16 +17,32 @@ class ChannelLogoWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         child: Container(
           color: AppTheme.focusColor,
-          child: logoUrl != null
-              ? Image.network(
-                  logoUrl!,
-                  fit: BoxFit.contain, 
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.tv, color: AppTheme.colorSecondary, size: 24),
-                  loadingBuilder: (context, widget, chunk) =>
-                      chunk == null ? widget : Icon(Icons.tv, color: AppTheme.colorSecondary, size: dimension * 0.6),
-                )
-              : Icon(Icons.tv, color: AppTheme.colorSecondary, size: dimension * 0.6),
+          child:
+              logoUrl != null
+                  ? Image.network(
+                    logoUrl!,
+                    fit: BoxFit.contain,
+                    errorBuilder:
+                        (context, error, stackTrace) => const Icon(
+                          Icons.tv,
+                          color: AppTheme.colorSecondary,
+                          size: 24,
+                        ),
+                    loadingBuilder:
+                        (context, widget, chunk) =>
+                            chunk == null
+                                ? widget
+                                : Icon(
+                                  Icons.tv,
+                                  color: AppTheme.colorSecondary,
+                                  size: dimension * 0.6,
+                                ),
+                  )
+                  : Icon(
+                    Icons.tv,
+                    color: AppTheme.colorSecondary,
+                    size: dimension * 0.6,
+                  ),
         ),
       ),
     );

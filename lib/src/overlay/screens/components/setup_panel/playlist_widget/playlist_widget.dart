@@ -58,15 +58,25 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || widget.controller.playerState.playlist.isEmpty || index < 0 || index >= widget.controller.playerState.playlist.length) return;
+    if (!_scrollController.hasClients ||
+        widget.controller.playerState.playlist.isEmpty ||
+        index < 0 ||
+        index >= widget.controller.playerState.playlist.length) {
+      return;
+    }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -78,19 +88,23 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
   Map<ShortcutActivator, VoidCallback> _getShortcuts() {
     final playlist = widget.controller.playerState.playlist;
     return {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => _handleKeyEvent(() {
             if (playlist.isNotEmpty) {
-              _selectedIndex = (_selectedIndex - 1 + playlist.length) % playlist.length;
+              _selectedIndex =
+                  (_selectedIndex - 1 + playlist.length) % playlist.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => _handleKeyEvent(() {
             if (playlist.isNotEmpty) {
               _selectedIndex = (_selectedIndex + 1) % playlist.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => _handleKeyEvent(() async {
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => _handleKeyEvent(() async {
             if (_selectedIndex < playlist.length) {
               final bloc = context.read<OverlayUiBloc>();
               await widget.controller.playSelectedIndex(index: _selectedIndex);
@@ -98,7 +112,8 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
               bloc.add(SetActivePanel(playerPanel: PlayerPanel.placeholder));
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.select): () => _handleKeyEvent(() async {
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => _handleKeyEvent(() async {
             if (_selectedIndex < playlist.length) {
               final bloc = context.read<OverlayUiBloc>();
               await widget.controller.playSelectedIndex(index: _selectedIndex);
@@ -106,7 +121,8 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
               bloc.add(SetActivePanel(playerPanel: PlayerPanel.placeholder));
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.space): () => _handleKeyEvent(() async {
+      const SingleActivator(LogicalKeyboardKey.space):
+          () => _handleKeyEvent(() async {
             if (_selectedIndex < playlist.length) {
               final bloc = context.read<OverlayUiBloc>();
               await widget.controller.playSelectedIndex(index: _selectedIndex);
@@ -122,7 +138,8 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
     return Material(
       color: Colors.transparent,
       child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-        buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
+        buildWhen:
+            (oldState, newState) => oldState.playIndex != newState.playIndex,
         builder: (context, state) {
           return CallbackShortcuts(
             bindings: _getShortcuts(),
@@ -143,7 +160,8 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
                       itemCount: widget.controller.playerState.playlist.length,
                       itemExtent: _itemExtent,
                       itemBuilder: (BuildContext context, int index) {
-                        final item = widget.controller.playerState.playlist[index];
+                        final item =
+                            widget.controller.playerState.playlist[index];
                         final playlistItemWidget = PlaylistItemWidget(
                           controller: widget.controller,
                           item: item,

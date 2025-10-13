@@ -10,14 +10,18 @@ class CustomInfoTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OverlayUiBloc, OverlayUiState>(
-      buildWhen: (previous, current) => previous.customInfoText != current.customInfoText,
+      buildWhen:
+          (previous, current) =>
+              previous.customInfoText != current.customInfoText,
       builder: (context, state) {
         if (state.customInfoText == null || state.customInfoText!.isEmpty) {
           return const SizedBox.shrink();
         }
         return Text(
           state.customInfoText!,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.colorSecondary),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.colorSecondary),
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

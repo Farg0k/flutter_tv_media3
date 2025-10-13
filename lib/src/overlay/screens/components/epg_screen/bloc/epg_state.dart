@@ -72,15 +72,15 @@ class EpgState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        errorMessage,
-        allChannels,
-        availableDates,
-        activeProgramIndex,
-        selectedChannelIndex,
-        selectedProgramIndex,
-        selectedDateIndex,
-        currentPage,
-        programIndexToScroll,
-      ];
+    status,
+    errorMessage,
+    allChannels,
+    availableDates,
+    activeProgramIndex,
+    selectedChannelIndex,
+    selectedProgramIndex,
+    selectedDateIndex,
+    currentPage,
+    programIndexToScroll,
+  ];
 }

@@ -11,8 +11,9 @@ class CustomListWidget<T> extends StatefulWidget {
   final ValueChanged<T>? onItemSelected;
   final ValueChanged<T>? onContextMenuRequested;
   final ValueChanged<int> onSelectedIndexChanged;
-  final Widget Function(T item, int index, bool isSelected, bool isFocused) itemBuilder;
-  final FocusNode? focusNode; 
+  final Widget Function(T item, int index, bool isSelected, bool isFocused)
+  itemBuilder;
+  final FocusNode? focusNode;
   final ValueChanged<bool>? onScrollUpChanged;
   final ValueChanged<bool>? onScrollDownChanged;
 
@@ -36,7 +37,7 @@ class CustomListWidget<T> extends StatefulWidget {
 
 class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   late ScrollController _scrollController;
-  late FocusNode _focusNode; 
+  late FocusNode _focusNode;
   late int _selectedIndex;
   static const double _itemExtent = AppTheme.customListItemExtent;
 
@@ -48,14 +49,14 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_updateScrollability);
-    
+
     _focusNode = widget.focusNode ?? FocusNode();
     _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         scrollToIndex(_selectedIndex);
-        _updateScrollability(); 
-        
+        _updateScrollability();
+
         if (widget.hasFocus) {
           _focusNode.requestFocus();
         }
@@ -67,21 +68,20 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   void didUpdateWidget(CustomListWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    
     if (widget.hasFocus && !_focusNode.hasFocus) {
       _focusNode.requestFocus();
     }
 
-    
-    if (widget.initialIndex != _selectedIndex && widget.initialIndex != oldWidget.initialIndex) {
+    if (widget.initialIndex != _selectedIndex &&
+        widget.initialIndex != oldWidget.initialIndex) {
       setState(() {
         _selectedIndex = widget.initialIndex;
       });
     }
-    
-    
-    if ((widget.hasFocus && !oldWidget.hasFocus) || (widget.initialIndex != oldWidget.initialIndex)) {
-       WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    if ((widget.hasFocus && !oldWidget.hasFocus) ||
+        (widget.initialIndex != oldWidget.initialIndex)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           scrollToIndex(_selectedIndex);
         }
@@ -93,7 +93,7 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   void dispose() {
     _scrollController.removeListener(_updateScrollability);
     _scrollController.dispose();
-    
+
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
@@ -121,20 +121,30 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   }
 
   void scrollToIndex(int index) {
-    if (!_scrollController.hasClients || widget.items.isEmpty || index < 0 || index >= widget.items.length) return;
+    if (!_scrollController.hasClients ||
+        widget.items.isEmpty ||
+        index < 0 ||
+        index >= widget.items.length) {
+      return;
+    }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
     if (widget.hasFocus) {
-      setState((){
+      setState(() {
         action();
       });
     }
@@ -142,47 +152,59 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
 
   Map<ShortcutActivator, VoidCallback> _getShortcuts() {
     return {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _handleKeyEvent(() {
-        if (_selectedIndex > 0) {
-          _selectedIndex--;
-          widget.onSelectedIndexChanged(_selectedIndex);
-          scrollToIndex(_selectedIndex);
-          _updateScrollability();
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => _handleKeyEvent(() {
-        if (_selectedIndex < widget.items.length - 1) {
-          _selectedIndex++;
-          widget.onSelectedIndexChanged(_selectedIndex);
-          scrollToIndex(_selectedIndex);
-          _updateScrollability();
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => _handleKeyEvent(() {
-        if (widget.onItemSelected != null && _selectedIndex < widget.items.length) {
-          widget.onItemSelected!(widget.items[_selectedIndex]);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.select): () => _handleKeyEvent(() {
-        if (widget.onItemSelected != null && _selectedIndex < widget.items.length) {
-          widget.onItemSelected!(widget.items[_selectedIndex]);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.space): () => _handleKeyEvent(() {
-        if (widget.onItemSelected != null && _selectedIndex < widget.items.length) {
-          widget.onItemSelected!(widget.items[_selectedIndex]);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.contextMenu): () => _handleKeyEvent(() {
-        if (widget.onContextMenuRequested != null && _selectedIndex < widget.items.length) {
-          widget.onContextMenuRequested!(widget.items[_selectedIndex]);
-        }
-      }),
-      const SingleActivator(LogicalKeyboardKey.keyQ): () => _handleKeyEvent(() {
-        if (widget.onContextMenuRequested != null && _selectedIndex < widget.items.length) {
-          widget.onContextMenuRequested!(widget.items[_selectedIndex]);
-        }
-      }),
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => _handleKeyEvent(() {
+            if (_selectedIndex > 0) {
+              _selectedIndex--;
+              widget.onSelectedIndexChanged(_selectedIndex);
+              scrollToIndex(_selectedIndex);
+              _updateScrollability();
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => _handleKeyEvent(() {
+            if (_selectedIndex < widget.items.length - 1) {
+              _selectedIndex++;
+              widget.onSelectedIndexChanged(_selectedIndex);
+              scrollToIndex(_selectedIndex);
+              _updateScrollability();
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => _handleKeyEvent(() {
+            if (widget.onItemSelected != null &&
+                _selectedIndex < widget.items.length) {
+              widget.onItemSelected!(widget.items[_selectedIndex]);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => _handleKeyEvent(() {
+            if (widget.onItemSelected != null &&
+                _selectedIndex < widget.items.length) {
+              widget.onItemSelected!(widget.items[_selectedIndex]);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.space):
+          () => _handleKeyEvent(() {
+            if (widget.onItemSelected != null &&
+                _selectedIndex < widget.items.length) {
+              widget.onItemSelected!(widget.items[_selectedIndex]);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.contextMenu):
+          () => _handleKeyEvent(() {
+            if (widget.onContextMenuRequested != null &&
+                _selectedIndex < widget.items.length) {
+              widget.onContextMenuRequested!(widget.items[_selectedIndex]);
+            }
+          }),
+      const SingleActivator(LogicalKeyboardKey.keyQ):
+          () => _handleKeyEvent(() {
+            if (widget.onContextMenuRequested != null &&
+                _selectedIndex < widget.items.length) {
+              widget.onContextMenuRequested!(widget.items[_selectedIndex]);
+            }
+          }),
     };
   }
 
@@ -190,7 +212,10 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) {
       return Center(
-        child: Text(OverlayLocalizations.get('noData'), style: AppTheme.noDataTextStyle),
+        child: Text(
+          OverlayLocalizations.get('noData'),
+          style: AppTheme.noDataTextStyle,
+        ),
       );
     }
     return CallbackShortcuts(
@@ -220,17 +245,27 @@ class CustomListWidgetState<T> extends State<CustomListWidget<T>> {
               },
               child: Container(
                 height: _itemExtent,
-                color: widget.hasFocus && isSelected ? AppTheme.focusColor : Colors.transparent,
+                color:
+                    widget.hasFocus && isSelected
+                        ? AppTheme.focusColor
+                        : Colors.transparent,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: DefaultTextStyle.merge(
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: widget.hasFocus && isSelected
-                          ? AppTheme.fullFocusColor
-                          : AppTheme.divider,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      color:
+                          widget.hasFocus && isSelected
+                              ? AppTheme.fullFocusColor
+                              : AppTheme.divider,
                     ),
-                    child: widget.itemBuilder(item, index, isSelected, widget.hasFocus),
+                    child: widget.itemBuilder(
+                      item,
+                      index,
+                      isSelected,
+                      widget.hasFocus,
+                    ),
                   ),
                 ),
               ),

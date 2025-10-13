@@ -13,7 +13,12 @@ import 'epg_channel.dart';
 typedef GetDirectLinkCallback =
     Future<PlaylistMediaItem> Function({
       required PlaylistMediaItem item,
-      Function({required String state, double? progress, required int requestId})? onProgress,
+      Function({
+        required String state,
+        double? progress,
+        required int requestId,
+      })?
+      onProgress,
       required int requestId,
     });
 
@@ -23,8 +28,13 @@ typedef GetDirectLinkCallback =
 /// - [duration]: The total duration of the media in seconds.
 /// - [position]: The last playback position in seconds.
 /// - [playIndex]: The index of the item in the playlist.
-typedef SaveWatchTimeSeconds = Future<void> Function(
-    {required String id, required int duration, required int position, required int playIndex});
+typedef SaveWatchTimeSeconds =
+    Future<void> Function({
+      required String id,
+      required int duration,
+      required int position,
+      required int playIndex,
+    });
 
 /// Represents a single playable item in a playlist.
 ///
@@ -188,15 +198,29 @@ class PlaylistMediaItem {
       duration: json['duration'] as int?,
       userAgent: json['userAgent'] as String?,
       subtitles:
-          (json['subtitles'] as List?)?.map((sub) => MediaItemSubtitle.fromMap(sub as Map<String, dynamic>)).toList(),
+          (json['subtitles'] as List?)
+              ?.map(
+                (sub) => MediaItemSubtitle.fromMap(sub as Map<String, dynamic>),
+              )
+              .toList(),
       audioTracks:
           (json['audioTracks'] as List?)
-              ?.map((audio) => MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>))
+              ?.map(
+                (audio) =>
+                    MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>),
+              )
               .toList(),
       // saveWatchTime is not deserialized as it's a function.
-      mediaItemType: MediaItemType.fromIndex(json['mediaItemType'] as int? ?? 0),
+      mediaItemType: MediaItemType.fromIndex(
+        json['mediaItemType'] as int? ?? 0,
+      ),
       programs:
-          (json['programs'] as List?)?.map((program) => EpgProgram.fromMap(program as Map<String, dynamic>)).toList(),
+          (json['programs'] as List?)
+              ?.map(
+                (program) =>
+                    EpgProgram.fromMap(program as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 
@@ -265,10 +289,20 @@ class MediaItemSubtitle {
   /// The mime type of the subtitle file.
   final String? mimeType;
 
-  MediaItemSubtitle({required this.url, required this.language, required this.label, this.mimeType});
+  MediaItemSubtitle({
+    required this.url,
+    required this.language,
+    required this.label,
+    this.mimeType,
+  });
 
   Map<String, dynamic> toMap() {
-    return {'url': url, 'language': language, 'label': label, 'mimeType': mimeType};
+    return {
+      'url': url,
+      'language': language,
+      'label': label,
+      'mimeType': mimeType,
+    };
   }
 
   factory MediaItemSubtitle.fromMap(Map<String, dynamic> json) {
@@ -292,22 +326,22 @@ class MediaItemAudioTrack {
   /// The track name displayed in the UI (e.g., "German 5.1").
   final String label;
 
-
   /// The mime type of the audio file.
   final String? mimeType;
 
-  MediaItemAudioTrack(
-      {required this.url,
-      required this.language,
-      required this.label,
-      this.mimeType});
+  MediaItemAudioTrack({
+    required this.url,
+    required this.language,
+    required this.label,
+    this.mimeType,
+  });
 
   Map<String, dynamic> toMap() {
     return {
       'url': url,
       'language': language,
       'label': label,
-      'mimeType': mimeType
+      'mimeType': mimeType,
     };
   }
 
@@ -325,10 +359,13 @@ class MediaItemAudioTrack {
 enum MediaItemType {
   /// A regular video file or video stream.
   video,
+
   /// An audio file or audio stream.
   audio,
+
   /// A live TV channel stream.
   tvStream;
 
-  static MediaItemType fromIndex(int? index) => index != null ? values[index] : values[0];
+  static MediaItemType fromIndex(int? index) =>
+      index != null ? values[index] : values[0];
 }

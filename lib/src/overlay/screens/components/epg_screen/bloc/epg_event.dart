@@ -25,14 +25,10 @@ class EpgProgramSelected extends EpgEvent {
   const EpgProgramSelected(this.programIndex);
 }
 
-
-
 class EpgPageChanged extends EpgEvent {
   final int pageIndex;
   const EpgPageChanged(this.pageIndex);
 }
-
-
 
 class EpgTimerTicked extends EpgEvent {}
 

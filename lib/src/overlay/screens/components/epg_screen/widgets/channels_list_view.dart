@@ -28,9 +28,10 @@ class ChannelsListView extends StatelessWidget {
     final bloc = context.read<EpgBloc>();
 
     return BlocBuilder<EpgBloc, EpgState>(
-      buildWhen: (prev, current) =>
-          prev.allChannels != current.allChannels ||
-          prev.selectedChannelIndex != current.selectedChannelIndex,
+      buildWhen:
+          (prev, current) =>
+              prev.allChannels != current.allChannels ||
+              prev.selectedChannelIndex != current.selectedChannelIndex,
       builder: (context, state) {
         return CustomListWidget<EpgChannel>(
           focusNode: focusNode,
@@ -46,9 +47,11 @@ class ChannelsListView extends StatelessWidget {
           itemBuilder: (channel, index, isSelected, isFocused) {
             return ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 4),
-              tileColor:
-                  isSelected && !hasFocus ? AppTheme.focusColor : null,
-              leading: ChannelLogoWidget(logoUrl: channel.logoUrl, dimension: 50),
+              tileColor: isSelected && !hasFocus ? AppTheme.focusColor : null,
+              leading: ChannelLogoWidget(
+                logoUrl: channel.logoUrl,
+                dimension: 50,
+              ),
               title: MarqueeWidget(
                 text: channel.name,
                 style: TextStyle(

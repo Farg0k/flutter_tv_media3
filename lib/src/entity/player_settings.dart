@@ -18,7 +18,7 @@ class PlayerSettings {
     this.preferredTextLanguages,
     this.forcedAutoEnable = true,
     this.deviceLocale,
-    this.isAfrEnabled = false
+    this.isAfrEnabled = false,
   });
 
   /// The desired video quality. The player will try to select a stream
@@ -47,8 +47,6 @@ class PlayerSettings {
   /// Defaults to `false`.
   final bool isAfrEnabled;
 
-
-
   Map<String, dynamic> toMap() {
     return {
       'videoQuality': videoQuality.index,
@@ -65,8 +63,14 @@ class PlayerSettings {
   factory PlayerSettings.fromMap(Map<dynamic, dynamic> map) {
     return PlayerSettings(
       videoQuality: VideoQuality.fromIndex(map['videoQuality'] as int?),
-      preferredAudioLanguages: (map['preferredAudioLanguages'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-      preferredTextLanguages: (map['preferredTextLanguages'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      preferredAudioLanguages:
+          (map['preferredAudioLanguages'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList(),
+      preferredTextLanguages:
+          (map['preferredTextLanguages'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList(),
       forcedAutoEnable: map['forcedAutoEnable'] as bool? ?? true,
       deviceLocale: _localeFromString(map['deviceLocale']),
       isAfrEnabled: map['isAfrEnabled'] as bool? ?? false,
@@ -82,8 +86,10 @@ class PlayerSettings {
   }) {
     return PlayerSettings(
       videoQuality: videoQuality ?? this.videoQuality,
-      preferredAudioLanguages: preferredAudioLanguages ?? this.preferredAudioLanguages,
-      preferredTextLanguages: preferredTextLanguages ?? this.preferredTextLanguages,
+      preferredAudioLanguages:
+          preferredAudioLanguages ?? this.preferredAudioLanguages,
+      preferredTextLanguages:
+          preferredTextLanguages ?? this.preferredTextLanguages,
       forcedAutoEnable: forcedAutoEnable ?? this.forcedAutoEnable,
       isAfrEnabled: isAfrEnabled ?? this.isAfrEnabled,
     );
@@ -102,7 +108,9 @@ class PlayerSettings {
 
   String? _localeToString(Locale? locale) {
     if (locale == null) return null;
-    return locale.countryCode != null ? '${locale.languageCode}_${locale.countryCode}' : locale.languageCode;
+    return locale.countryCode != null
+        ? '${locale.languageCode}_${locale.countryCode}'
+        : locale.languageCode;
   }
 
   static Locale? _localeFromString(String? localeString) {
@@ -146,9 +154,13 @@ enum VideoQuality {
   /// The maximum height for this quality level.
   final int? height;
 
-  static VideoQuality fromIndex(int? index) => index != null ? values[index] : values[0];
+  static VideoQuality fromIndex(int? index) =>
+      index != null ? values[index] : values[0];
 
-  static VideoQuality changeValue({required int index, required int direction}) {
+  static VideoQuality changeValue({
+    required int index,
+    required int direction,
+  }) {
     final length = VideoQuality.values.length;
     final newIndex = (index + direction + length) % length;
     return VideoQuality.values[newIndex];

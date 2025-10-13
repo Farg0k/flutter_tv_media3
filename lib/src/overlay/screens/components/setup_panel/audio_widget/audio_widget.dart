@@ -29,14 +29,19 @@ class _AudioWidgetState extends State<AudioWidget> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _audioTracks = _getProcessedTracks(widget.controller.playerState.audioTracks);
+    _audioTracks = _getProcessedTracks(
+      widget.controller.playerState.audioTracks,
+    );
     _selectedIndex = _getInitialSelectedIndex();
 
-    _streamSubscription = widget.controller.playerStateStream.listen((playerState) {
+    _streamSubscription = widget.controller.playerStateStream.listen((
+      playerState,
+    ) {
       setState(() {
         _audioTracks = _getProcessedTracks(playerState.audioTracks);
         if (_selectedIndex >= _audioTracks.length) {
-          _selectedIndex = _audioTracks.isNotEmpty ? _audioTracks.length - 1 : 0;
+          _selectedIndex =
+              _audioTracks.isNotEmpty ? _audioTracks.length - 1 : 0;
         }
       });
     });
@@ -51,7 +56,9 @@ class _AudioWidgetState extends State<AudioWidget> {
   List<AudioTrack> _getProcessedTracks(List<AudioTrack> audioTracks) {
     final processedTracks = List<AudioTrack>.from(audioTracks);
     if (processedTracks.isNotEmpty) {
-      final isAnySelected = processedTracks.any((element) => element.isSelected);
+      final isAnySelected = processedTracks.any(
+        (element) => element.isSelected,
+      );
       AudioTrack autoTrack = AudioTrack(
         id: '-1',
         index: -1,
@@ -80,15 +87,25 @@ class _AudioWidgetState extends State<AudioWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || _audioTracks.isEmpty || index < 0 || index >= _audioTracks.length) return;
+    if (!_scrollController.hasClients ||
+        _audioTracks.isEmpty ||
+        index < 0 ||
+        index >= _audioTracks.length) {
+      return;
+    }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -99,26 +116,36 @@ class _AudioWidgetState extends State<AudioWidget> {
 
   Map<ShortcutActivator, VoidCallback> _getShortcuts() {
     return {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => _handleKeyEvent(() {
             if (_audioTracks.isNotEmpty) {
-              _selectedIndex = (_selectedIndex - 1 + _audioTracks.length) % _audioTracks.length;
+              _selectedIndex =
+                  (_selectedIndex - 1 + _audioTracks.length) %
+                  _audioTracks.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => _handleKeyEvent(() {
             if (_audioTracks.isNotEmpty) {
               _selectedIndex = (_selectedIndex + 1) % _audioTracks.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _audioTracks.length) {
-              widget.controller.selectAudioTrack(track: _audioTracks[_selectedIndex]);
+              widget.controller.selectAudioTrack(
+                track: _audioTracks[_selectedIndex],
+              );
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.select): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _audioTracks.length) {
-              widget.controller.selectAudioTrack(track: _audioTracks[_selectedIndex]);
+              widget.controller.selectAudioTrack(
+                track: _audioTracks[_selectedIndex],
+              );
             }
           }),
     };
@@ -129,37 +156,37 @@ class _AudioWidgetState extends State<AudioWidget> {
     return _audioTracks.isEmpty
         ? const Focus(autofocus: true, child: SizedBox.shrink())
         : CallbackShortcuts(
-            bindings: _getShortcuts(),
-            child: Focus(
-              focusNode: _focusNode,
-              autofocus: true,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 7),
-                child: Scrollbar(
-                  controller: _scrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  radius: const Radius.circular(50),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: _audioTracks.length,
-                      itemExtent: _itemExtent,
-                      itemBuilder: (BuildContext context, int index) {
-                        final track = _audioTracks[index];
-                        return AudioItemWidget(
-                          controller: widget.controller,
-                          track: track,
-                          index: index,
-                          isFocused: index == _selectedIndex,
-                        );
-                      },
-                    ),
+          bindings: _getShortcuts(),
+          child: Focus(
+            focusNode: _focusNode,
+            autofocus: true,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 7),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                radius: const Radius.circular(50),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _audioTracks.length,
+                    itemExtent: _itemExtent,
+                    itemBuilder: (BuildContext context, int index) {
+                      final track = _audioTracks[index];
+                      return AudioItemWidget(
+                        controller: widget.controller,
+                        track: track,
+                        index: index,
+                        isFocused: index == _selectedIndex,
+                      );
+                    },
                   ),
                 ),
               ),
             ),
-          );
+          ),
+        );
   }
 }

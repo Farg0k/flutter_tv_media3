@@ -51,19 +51,30 @@ class _PlayerErrorWidgetState extends State<PlayerErrorWidget> {
       color: Colors.transparent,
       child: Center(
         child: Container(
-          decoration: BoxDecoration(color: AppTheme.backgroundColor, borderRadius: AppTheme.borderRadius),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundColor,
+            borderRadius: AppTheme.borderRadius,
+          ),
           padding: const EdgeInsets.all(18.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: AppTheme.errColor, size: 64),
+              const Icon(
+                Icons.error_outline,
+                color: AppTheme.errColor,
+                size: 64,
+              ),
               const SizedBox(height: 16),
               if (widget.errorCode != null)
                 Text(
                   widget.errorCode!,
-                  style: const TextStyle(color: AppTheme.errColor, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: AppTheme.errColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

@@ -23,9 +23,10 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
     // Prime the last valid item with the initial data from the controller.
     // This handles the case where the first video is launched.
     final playerState = widget.controller.playerState;
-    final initialItem = playerState.playIndex != -1 && playerState.playlist.isNotEmpty
-        ? playerState.playlist[playerState.playIndex]
-        : null;
+    final initialItem =
+        playerState.playIndex != -1 && playerState.playlist.isNotEmpty
+            ? playerState.playlist[playerState.playIndex]
+            : null;
     if (initialItem?.title != null) {
       _lastValidItem = initialItem;
     }
@@ -45,18 +46,18 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final currentItem = playerState.playIndex != -1 && playerState.playlist.isNotEmpty
-              ? playerState.playlist[playerState.playIndex]
-              : null;
+          final currentItem =
+              playerState.playIndex != -1 && playerState.playlist.isNotEmpty
+                  ? playerState.playlist[playerState.playIndex]
+                  : null;
 
           // Update last valid item only when we get a new item with a title.
           // This prevents showing an empty item during transition.
           if (currentItem?.title != null) {
             _lastValidItem = currentItem;
           }
-          
-          final itemToDisplay = _lastValidItem ?? currentItem;
 
+          final itemToDisplay = _lastValidItem ?? currentItem;
 
           // Show error if item is invalid, regardless of activity state
           if (itemToDisplay == null) {
@@ -66,21 +67,27 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
               onExit: widget.controller.stop,
             );
           }
-          
+
           if (itemToDisplay.coverImg != null) {
-            precacheImage(NetworkImage(itemToDisplay.coverImg!), context, onError: (exception, stackTrace) {});
+            precacheImage(
+              NetworkImage(itemToDisplay.coverImg!),
+              context,
+              onError: (exception, stackTrace) {},
+            );
           }
 
-          final bool showLoadingIndicator = !playerState.activityReady || 
-                                            playerState.stateValue == StateValue.buffering || 
-                                            playerState.stateValue == StateValue.initial;
+          final bool showLoadingIndicator =
+              !playerState.activityReady ||
+              playerState.stateValue == StateValue.buffering ||
+              playerState.stateValue == StateValue.initial;
 
           return Stack(
             alignment: Alignment.center,
             children: [
-              if (itemToDisplay.placeholderImg != null) _BackgroundImage(imageUrl: itemToDisplay.placeholderImg!),
+              if (itemToDisplay.placeholderImg != null)
+                _BackgroundImage(imageUrl: itemToDisplay.placeholderImg!),
               Container(color: AppTheme.backgroundColor),
-              
+
               // Always show the content (of the last valid item)
               _Content(item: itemToDisplay),
 
@@ -91,7 +98,7 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                   onExit: () => widget.controller.stop(),
                   onNext: () => widget.controller.playNext(),
                 ),
-              
+
               // Show loading indicator when buffering or activity is not ready
               if (showLoadingIndicator && playerState.lastError == null)
                 Positioned(
@@ -105,18 +112,23 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                         Text(
                           OverlayLocalizations.get('loading'),
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(color: Colors.white70, fontWeight: FontWeight.w300),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w300,
+                          ),
                         ),
-                        LinearProgressIndicator(value: playerState.loadingProgress),
+                        LinearProgressIndicator(
+                          value: playerState.loadingProgress,
+                        ),
                       ],
                     ),
                   ),
                 ),
 
-              if (snapshot.data?.loadingStatus != null && playerState.lastError == null)
+              if (snapshot.data?.loadingStatus != null &&
+                  playerState.lastError == null)
                 Positioned(
                   bottom: 25,
                   left: 10,
@@ -126,10 +138,10 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.white70, fontStyle: FontStyle.italic),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white70,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
             ],
@@ -164,9 +176,10 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w200),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w200,
+                    ),
                   ),
                 const SizedBox(height: 8),
                 if (item?.subTitle != null)
@@ -175,7 +188,9 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   ),
                 if (item?.label != null)
                   Text(
@@ -183,7 +198,9 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   ),
                 const CustomInfoTextWidget(),
               ],
@@ -208,7 +225,9 @@ class _BackgroundImage extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (context, error, stackTrace) {
-        return const Center(child: Icon(Icons.broken_image, color: Colors.white, size: 64));
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.white, size: 64),
+        );
       },
     );
   }

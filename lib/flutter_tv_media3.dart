@@ -62,5 +62,6 @@ class FlutterTvMedia3 {
   /// The [FtvMedia3PlayerController] is the primary entry point for interacting with
   /// the player from the main application. It is used to open the player,
   /// manage playlists, and control playback externally.
-  static FtvMedia3PlayerController get controller => FtvMedia3PlayerController();
+  static FtvMedia3PlayerController get controller =>
+      FtvMedia3PlayerController();
 }

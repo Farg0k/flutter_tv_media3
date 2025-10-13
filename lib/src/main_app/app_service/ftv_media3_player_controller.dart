@@ -9,19 +9,23 @@ import '../../entity/refresh_rate_info.dart';
 import '../../localization/overlay_localizations.dart';
 
 /// A callback to save the current subtitle style settings.
-typedef SaveSubtitleStyle = Future<void> Function({required SubtitleStyle subtitleStyle});
+typedef SaveSubtitleStyle =
+    Future<void> Function({required SubtitleStyle subtitleStyle});
 
 /// A callback to save the current clock settings.
-typedef SaveClockSettings = Future<void> Function({required ClockSettings clockSettings});
+typedef SaveClockSettings =
+    Future<void> Function({required ClockSettings clockSettings});
 
 /// A callback to save the current player settings.
-typedef SavePlayerSettings = Future<void> Function({required PlayerSettings playerSettings});
+typedef SavePlayerSettings =
+    Future<void> Function({required PlayerSettings playerSettings});
 
 /// Defines the signature for the function that searches for external subtitles.
 ///
 /// It receives the [id] of the current media item and should return a list
 /// of found subtitles or null if the search fails.
-typedef SearchExternalSubtitle = Future<List<MediaItemSubtitle>?> Function({required String id});
+typedef SearchExternalSubtitle =
+    Future<List<MediaItemSubtitle>?> Function({required String id});
 typedef LabelSearchExternalSubtitle = Future<String> Function();
 
 /// Manages the communication and state for the Media3 player from the main app.
@@ -49,10 +53,14 @@ typedef LabelSearchExternalSubtitle = Future<String> Function();
 /// - [mediaMetadataStream]: For the metadata of the currently playing media ([MediaMetadata]).
 class FtvMedia3PlayerController {
   /// The method channel used for communication from the native plugin to Flutter.
-  static const MethodChannel _pluginChannel = MethodChannel('app_player_plugin');
+  static const MethodChannel _pluginChannel = MethodChannel(
+    'app_player_plugin',
+  );
 
   /// The method channel used for communication from Flutter to the native player Activity.
-  static const MethodChannel _activityChannel = MethodChannel('app_player_plugin_activity');
+  static const MethodChannel _activityChannel = MethodChannel(
+    'app_player_plugin_activity',
+  );
 
   VoidCallback? _sleepTimerExec;
   SaveSubtitleStyle? _saveSubtitleStyle;
@@ -87,25 +95,30 @@ class FtvMedia3PlayerController {
   MediaMetadata get currentMetadata => _currentMetadata;
 
   /// Stream controller for the overall player state.
-  final StreamController<PlayerState> _stateController = StreamController<PlayerState>.broadcast();
+  final StreamController<PlayerState> _stateController =
+      StreamController<PlayerState>.broadcast();
 
   /// A stream of [PlayerState] updates. Listen to this to get notified of
   /// changes in the player's state (e.g., playlist changes, errors, track updates).
   Stream<PlayerState> get playerStateStream => _stateController.stream;
 
   /// Stream controller for the playback state.
-  final StreamController<PlaybackState> _playbackStateController = StreamController<PlaybackState>.broadcast();
+  final StreamController<PlaybackState> _playbackStateController =
+      StreamController<PlaybackState>.broadcast();
 
   /// A stream of [PlaybackState] updates. Listen to this to get notified of
   /// changes in playback position, buffering, and duration.
-  Stream<PlaybackState> get playbackStateStream => _playbackStateController.stream;
+  Stream<PlaybackState> get playbackStateStream =>
+      _playbackStateController.stream;
 
   /// Stream controller for the media metadata.
-  final StreamController<MediaMetadata> _mediaMetadataController = StreamController<MediaMetadata>.broadcast();
+  final StreamController<MediaMetadata> _mediaMetadataController =
+      StreamController<MediaMetadata>.broadcast();
 
   /// A stream of [MediaMetadata] updates. Listen to this to get notified when
   /// the metadata of the current media item changes.
-  Stream<MediaMetadata> get mediaMetadataStream => _mediaMetadataController.stream;
+  Stream<MediaMetadata> get mediaMetadataStream =>
+      _mediaMetadataController.stream;
 
   /// A map of localized strings passed from the main application.
   Map<String, String> _localeStrings = {};
@@ -116,7 +129,8 @@ class FtvMedia3PlayerController {
   }
 
   /// The singleton instance of the controller.
-  static final FtvMedia3PlayerController _instance = FtvMedia3PlayerController._internal();
+  static final FtvMedia3PlayerController _instance =
+      FtvMedia3PlayerController._internal();
 
   /// Factory constructor to return the singleton instance.
   factory FtvMedia3PlayerController() => _instance;
@@ -149,10 +163,16 @@ class FtvMedia3PlayerController {
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
-    if (searchExternalSubtitle != null) _searchExternalSubtitle = searchExternalSubtitle;
+    if (searchExternalSubtitle != null) {
+      _searchExternalSubtitle = searchExternalSubtitle;
+    }
     if (findSubtitlesLabel != null) _findSubtitlesLabel = findSubtitlesLabel;
-    if (findSubtitlesStateInfoLabel != null) _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
-    if (labelSearchExternalSubtitle != null) _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
+    if (findSubtitlesStateInfoLabel != null) {
+      _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
+    }
+    if (labelSearchExternalSubtitle != null) {
+      _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
+    }
   }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.
@@ -176,46 +196,89 @@ class FtvMedia3PlayerController {
         final requestId = MediaRequestManager.newRequest();
 
         try {
-          if (index == null || index < 0 || index >= playerState.playlist.length) {
-            throw PlatformException(code: 'INVALID_INDEX', message: 'Invalid playlist index: $index', details: null);
+          if (index == null ||
+              index < 0 ||
+              index >= playerState.playlist.length) {
+            throw PlatformException(
+              code: 'INVALID_INDEX',
+              message: 'Invalid playlist index: $index',
+              details: null,
+            );
           }
 
           PlaylistMediaItem item = playerState.playlist[index];
 
           if (!MediaRequestManager.isCurrentRequest(requestId)) {
-            _sendLoadProgressToUI(state: 'Cancelled', progress: null, requestId: requestId);
+            _sendLoadProgressToUI(
+              state: 'Cancelled',
+              progress: null,
+              requestId: requestId,
+            );
             return null;
           }
 
-          _sendLoadProgressToUI(state: 'Start load link', progress: null, requestId: requestId);
+          _sendLoadProgressToUI(
+            state: 'Start load link',
+            progress: null,
+            requestId: requestId,
+          );
 
           if (item.getDirectLink != null) {
             try {
-              item = await item.getDirectLink!(item: item, onProgress: _sendLoadProgressToUI, requestId: requestId);
+              item = await item.getDirectLink!(
+                item: item,
+                onProgress: _sendLoadProgressToUI,
+                requestId: requestId,
+              );
 
               if (!MediaRequestManager.isCurrentRequest(requestId)) {
-                _sendLoadProgressToUI(state: 'Cancelled', progress: null, requestId: requestId);
+                _sendLoadProgressToUI(
+                  state: 'Cancelled',
+                  progress: null,
+                  requestId: requestId,
+                );
                 return null;
               }
             } catch (e) {
               if (MediaRequestManager.isCurrentRequest(requestId)) {
-                _sendLoadProgressToUI(state: 'Error: ${e.toString()}', progress: null, requestId: requestId);
+                _sendLoadProgressToUI(
+                  state: 'Error: ${e.toString()}',
+                  progress: null,
+                  requestId: requestId,
+                );
                 _updateState(_playerState.copyWith(activityReady: true));
               }
-              throw PlatformException(code: 'DIRECT_LINK_ERROR', message: e.toString());
+              throw PlatformException(
+                code: 'DIRECT_LINK_ERROR',
+                message: e.toString(),
+              );
             }
           }
           if (!MediaRequestManager.isCurrentRequest(requestId)) {
-            _sendLoadProgressToUI(state: 'Cancelled', progress: null, requestId: requestId);
+            _sendLoadProgressToUI(
+              state: 'Cancelled',
+              progress: null,
+              requestId: requestId,
+            );
             return null;
           }
 
-          _sendLoadProgressToUI(state: 'Link loaded', progress: null, requestId: requestId);
-          _updateState(_playerState.copyWith(activityReady: true, playIndex: index));
+          _sendLoadProgressToUI(
+            state: 'Link loaded',
+            progress: null,
+            requestId: requestId,
+          );
+          _updateState(
+            _playerState.copyWith(activityReady: true, playIndex: index),
+          );
           return item.toMap();
         } catch (e) {
           if (!MediaRequestManager.isCurrentRequest(requestId)) {
-            _sendLoadProgressToUI(state: 'Cancelled', progress: null, requestId: requestId);
+            _sendLoadProgressToUI(
+              state: 'Cancelled',
+              progress: null,
+              requestId: requestId,
+            );
             return null;
           }
           rethrow;
@@ -241,13 +304,17 @@ class FtvMedia3PlayerController {
           }
           if (mediaId == null) {
             _updateFindSubtitlesState(
-              baseFindState.copyWith(status: SubtitleSearchStatus.error, errorMessage: 'Error: mediaId is null.'),
+              baseFindState.copyWith(
+                status: SubtitleSearchStatus.error,
+                errorMessage: 'Error: mediaId is null.',
+              ),
             );
             break;
           }
 
           try {
-            final List<MediaItemSubtitle>? foundSubtitles = await _searchExternalSubtitle!(id: mediaId);
+            final List<MediaItemSubtitle>? foundSubtitles =
+                await _searchExternalSubtitle!(id: mediaId);
             _findSubtitlesStateInfoLabel =
                 _labelSearchExternalSubtitle != null
                     ? await _labelSearchExternalSubtitle!()
@@ -257,7 +324,10 @@ class FtvMedia3PlayerController {
               // The UI will show its own success notification when the track list updates.
               // We just reset the state to idle.
               _updateFindSubtitlesState(
-                baseFindState.copyWith(status: SubtitleSearchStatus.idle, stateInfoLabel: _findSubtitlesStateInfoLabel),
+                baseFindState.copyWith(
+                  status: SubtitleSearchStatus.idle,
+                  stateInfoLabel: _findSubtitlesStateInfoLabel,
+                ),
               );
             } else {
               _updateFindSubtitlesState(
@@ -295,14 +365,21 @@ class FtvMedia3PlayerController {
           final int durationMs = call.arguments['duration_ms'] as int? ?? 0;
           final int positionMs = call.arguments['position_ms'] as int? ?? 0;
 
-          if (index != null && index >= 0 && index < _playerState.playlist.length) {
+          if (index != null &&
+              index >= 0 &&
+              index < _playerState.playlist.length) {
             PlaylistMediaItem item = _playerState.playlist[index];
             if (item.saveWatchTime != null) {
               final durationSec = (durationMs / 1000).round().toInt();
               int positionSec = (positionMs / 1000).round().toInt();
               if (durationSec == 0) return;
               if (positionSec > durationSec) positionSec = durationSec;
-              await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+              await item.saveWatchTime!(
+                id: item.id,
+                duration: durationSec,
+                position: positionSec,
+                playIndex: index,
+              );
             }
           }
         } finally {
@@ -327,7 +404,12 @@ class FtvMedia3PlayerController {
                   positionSec = durationSec;
                 }
                 if (positionSec > durationSec) positionSec = durationSec;
-                await item.saveWatchTime!(id: item.id, duration: durationSec, position: positionSec, playIndex: index);
+                await item.saveWatchTime!(
+                  id: item.id,
+                  duration: durationSec,
+                  position: positionSec,
+                  playIndex: index,
+                );
               }
             }
           }
@@ -338,7 +420,9 @@ class FtvMedia3PlayerController {
         break;
       case 'onError':
         newState = newState.copyWith(
-          lastError: call.arguments['message'] as String? ?? 'An unknown playback error occurred.',
+          lastError:
+              call.arguments['message'] as String? ??
+              'An unknown playback error occurred.',
           errorCode: call.arguments['code'] as String?,
         );
         break;
@@ -346,15 +430,22 @@ class FtvMedia3PlayerController {
         final styleSettingsMap = call.arguments as Map<dynamic, dynamic>?;
         if (styleSettingsMap != null) {
           final styleSettings = SubtitleStyle.fromMap(styleSettingsMap);
-          if (_saveSubtitleStyle != null) _saveSubtitleStyle!(subtitleStyle: styleSettings);
+          if (_saveSubtitleStyle != null) {
+            _saveSubtitleStyle!(subtitleStyle: styleSettings);
+          }
         }
         break;
       case 'saveClockSettings':
         final clockSettingsStr = call.arguments['clock_settings'] as String?;
         if (_saveClockSettings != null) {
           final clockSettingsMap =
-              clockSettingsStr != null ? jsonDecode(clockSettingsStr) as Map<String, dynamic> : null;
-          final clockSettings = clockSettingsMap != null ? ClockSettings.fromMap(clockSettingsMap) : ClockSettings();
+              clockSettingsStr != null
+                  ? jsonDecode(clockSettingsStr) as Map<String, dynamic>
+                  : null;
+          final clockSettings =
+              clockSettingsMap != null
+                  ? ClockSettings.fromMap(clockSettingsMap)
+                  : ClockSettings();
           _saveClockSettings!(clockSettings: clockSettings);
         }
         break;
@@ -362,7 +453,9 @@ class FtvMedia3PlayerController {
         final playerSettingsMap = call.arguments as Map<dynamic, dynamic>?;
         if (_savePlayerSettings != null) {
           final playerSettings =
-              playerSettingsMap != null ? PlayerSettings.fromMap(playerSettingsMap) : PlayerSettings();
+              playerSettingsMap != null
+                  ? PlayerSettings.fromMap(playerSettingsMap)
+                  : PlayerSettings();
           _savePlayerSettings!(playerSettings: playerSettings);
         }
         break;
@@ -373,8 +466,10 @@ class FtvMedia3PlayerController {
         final durationMs = (data['duration'] as num?)?.toInt();
 
         final newPlaybackState = _playbackState.copyWith(
-          position: newPositionMs != null ? (newPositionMs / 1000).toInt() : null,
-          bufferedPosition: newBufferedMs != null ? (newBufferedMs / 1000).toInt() : null,
+          position:
+              newPositionMs != null ? (newPositionMs / 1000).toInt() : null,
+          bufferedPosition:
+              newBufferedMs != null ? (newBufferedMs / 1000).toInt() : null,
           duration: durationMs != null ? (durationMs / 1000).toInt() : null,
         );
         _updatePlaybackState(newPlaybackState);
@@ -382,22 +477,37 @@ class FtvMedia3PlayerController {
 
       case 'onActivityReady':
         final playIndex = call.arguments['playlist_index'] as int? ?? 0;
-        final Map<dynamic, dynamic>? subtitleStyleMap = call.arguments['subtitle_style'];
-        final subtitleStyle = subtitleStyleMap != null ? SubtitleStyle.fromMap(subtitleStyleMap) : null;
+        final Map<dynamic, dynamic>? subtitleStyleMap =
+            call.arguments['subtitle_style'];
+        final subtitleStyle =
+            subtitleStyleMap != null
+                ? SubtitleStyle.fromMap(subtitleStyleMap)
+                : null;
         final clockSettingsStr = call.arguments['clock_settings'] as String?;
-        final clockSettings = clockSettingsStr != null ? ClockSettings.fromMap(jsonDecode(clockSettingsStr)) : null;
-        final Map<dynamic, dynamic>? playerSettingsMap = call.arguments['player_settings'];
+        final clockSettings =
+            clockSettingsStr != null
+                ? ClockSettings.fromMap(jsonDecode(clockSettingsStr))
+                : null;
+        final Map<dynamic, dynamic>? playerSettingsMap =
+            call.arguments['player_settings'];
         PlayerSettings playerSettings =
-            playerSettingsMap != null ? PlayerSettings.fromMap(playerSettingsMap) : PlayerSettings();
+            playerSettingsMap != null
+                ? PlayerSettings.fromMap(playerSettingsMap)
+                : PlayerSettings();
 
-        final Map<dynamic, dynamic>? volumeStateMap = call.arguments['volume_state'];
+        final Map<dynamic, dynamic>? volumeStateMap =
+            call.arguments['volume_state'];
         VolumeState? volumeState;
         if (volumeStateMap != null) {
           final current = volumeStateMap['current'] as int?;
           final max = volumeStateMap['max'] as int?;
           final isMute = volumeStateMap['isMute'] as bool?;
           if (current != null && max != null && isMute != null) {
-            volumeState = VolumeState(current: current, max: max, isMute: isMute);
+            volumeState = VolumeState(
+              current: current,
+              max: max,
+              isMute: isMute,
+            );
           }
         }
 
@@ -430,7 +540,10 @@ class FtvMedia3PlayerController {
         final state = call.arguments['state'] as String?;
         final progress = call.arguments['progress'] as double?;
         if (state != null) {
-          newState = newState.copyWith(loadingStatus: state, loadingProgress: progress);
+          newState = newState.copyWith(
+            loadingStatus: state,
+            loadingProgress: progress,
+          );
         }
         break;
       case 'setCurrentTracks':
@@ -442,22 +555,31 @@ class FtvMedia3PlayerController {
                   .map((e) => Map<String, dynamic>.from(e))
                   .map(MediaTrack.fromMap)
                   .toList();
-          List<VideoTrack> videoTracks = tracksList.whereType<VideoTrack>().toList();
-          List<AudioTrack> audioTracks = tracksList.whereType<AudioTrack>().toList();
-          List<SubtitleTrack> subtitleTracks = tracksList.whereType<SubtitleTrack>().toList();
+          List<VideoTrack> videoTracks =
+              tracksList.whereType<VideoTrack>().toList();
+          List<AudioTrack> audioTracks =
+              tracksList.whereType<AudioTrack>().toList();
+          List<SubtitleTrack> subtitleTracks =
+              tracksList.whereType<SubtitleTrack>().toList();
           newState = newState.copyWith(
             videoTracks: videoTracks,
             audioTracks: audioTracks,
             subtitleTracks: subtitleTracks,
           );
         } catch (e) {
-          newState = newState.copyWith(lastError: e.toString(), errorCode: 'SET_CURRENT_TRACKS_ERROR');
+          newState = newState.copyWith(
+            lastError: e.toString(),
+            errorCode: 'SET_CURRENT_TRACKS_ERROR',
+          );
         }
         break;
       case "setCurrentResizeMode":
         final String? zoomValue = call.arguments['zoom'] as String?;
         if (zoomValue == null) {
-          newState = newState.copyWith(lastError: 'zoomValue is null in response', errorCode: 'ZOOM_RESPONSE_ERROR');
+          newState = newState.copyWith(
+            lastError: 'zoomValue is null in response',
+            errorCode: 'ZOOM_RESPONSE_ERROR',
+          );
         } else {
           newState = newState.copyWith(zoom: PlayerZoom.fromString(zoomValue));
         }
@@ -465,7 +587,10 @@ class FtvMedia3PlayerController {
       case "setCurrentSpeed":
         final speedValue = call.arguments['speed'] as double?;
         if (speedValue == null) {
-          newState = newState.copyWith(lastError: 'Null speed value in response', errorCode: 'SPEED_RESPONSE_ERROR');
+          newState = newState.copyWith(
+            lastError: 'Null speed value in response',
+            errorCode: 'SPEED_RESPONSE_ERROR',
+          );
         } else {
           newState = newState.copyWith(speed: speedValue);
         }
@@ -473,7 +598,10 @@ class FtvMedia3PlayerController {
       case "setRepeatMode":
         final repeat = call.arguments['mode'] as String?;
         if (repeat == null) {
-          newState = newState.copyWith(lastError: 'Null speed value in response', errorCode: 'SET_REPEAT_MODE');
+          newState = newState.copyWith(
+            lastError: 'Null speed value in response',
+            errorCode: 'SET_REPEAT_MODE',
+          );
           return;
         }
         newState = newState.copyWith(repeatMode: RepeatMode.fromString(repeat));
@@ -485,8 +613,12 @@ class FtvMedia3PlayerController {
         break;
       case 'onStreamingMetadataUpdated':
         final rawStreamingData = call.arguments as Map<Object?, Object?>?;
-        final newStreamingMetadata = StreamingMetadata.fromMap(rawStreamingData);
-        _currentMetadata = _currentMetadata.copyWith(streamingMetadata: newStreamingMetadata);
+        final newStreamingMetadata = StreamingMetadata.fromMap(
+          rawStreamingData,
+        );
+        _currentMetadata = _currentMetadata.copyWith(
+          streamingMetadata: newStreamingMetadata,
+        );
         _mediaMetadataController.add(_currentMetadata);
         break;
       case 'onStateChanged':
@@ -496,7 +628,8 @@ class FtvMedia3PlayerController {
         final playIndex = call.arguments['playlist_index'] as int? ?? 0;
         final speed = (call.arguments['speed'] as num?)?.toDouble();
         final repeatMode = call.arguments['repeatMode'] as String?;
-        final shuffleEnabled = call.arguments['shuffleEnabled'] as bool? ?? false;
+        final shuffleEnabled =
+            call.arguments['shuffleEnabled'] as bool? ?? false;
         newState = newState.copyWith(
           stateValue: StateValue.fromString(stateValue),
           isLive: isLive,
@@ -512,23 +645,39 @@ class FtvMedia3PlayerController {
         final max = call.arguments['max'] as int?;
         final isMute = call.arguments['isMute'] as bool?;
         final volume = (call.arguments['volume'] as num?)?.toDouble();
-        if (current != null && max != null && isMute != null && volume != null) {
+        if (current != null &&
+            max != null &&
+            isMute != null &&
+            volume != null) {
           newState = newState.copyWith(
-            volumeState: VolumeState(current: current, max: max, isMute: isMute, volume: volume),
+            volumeState: VolumeState(
+              current: current,
+              max: max,
+              isMute: isMute,
+              volume: volume,
+            ),
           );
         }
         break;
       default:
-        final err = "UNKNOWN_NATIVE_METHOD: ${call.method} with args: ${call.arguments}";
+        final err =
+            "UNKNOWN_NATIVE_METHOD: ${call.method} with args: ${call.arguments}";
         _updateState(_playerState.copyWith(lastError: err));
     }
     _updateState(newState);
   }
 
   /// Sends the progress of loading media information to the UI.
-  Future<void> _sendLoadProgressToUI({required String state, double? progress, required int requestId}) async {
+  Future<void> _sendLoadProgressToUI({
+    required String state,
+    double? progress,
+    required int requestId,
+  }) async {
     if (requestId == MediaRequestManager.currentRequestId) {
-      await _invokeMethodGuarded<void>(_activityChannel, 'loadMediaInfoState', {"state": state, "progress": progress});
+      await _invokeMethodGuarded<void>(_activityChannel, 'loadMediaInfoState', {
+        "state": state,
+        "progress": progress,
+      });
     }
   }
 
@@ -560,25 +709,34 @@ class FtvMedia3PlayerController {
   ///
   /// This method serializes the playlist and settings and sends them to the
   /// native side via the method channel to launch the player activity.
-  Future<void> openNativePlayer({required List<PlaylistMediaItem> playlist, int initialIndex = 0}) async {
+  Future<void> openNativePlayer({
+    required List<PlaylistMediaItem> playlist,
+    int initialIndex = 0,
+  }) async {
     _playerState = PlayerState();
     if (playlist.isEmpty) {
-      _updateState(_playerState.copyWith(lastError: "Cannot open empty playlist."));
+      _updateState(
+        _playerState.copyWith(lastError: "Cannot open empty playlist."),
+      );
       return;
     }
     if (initialIndex < 0 || initialIndex >= playlist.length) {
       _updateState(
         _playerState.copyWith(
-          lastError: "Invalid initial index ($initialIndex) for playlist of size ${playlist.length}.",
+          lastError:
+              "Invalid initial index ($initialIndex) for playlist of size ${playlist.length}.",
         ),
       );
       return;
     }
-    _updateState(_playerState.copyWith(playlist: playlist, playIndex: initialIndex));
+    _updateState(
+      _playerState.copyWith(playlist: playlist, playIndex: initialIndex),
+    );
 
     final playlistMap = playlist.map((e) => e.toMap()).toList();
     final playlistStr = jsonEncode(playlistMap);
-    final clockSettingsStr = _clockSettings != null ? jsonEncode(_clockSettings?.toMap()) : null;
+    final clockSettingsStr =
+        _clockSettings != null ? jsonEncode(_clockSettings?.toMap()) : null;
 
     final subtitleSearch =
         FindSubtitlesState(
@@ -621,29 +779,42 @@ class FtvMedia3PlayerController {
   }
 
   /// Sets the method call handler for the activity channel.
-  void _setMethodCallHandler(Future<dynamic> Function(MethodCall call)? handler) {
+  void _setMethodCallHandler(
+    Future<dynamic> Function(MethodCall call)? handler,
+  ) {
     _activityChannel.setMethodCallHandler(handler);
   }
 
   /// Sets the method call handler for the plugin channel.
-  void _setPluginMethodCallHandler(Future<dynamic> Function(MethodCall call)? handler) {
+  void _setPluginMethodCallHandler(
+    Future<dynamic> Function(MethodCall call)? handler,
+  ) {
     _pluginChannel.setMethodCallHandler(handler);
   }
 
   /// A guarded wrapper for invoking method channel methods to handle exceptions.
-  Future<T> _invokeMethodGuarded<T>(MethodChannel channel, String method, [dynamic arguments]) async {
+  Future<T> _invokeMethodGuarded<T>(
+    MethodChannel channel,
+    String method, [
+    dynamic arguments,
+  ]) async {
     try {
       final T? result = await channel.invokeMethod<T>(method, arguments);
       return result as T;
     } on PlatformException catch (e, s) {
-      throw AppPlayerException('Platform error calling $method: ${e.message}', e, s);
+      throw AppPlayerException(
+        'Platform error calling $method: ${e.message}',
+        e,
+        s,
+      );
     } catch (e, s) {
       throw AppPlayerException('Error calling $method: $e', e, s);
     }
   }
 
   /// Toggles the player between play and pause states.
-  Future<void> playPause() async => await _invokeMethodGuarded<void>(_activityChannel, 'playPause');
+  Future<void> playPause() async =>
+      await _invokeMethodGuarded<void>(_activityChannel, 'playPause');
 
   /// Starts or resumes playback.
   Future<void> play() async {
@@ -659,64 +830,114 @@ class FtvMedia3PlayerController {
   ///
   /// [positionSeconds] The position to seek to, in seconds.
   Future<void> seekTo({required int positionSeconds}) async {
-    await _invokeMethodGuarded<void>(_activityChannel, 'seekTo', {"position": positionSeconds * 1000});
+    await _invokeMethodGuarded<void>(_activityChannel, 'seekTo', {
+      "position": positionSeconds * 1000,
+    });
   }
 
   /// Sets the playback speed.
   Future<void> setSpeed({required double speed}) async {
     try {
-      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(_activityChannel, 'setSpeed', {'speed': speed});
+      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(
+        _activityChannel,
+        'setSpeed',
+        {'speed': speed},
+      );
 
       final speedValue = result['speed'] as double?;
       if (speedValue == null) {
         _updateState(
-          _playerState.copyWith(lastError: 'Null speed value in response', errorCode: 'SPEED_RESPONSE_ERROR'),
+          _playerState.copyWith(
+            lastError: 'Null speed value in response',
+            errorCode: 'SPEED_RESPONSE_ERROR',
+          ),
         );
         return;
       }
 
       _updateState(_playerState.copyWith(speed: speedValue));
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message ?? 'Unknown platform error', errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.message ?? 'Unknown platform error',
+          errorCode: e.code,
+        ),
+      );
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: 'Failed to set speed: $e', errorCode: 'SPEED_CHANNEL_ERROR'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: 'Failed to set speed: $e',
+          errorCode: 'SPEED_CHANNEL_ERROR',
+        ),
+      );
     }
   }
 
   /// Sets the repeat mode for the player (off, one, all).
   Future<void> setRepeatMode({required RepeatMode repeatMode}) async {
     try {
-      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(_activityChannel, 'setRepeatMode', {
-        'mode': repeatMode.nativeValue,
-      });
+      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(
+        _activityChannel,
+        'setRepeatMode',
+        {'mode': repeatMode.nativeValue},
+      );
 
       final repeat = result['mode'] as String?;
       if (repeat == null) {
-        _updateState(_playerState.copyWith(lastError: 'Null speed value in response', errorCode: 'SET_REPEAT_MODE'));
+        _updateState(
+          _playerState.copyWith(
+            lastError: 'Null speed value in response',
+            errorCode: 'SET_REPEAT_MODE',
+          ),
+        );
         return;
       }
-      _updateState(_playerState.copyWith(repeatMode: RepeatMode.fromString(repeat)));
+      _updateState(
+        _playerState.copyWith(repeatMode: RepeatMode.fromString(repeat)),
+      );
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message ?? 'Unknown platform error', errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.message ?? 'Unknown platform error',
+          errorCode: e.code,
+        ),
+      );
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: 'Failed to set speed: $e', errorCode: 'SET_REPEAT_MODE'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: 'Failed to set speed: $e',
+          errorCode: 'SET_REPEAT_MODE',
+        ),
+      );
     }
   }
 
   /// Enables or disables shuffle mode.
   Future<void> setShuffleMode(bool enabled) async {
     try {
-      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(_activityChannel, 'setShuffleMode', {
-        'enabled': enabled,
-      });
+      final result = await _invokeMethodGuarded<Map<Object?, Object?>>(
+        _activityChannel,
+        'setShuffleMode',
+        {'enabled': enabled},
+      );
       final shuffleEnabled = result['shuffleEnabled'] as bool?;
       if (shuffleEnabled == null) {
-        _updateState(_playerState.copyWith(lastError: 'Null speed value in response', errorCode: 'SET_SHUFFLE_MODE'));
+        _updateState(
+          _playerState.copyWith(
+            lastError: 'Null speed value in response',
+            errorCode: 'SET_SHUFFLE_MODE',
+          ),
+        );
         return;
       }
       _updateState(_playerState.copyWith(isShuffleModeEnabled: shuffleEnabled));
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message ?? 'Unknown platform error', errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.message ?? 'Unknown platform error',
+          errorCode: e.code,
+        ),
+      );
     }
   }
 
@@ -734,9 +955,14 @@ class FtvMedia3PlayerController {
   }
 
   /// Sets a custom scale for the video.
-  Future<void> setScale({required double scaleX, required double scaleY}) async {
+  Future<void> setScale({
+    required double scaleX,
+    required double scaleY,
+  }) async {
     if (playerState.zoom != PlayerZoom.scale) {
-      await _invokeMethodGuarded<void>(_activityChannel, 'setResizeMode', {"mode": 'FILL'});
+      await _invokeMethodGuarded<void>(_activityChannel, 'setResizeMode', {
+        "mode": 'FILL',
+      });
     }
     await _executeZoomCommand('setScale', {"scaleX": scaleX, "scaleY": scaleY});
   }
@@ -744,14 +970,22 @@ class FtvMedia3PlayerController {
   /// Saves and applies new clock settings.
   Future<void> setClockSettings({ClockSettings? clockSettings}) async {
     final clockSettingsMap = clockSettings?.toMap();
-    final clockSettingsStr = clockSettingsMap != null ? jsonEncode(clockSettingsMap) : null;
+    final clockSettingsStr =
+        clockSettingsMap != null ? jsonEncode(clockSettingsMap) : null;
     try {
-      await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'saveClockSettings', {
-        "clock_settings": clockSettingsStr,
-      });
+      await _invokeMethodGuarded<Map<dynamic, dynamic>>(
+        _activityChannel,
+        'saveClockSettings',
+        {"clock_settings": clockSettingsStr},
+      );
       _updateState(_playerState.copyWith(clockSettings: clockSettings));
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.toString(), errorCode: 'UPDATE_CLOCK_SETTINGS_ERROR'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.toString(),
+          errorCode: 'UPDATE_CLOCK_SETTINGS_ERROR',
+        ),
+      );
     }
   }
 
@@ -766,16 +1000,26 @@ class FtvMedia3PlayerController {
       );
 
       if (result is! Map) {
-        _playerState.copyWith(lastError: 'Unknown or null result type', errorCode: 'UPDATE_SUBTITLE_STYLE_ERROR');
+        _playerState.copyWith(
+          lastError: 'Unknown or null result type',
+          errorCode: 'UPDATE_SUBTITLE_STYLE_ERROR',
+        );
         return;
       }
       final Map map = result;
       final subtitleStyle = SubtitleStyle.fromMap(map);
       _updateState(_playerState.copyWith(subtitleStyle: subtitleStyle));
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message, errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(lastError: e.message, errorCode: e.code),
+      );
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.toString(), errorCode: 'UPDATE_SUBTITLE_STYLE_ERROR'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.toString(),
+          errorCode: 'UPDATE_SUBTITLE_STYLE_ERROR',
+        ),
+      );
     }
   }
 
@@ -783,61 +1027,101 @@ class FtvMedia3PlayerController {
   Future<void> setPlayerSettings({PlayerSettings? playerSettings}) async {
     final playerSettingsMap = playerSettings?.toMap();
     try {
-      await _invokeMethodGuarded<void>(_activityChannel, 'savePlayerSettings', playerSettingsMap);
+      await _invokeMethodGuarded<void>(
+        _activityChannel,
+        'savePlayerSettings',
+        playerSettingsMap,
+      );
       _updateState(_playerState.copyWith(playerSettings: playerSettings));
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message, errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(lastError: e.message, errorCode: e.code),
+      );
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.toString(), errorCode: 'UPDATE_PLAYER_SETTINGS_ERROR'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.toString(),
+          errorCode: 'UPDATE_PLAYER_SETTINGS_ERROR',
+        ),
+      );
     }
   }
 
   /// Helper to execute a zoom-related command and handle the result.
-  Future<void> _executeZoomCommand(String method, Map<String, dynamic> args) async {
+  Future<void> _executeZoomCommand(
+    String method,
+    Map<String, dynamic> args,
+  ) async {
     try {
-      final dynamic result = await _invokeMethodGuarded<dynamic>(_activityChannel, method, args);
+      final dynamic result = await _invokeMethodGuarded<dynamic>(
+        _activityChannel,
+        method,
+        args,
+      );
       _updateState(_handleZoomResult(result));
     } on PlatformException catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.message, errorCode: e.code));
+      _updateState(
+        _playerState.copyWith(lastError: e.message, errorCode: e.code),
+      );
     } catch (e) {
-      _updateState(_playerState.copyWith(lastError: e.toString(), errorCode: 'ZOOM_CHANNEL_ERROR'));
+      _updateState(
+        _playerState.copyWith(
+          lastError: e.toString(),
+          errorCode: 'ZOOM_CHANNEL_ERROR',
+        ),
+      );
     }
   }
 
   /// Helper to process the result from a zoom command.
   PlayerState _handleZoomResult(dynamic result) {
     if (result is! Map) {
-      return _playerState.copyWith(lastError: 'Unknown or null result type', errorCode: 'ZOOM_RESPONSE_ERROR');
+      return _playerState.copyWith(
+        lastError: 'Unknown or null result type',
+        errorCode: 'ZOOM_RESPONSE_ERROR',
+      );
     }
 
     final Map<Object?, Object?> resultMap = result;
     final String? zoomValue = resultMap['zoom'] as String?;
 
     if (zoomValue == null) {
-      return _playerState.copyWith(lastError: 'zoomValue is null in response', errorCode: 'ZOOM_RESPONSE_ERROR');
+      return _playerState.copyWith(
+        lastError: 'zoomValue is null in response',
+        errorCode: 'ZOOM_RESPONSE_ERROR',
+      );
     }
     return _playerState.copyWith(zoom: PlayerZoom.fromString(zoomValue));
   }
 
   /// Fetches the currently available tracks (video, audio, subtitle) from the player.
   Future<List<MediaTrack>> getCurrentTracks() async {
-    final result = await _invokeMethodGuarded<dynamic>(_activityChannel, 'getCurrentTracks');
+    final result = await _invokeMethodGuarded<dynamic>(
+      _activityChannel,
+      'getCurrentTracks',
+    );
     final tracks = List<Map<String, dynamic>>.from(result);
     return tracks.map((track) => MediaTrack.fromMap(track)).toList();
   }
 
   /// Selects the specified audio track.
-  Future<void> selectAudioTrack({AudioTrack? track}) async => await _selectTrack(track);
+  Future<void> selectAudioTrack({AudioTrack? track}) async =>
+      await _selectTrack(track);
 
   /// Selects the specified subtitle track.
-  Future<void> selectSubtitleTrack({SubtitleTrack? track}) async => await _selectTrack(track);
+  Future<void> selectSubtitleTrack({SubtitleTrack? track}) async =>
+      await _selectTrack(track);
 
   /// Selects the specified video track.
   Future<void> selectVideoTrack({VideoTrack? track}) async {
     if (track?.isExternal == true) {
       final url = track?.url;
       if (url != null) {
-        await _invokeMethodGuarded<void>(_activityChannel, 'selectExternalVideoTrack', {'url': url});
+        await _invokeMethodGuarded<void>(
+          _activityChannel,
+          'selectExternalVideoTrack',
+          {'url': url},
+        );
       } else {
         throw ArgumentError('External video track must have a valid URL.');
       }
@@ -852,7 +1136,9 @@ class FtvMedia3PlayerController {
     final groupIndex = track?.groupIndex;
     final trackType = track?.trackType;
     if (trackIndex == null || groupIndex == null || trackType == null) {
-      throw ArgumentError('You must provide a track index or a track with index.');
+      throw ArgumentError(
+        'You must provide a track index or a track with index.',
+      );
     }
     await _invokeMethodGuarded<void>(_activityChannel, 'selectTrack', {
       "trackType": trackType,
@@ -863,7 +1149,10 @@ class FtvMedia3PlayerController {
 
   /// Fetches the latest metadata from the player.
   Future<void> getMetaData() async {
-    final result = await _invokeMethodGuarded<dynamic>(_activityChannel, 'getMetadata');
+    final result = await _invokeMethodGuarded<dynamic>(
+      _activityChannel,
+      'getMetadata',
+    );
     final Map<Object?, Object?> resultMap = result;
     _currentMetadata = MediaMetadata.fromMap(resultMap);
     _mediaMetadataController.add(_currentMetadata);
@@ -885,7 +1174,9 @@ class FtvMedia3PlayerController {
   /// Plays the item at the specified index in the playlist.
   Future<void> playSelectedIndex({required int index}) async {
     if (_playerState.playlist.length > index && index >= 0) {
-      await _invokeMethodGuarded<void>(_activityChannel, 'playSelectedIndex', {"index": index});
+      await _invokeMethodGuarded<void>(_activityChannel, 'playSelectedIndex', {
+        "index": index,
+      });
     } else {
       final newState = _playerState.copyWith(
         stateValue: StateValue.error,
@@ -897,18 +1188,28 @@ class FtvMedia3PlayerController {
   }
 
   /// Sets external subtitle tracks for the current media item.
-  Future<void> setExternalSubtitles({required List<MediaItemSubtitle> subtitleTracks}) async {
+  Future<void> setExternalSubtitles({
+    required List<MediaItemSubtitle> subtitleTracks,
+  }) async {
     if (subtitleTracks.isNotEmpty) {
       final subtitleTracksMap = subtitleTracks.map((e) => e.toMap()).toList();
-      await _invokeMethodGuarded<void>(_activityChannel, 'setExternalSubtitles', {"subtitleTracks": subtitleTracksMap});
+      await _invokeMethodGuarded<void>(
+        _activityChannel,
+        'setExternalSubtitles',
+        {"subtitleTracks": subtitleTracksMap},
+      );
     }
   }
 
   /// Sets external audio tracks for the current media item.
-  Future<void> setExternalAudio({required List<MediaItemAudioTrack> audioTracks}) async {
+  Future<void> setExternalAudio({
+    required List<MediaItemAudioTrack> audioTracks,
+  }) async {
     if (audioTracks.isNotEmpty) {
       final subtitleTracksMap = audioTracks.map((e) => e.toMap()).toList();
-      await _invokeMethodGuarded<void>(_activityChannel, 'setExternalAudio', {"audioTracks": subtitleTracksMap});
+      await _invokeMethodGuarded<void>(_activityChannel, 'setExternalAudio', {
+        "audioTracks": subtitleTracksMap,
+      });
     }
   }
 
@@ -917,19 +1218,27 @@ class FtvMedia3PlayerController {
   /// This string will be shown in the TimeLinePanel.
   Future<void> sendCustomInfoToOverlay(String text) async {
     if (_playerState.activityReady != true) return;
-    await _invokeMethodGuarded<void>(_activityChannel, 'onReceiveInfoText', {'text': text});
+    await _invokeMethodGuarded<void>(_activityChannel, 'onReceiveInfoText', {
+      'text': text,
+    });
   }
 
   /// Sends the current state of the subtitle search to the UI overlay.
   Future<void> _updateFindSubtitlesState(FindSubtitlesState state) async {
     if (_playerState.activityReady != true) return;
-    await _invokeMethodGuarded<void>(_activityChannel, 'onSubtitleSearchStateChanged', state.toMap());
+    await _invokeMethodGuarded<void>(
+      _activityChannel,
+      'onSubtitleSearchStateChanged',
+      state.toMap(),
+    );
   }
 
   /// Updates the info label for the subtitle search state and notifies the UI.
   Future<void> updateFindSubtitlesStateInfoLabel() async {
     _findSubtitlesStateInfoLabel =
-        _labelSearchExternalSubtitle != null ? await _labelSearchExternalSubtitle!() : _findSubtitlesStateInfoLabel;
+        _labelSearchExternalSubtitle != null
+            ? await _labelSearchExternalSubtitle!()
+            : _findSubtitlesStateInfoLabel;
     final updatedState = FindSubtitlesState(
       isVisible: _searchExternalSubtitle != null,
       label: _findSubtitlesLabel,
@@ -944,7 +1253,10 @@ class FtvMedia3PlayerController {
   /// Returns a map containing a list of supported rates and the currently
   /// active rate.
   Future<RefreshRateInfo> getRefreshRateInfo() async {
-    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'getRefreshRateInfo');
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(
+      _activityChannel,
+      'getRefreshRateInfo',
+    );
     final map = result.map((key, value) => MapEntry(key.toString(), value));
     return RefreshRateInfo.fromMap(map);
   }
@@ -955,18 +1267,28 @@ class FtvMedia3PlayerController {
   ///
   /// - [rate]: The desired refresh rate.
   Future<void> setManualFrameRate(double rate) async {
-    await _invokeMethodGuarded<void>(_activityChannel, 'setManualFrameRate', {'rate': rate});
+    await _invokeMethodGuarded<void>(_activityChannel, 'setManualFrameRate', {
+      'rate': rate,
+    });
   }
 
   /// Fetches the current volume state from the native player.
   Future<VolumeState> getVolume() async {
-    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'getVolume');
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(
+      _activityChannel,
+      'getVolume',
+    );
     final current = result['current'] as int?;
     final max = result['max'] as int?;
     final isMute = result['isMute'] as bool?;
     final volume = (result['volume'] as num?)?.toDouble();
     if (current != null && max != null && isMute != null && volume != null) {
-      final volumeState = VolumeState(current: current, max: max, isMute: isMute, volume: volume);
+      final volumeState = VolumeState(
+        current: current,
+        max: max,
+        isMute: isMute,
+        volume: volume,
+      );
       _updateState(_playerState.copyWith(volumeState: volumeState));
       return volumeState;
     }
@@ -976,21 +1298,32 @@ class FtvMedia3PlayerController {
   /// Sets the volume on the native player.
   /// [volume] The volume level to set, from 0.0 to 1.0.
   Future<void> setVolume({required double volume}) async {
-    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {'volume': volume.clamp(0.0, 1.0)});
+    await _invokeMethodGuarded<void>(_activityChannel, 'setVolume', {
+      'volume': volume.clamp(0.0, 1.0),
+    });
   }
 
   /// Mutes or unmutes the audio on the native player.
   /// [mute] True to mute, false to unmute.
   Future<void> setMute({required bool mute}) async {
-    await _invokeMethodGuarded<void>(_activityChannel, 'setMute', {'mute': mute});
+    await _invokeMethodGuarded<void>(_activityChannel, 'setMute', {
+      'mute': mute,
+    });
   }
 
   /// Toggles the mute state on the native player.
   Future<void> toggleMute() async {
-    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(_activityChannel, 'toggleMute');
+    final result = await _invokeMethodGuarded<Map<dynamic, dynamic>>(
+      _activityChannel,
+      'toggleMute',
+    );
     final isMute = result['isMute'] as bool?;
     if (isMute != null) {
-      _updateState(_playerState.copyWith(volumeState: _playerState.volumeState.copyWith(isMute: isMute)));
+      _updateState(
+        _playerState.copyWith(
+          volumeState: _playerState.volumeState.copyWith(isMute: isMute),
+        ),
+      );
     }
   }
 }
@@ -1000,7 +1333,11 @@ class AppPlayerException implements Exception {
   final String message;
   final dynamic originalException;
   final StackTrace? originalStackTrace;
-  AppPlayerException(this.message, [this.originalException, this.originalStackTrace]);
+  AppPlayerException(
+    this.message, [
+    this.originalException,
+    this.originalStackTrace,
+  ]);
 
   @override
   String toString() {

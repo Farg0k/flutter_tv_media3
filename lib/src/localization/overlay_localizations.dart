@@ -20,7 +20,7 @@ class OverlayLocalizations {
 
   /// Initializes the localization service.
   ///
-  
+
   /// This should be called once at the start of the overlay to set up
   /// default date formatting for the initial locale.
   static void init() {
@@ -39,10 +39,7 @@ class OverlayLocalizations {
   /// from the native side. New strings from [newStrings] will overwrite
   /// existing default values if the keys match.
   static void load(Map<String, String> newStrings) {
-    _strings = {
-      ..._strings,
-      ...newStrings,
-    };
+    _strings = {..._strings, ...newStrings};
   }
 
   /// Gets the localized string for the given [key].

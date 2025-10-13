@@ -32,16 +32,17 @@ class NavigationHints extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.arrow_drop_up,
-                    size: 20,
-                    color: canScrollUp
-                        ? AppTheme.colorPrimary
-                        : AppTheme.divider),
-                Icon(Icons.arrow_drop_down,
-                    size: 20,
-                    color: canScrollDown
-                        ? AppTheme.colorPrimary
-                        : AppTheme.divider),
+                Icon(
+                  Icons.arrow_drop_up,
+                  size: 20,
+                  color: canScrollUp ? AppTheme.colorPrimary : AppTheme.divider,
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  size: 20,
+                  color:
+                      canScrollDown ? AppTheme.colorPrimary : AppTheme.divider,
+                ),
               ],
             ),
         ],

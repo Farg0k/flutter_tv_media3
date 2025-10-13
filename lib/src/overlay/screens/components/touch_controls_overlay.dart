@@ -39,7 +39,9 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
   void _startHideTimer() {
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted && context.read<OverlayUiBloc>().state.playerPanel == PlayerPanel.touchOverlay) {
+      if (mounted &&
+          context.read<OverlayUiBloc>().state.playerPanel ==
+              PlayerPanel.touchOverlay) {
         setState(() {
           _opacity = 0;
         });
@@ -64,7 +66,11 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
     _startHideTimer();
   }
 
-  Widget _buildPanelButton({required OverlayUiBloc bloc, required IconData icon, required PlayerPanel panel}) {
+  Widget _buildPanelButton({
+    required OverlayUiBloc bloc,
+    required IconData icon,
+    required PlayerPanel panel,
+  }) {
     return IconButton(
       icon: Icon(icon, color: Colors.white, size: 32),
       onPressed: () {
@@ -86,7 +92,9 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
         onTap: _startHideTimer,
         onPanDown: (_) => _startHideTimer(),
         child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-          buildWhen: (previous, current) => previous.isScreenLocked != current.isScreenLocked,
+          buildWhen:
+              (previous, current) =>
+                  previous.isScreenLocked != current.isScreenLocked,
           builder: (context, state) {
             final isLocked = state.isScreenLocked;
             if (isLocked) {
@@ -100,8 +108,10 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
               child: StreamBuilder<PlayerState>(
                 stream: widget.controller.playerStateStream,
                 builder: (context, playerStateSnapshot) {
-                  final playerState = playerStateSnapshot.data ?? widget.controller.playerState;
-                  final isPlaying = playerState.stateValue == StateValue.playing;
+                  final playerState =
+                      playerStateSnapshot.data ?? widget.controller.playerState;
+                  final isPlaying =
+                      playerState.stateValue == StateValue.playing;
                   final hasMultipleItems = playerState.playlist.length > 1;
                   return GestureDetector(
                     onTap:
@@ -119,41 +129,58 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                 children: [
                                   Column(
                                     spacing: 25,
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       IconButton(
                                         icon: Icon(
-                                          isLocked ? Icons.lock : Icons.lock_open,
+                                          isLocked
+                                              ? Icons.lock
+                                              : Icons.lock_open,
                                           color: Colors.white,
                                           size: 32,
                                         ),
-                                        onPressed: () => bloc.add(const ToggleScreenLock()),
+                                        onPressed:
+                                            () => bloc.add(
+                                              const ToggleScreenLock(),
+                                            ),
                                       ),
                                       Expanded(
                                         child: StreamBuilder<PlayerState>(
-                                          stream: widget.controller.playerStateStream,
-                                          initialData: widget.controller.playerState,
+                                          stream:
+                                              widget
+                                                  .controller
+                                                  .playerStateStream,
+                                          initialData:
+                                              widget.controller.playerState,
                                           builder: (context, snapshot) {
-                                            final volumeState = snapshot.data?.volumeState;
-                                            if (volumeState == null) return const SizedBox.shrink();
+                                            final volumeState =
+                                                snapshot.data?.volumeState;
+                                            if (volumeState == null) {
+                                              return const SizedBox.shrink();
+                                            }
 
                                             return Visibility(
                                               visible: !isLocked,
                                               child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
                                                 children: [
                                                   IconButton(
                                                     icon: Icon(
                                                       volumeState.isMute
                                                           ? Icons.volume_off
-                                                          : volumeState.current > 0
+                                                          : volumeState
+                                                                  .current >
+                                                              0
                                                           ? Icons.volume_up
                                                           : Icons.volume_mute,
                                                       color: Colors.white,
                                                       size: 32,
                                                     ),
                                                     onPressed: () {
-                                                      widget.controller.toggleMute();
+                                                      widget.controller
+                                                          .toggleMute();
                                                       _startHideTimer();
                                                     },
                                                   ),
@@ -161,14 +188,22 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                                     child: RotatedBox(
                                                       quarterTurns: 3,
                                                       child: Slider(
-                                                        value: volumeState.volume,
+                                                        value:
+                                                            volumeState.volume,
                                                         max: 1.0,
                                                         onChanged: (value) {
-                                                          widget.controller.setVolume(volume: value);
+                                                          widget.controller
+                                                              .setVolume(
+                                                                volume: value,
+                                                              );
                                                           _startHideTimer();
                                                         },
-                                                        activeColor: AppTheme.fullFocusColor,
-                                                        inactiveColor: AppTheme.colorPrimary,
+                                                        activeColor:
+                                                            AppTheme
+                                                                .fullFocusColor,
+                                                        inactiveColor:
+                                                            AppTheme
+                                                                .colorPrimary,
                                                       ),
                                                     ),
                                                   ),
@@ -179,7 +214,11 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.stop_circle, color: Colors.white, size: 32),
+                                        icon: const Icon(
+                                          Icons.stop_circle,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
                                         onPressed: () {
                                           _startHideTimer();
                                           widget.controller.stop();
@@ -191,35 +230,58 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                     child: Visibility(
                                       visible: !isLocked,
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.info_outline, color: Colors.white, size: 32),
+                                            icon: const Icon(
+                                              Icons.info_outline,
+                                              color: Colors.white,
+                                              size: 32,
+                                            ),
                                             onPressed: () {
                                               _startHideTimer();
-                                              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.info));
+                                              bloc.add(
+                                                const SetActivePanel(
+                                                  playerPanel: PlayerPanel.info,
+                                                ),
+                                              );
                                             },
                                           ),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               if (hasMultipleItems)
                                                 IconButton(
-                                                  icon: const Icon(Icons.skip_previous, color: Colors.white, size: 48),
+                                                  icon: const Icon(
+                                                    Icons.skip_previous,
+                                                    color: Colors.white,
+                                                    size: 48,
+                                                  ),
                                                   onPressed: () {
                                                     _startHideTimer();
-                                                    widget.controller.playPrevious();
+                                                    widget.controller
+                                                        .playPrevious();
                                                   },
                                                 ),
                                               const SizedBox(width: 24),
                                               IconButton(
-                                                icon: const Icon(Icons.replay_10, color: Colors.white, size: 48),
+                                                icon: const Icon(
+                                                  Icons.replay_10,
+                                                  color: Colors.white,
+                                                  size: 48,
+                                                ),
                                                 onPressed: () => _seek(-10),
                                               ),
                                               const SizedBox(width: 24),
                                               IconButton(
                                                 icon: Icon(
-                                                  isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                                                  isPlaying
+                                                      ? Icons
+                                                          .pause_circle_filled
+                                                      : Icons
+                                                          .play_circle_filled,
                                                   color: Colors.white,
                                                   size: 80,
                                                 ),
@@ -230,16 +292,25 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                               ),
                                               const SizedBox(width: 24),
                                               IconButton(
-                                                icon: const Icon(Icons.forward_10, color: Colors.white, size: 48),
+                                                icon: const Icon(
+                                                  Icons.forward_10,
+                                                  color: Colors.white,
+                                                  size: 48,
+                                                ),
                                                 onPressed: () => _seek(10),
                                               ),
                                               const SizedBox(width: 24),
                                               if (hasMultipleItems)
                                                 IconButton(
-                                                  icon: const Icon(Icons.skip_next, color: Colors.white, size: 48),
+                                                  icon: const Icon(
+                                                    Icons.skip_next,
+                                                    color: Colors.white,
+                                                    size: 48,
+                                                  ),
                                                   onPressed: () {
                                                     _startHideTimer();
-                                                    widget.controller.playNext();
+                                                    widget.controller
+                                                        .playNext();
                                                   },
                                                 ),
                                             ],
@@ -247,24 +318,48 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: List.generate(10, (index) {
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: List.generate(10, (
+                                                index,
+                                              ) {
                                                 final percentage = index / 10.0;
                                                 return Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: OutlinedButton(
-                                                    onPressed: () => _goToVideoPercentage(percentage),
-                                                    style: OutlinedButton.styleFrom(
-                                                      foregroundColor: Colors.white30,
-                                                      side: const BorderSide(color: Colors.white30, width: 1.5),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(8),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 4.0,
                                                       ),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                  child: OutlinedButton(
+                                                    onPressed:
+                                                        () =>
+                                                            _goToVideoPercentage(
+                                                              percentage,
+                                                            ),
+                                                    style: OutlinedButton.styleFrom(
+                                                      foregroundColor:
+                                                          Colors.white30,
+                                                      side: const BorderSide(
+                                                        color: Colors.white30,
+                                                        width: 1.5,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 12,
+                                                            vertical: 6,
+                                                          ),
                                                     ),
                                                     child: Text(
                                                       '${index * 10}%',
-                                                      style: const TextStyle(color: Colors.white30, fontSize: 16),
+                                                      style: const TextStyle(
+                                                        color: Colors.white30,
+                                                        fontSize: 16,
+                                                      ),
                                                     ),
                                                   ),
                                                 );
@@ -278,7 +373,8 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                   Visibility(
                                     visible: !isLocked,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         _buildPanelButton(
                                           bloc: bloc,
@@ -291,7 +387,12 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           panel: PlayerPanel.playlist,
                                         ),
                                         Visibility(
-                                          visible: widget.controller.playItem.programs != null,
+                                          visible:
+                                              widget
+                                                  .controller
+                                                  .playItem
+                                                  .programs !=
+                                              null,
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -309,7 +410,11 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                           icon: Icons.video_settings,
                                           panel: PlayerPanel.video,
                                         ),
-                                        _buildPanelButton(bloc: bloc, icon: Icons.audiotrack, panel: PlayerPanel.audio),
+                                        _buildPanelButton(
+                                          bloc: bloc,
+                                          icon: Icons.audiotrack,
+                                          panel: PlayerPanel.audio,
+                                        ),
                                         _buildPanelButton(
                                           bloc: bloc,
                                           icon: Icons.subtitles,
@@ -321,7 +426,12 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
                                 ],
                               ),
                             ),
-                            Visibility(visible: !isLocked, child: TimeLinePanel(controller: widget.controller)),
+                            Visibility(
+                              visible: !isLocked,
+                              child: TimeLinePanel(
+                                controller: widget.controller,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -337,5 +447,9 @@ class _TouchControlsOverlayState extends State<TouchControlsOverlay> {
   }
 
   void _closePanel() =>
-      _opacity == 0 ? context.read<OverlayUiBloc>().add(const SetActivePanel(playerPanel: PlayerPanel.none)) : null;
+      _opacity == 0
+          ? context.read<OverlayUiBloc>().add(
+            const SetActivePanel(playerPanel: PlayerPanel.none),
+          )
+          : null;
 }

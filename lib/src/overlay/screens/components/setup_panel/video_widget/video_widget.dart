@@ -28,16 +28,20 @@ class _VideoWidgetState extends State<VideoWidget> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _videoTracks = _getProcessedTracks(widget.controller.playerState.videoTracks);
+    _videoTracks = _getProcessedTracks(
+      widget.controller.playerState.videoTracks,
+    );
     _selectedIndex = _getInitialSelectedIndex();
 
-    _streamSubscription = widget.controller.playerStateStream.listen((playerState) {
+    _streamSubscription = widget.controller.playerStateStream.listen((
+      playerState,
+    ) {
       setState(() {
-        
         _videoTracks = _getProcessedTracks(playerState.videoTracks);
-        
+
         if (_selectedIndex >= _videoTracks.length) {
-          _selectedIndex = _videoTracks.isNotEmpty ? _videoTracks.length - 1 : 0;
+          _selectedIndex =
+              _videoTracks.isNotEmpty ? _videoTracks.length - 1 : 0;
         }
       });
     });
@@ -51,14 +55,16 @@ class _VideoWidgetState extends State<VideoWidget> {
 
   List<VideoTrack> _getProcessedTracks(List<VideoTrack> videoTracks) {
     final processedTracks = List<VideoTrack>.from(videoTracks);
-    final hasExternalTracks = processedTracks.any((track) => track.isExternal == true);
+    final hasExternalTracks = processedTracks.any(
+      (track) => track.isExternal == true,
+    );
     if (!hasExternalTracks && processedTracks.isNotEmpty) {
       final isAnySelected = processedTracks.any((t) => t.isSelected);
       VideoTrack autoTrack = VideoTrack(
         id: '-1',
         index: -1,
         groupIndex: -1,
-        isSelected: !isAnySelected, 
+        isSelected: !isAnySelected,
         isExternal: false,
         label: OverlayLocalizations.get('auto'),
         trackType: 2,
@@ -82,15 +88,25 @@ class _VideoWidgetState extends State<VideoWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || _videoTracks.isEmpty || index < 0 || index >= _videoTracks.length) return;
+    if (!_scrollController.hasClients ||
+        _videoTracks.isEmpty ||
+        index < 0 ||
+        index >= _videoTracks.length) {
+      return;
+    }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -101,26 +117,36 @@ class _VideoWidgetState extends State<VideoWidget> {
 
   Map<ShortcutActivator, VoidCallback> _getShortcuts() {
     return {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => _handleKeyEvent(() {
             if (_videoTracks.isNotEmpty) {
-              _selectedIndex = (_selectedIndex - 1 + _videoTracks.length) % _videoTracks.length;
+              _selectedIndex =
+                  (_selectedIndex - 1 + _videoTracks.length) %
+                  _videoTracks.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => _handleKeyEvent(() {
             if (_videoTracks.isNotEmpty) {
               _selectedIndex = (_selectedIndex + 1) % _videoTracks.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _videoTracks.length) {
-              widget.controller.selectVideoTrack(track: _videoTracks[_selectedIndex]);
+              widget.controller.selectVideoTrack(
+                track: _videoTracks[_selectedIndex],
+              );
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.select): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _videoTracks.length) {
-              widget.controller.selectVideoTrack(track: _videoTracks[_selectedIndex]);
+              widget.controller.selectVideoTrack(
+                track: _videoTracks[_selectedIndex],
+              );
             }
           }),
     };
@@ -131,36 +157,36 @@ class _VideoWidgetState extends State<VideoWidget> {
     return _videoTracks.isEmpty
         ? const Focus(autofocus: true, child: SizedBox.shrink())
         : CallbackShortcuts(
-            bindings: _getShortcuts(),
-            child: Focus(
-              focusNode: _focusNode,
-              autofocus: true,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 7),
-                child: Scrollbar(
-                  controller: _scrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  radius: const Radius.circular(50),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: _videoTracks.length,
-                      itemExtent: _itemExtent,
-                      itemBuilder: (BuildContext context, int index) {
-                        final track = _videoTracks[index];
-                        return VideoItemWidget(
-                          controller: widget.controller,
-                          track: track,
-                          isFocused: index == _selectedIndex,
-                        );
-                      },
-                    ),
+          bindings: _getShortcuts(),
+          child: Focus(
+            focusNode: _focusNode,
+            autofocus: true,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 7),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                radius: const Radius.circular(50),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _videoTracks.length,
+                    itemExtent: _itemExtent,
+                    itemBuilder: (BuildContext context, int index) {
+                      final track = _videoTracks[index];
+                      return VideoItemWidget(
+                        controller: widget.controller,
+                        track: track,
+                        isFocused: index == _selectedIndex,
+                      );
+                    },
                   ),
                 ),
               ),
             ),
-          );
+          ),
+        );
   }
 }

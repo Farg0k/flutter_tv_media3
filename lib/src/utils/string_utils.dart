@@ -17,7 +17,11 @@ class StringUtils {
           ? (position / duration).clamp(0.0, 1.0)
           : 0.0;
 
-  static String getTimeLeft({int? position, int? duration, bool seconds = true}) {
+  static String getTimeLeft({
+    int? position,
+    int? duration,
+    bool seconds = true,
+  }) {
     if (position == null || duration == null) return '--:--';
     final d = Duration(seconds: duration - position);
     String timeLeft = d.toString().split('.').first.padLeft(8, "0");
@@ -27,7 +31,7 @@ class StringUtils {
 
   static String simplifyMimeType(String? mimeType) {
     if (mimeType == null) return '';
-    
+
     if (mimeType.contains('video/mp4')) return 'MP4';
     if (mimeType.contains('video/webm')) return 'WebM';
     if (mimeType.contains('video/mp2t')) return 'MPEG-TS';
@@ -37,12 +41,12 @@ class StringUtils {
     if (mimeType.contains('video/x-flv')) return 'FLV';
     if (mimeType.contains('video/avi')) return 'AVI';
 
-    
     if (mimeType.contains('application/x-mpegURL')) return 'HLS';
     if (mimeType.contains('application/dash+xml')) return 'DASH';
-    if (mimeType.contains('application/vnd.ms-sstr+xml')) return 'SmoothStreaming';
+    if (mimeType.contains('application/vnd.ms-sstr+xml')) {
+      return 'SmoothStreaming';
+    }
 
-    
     if (mimeType.contains('audio/mpeg')) return 'MP3';
     if (mimeType.contains('audio/aac')) return 'AAC';
     if (mimeType.contains('audio/ogg')) return 'Ogg';
@@ -56,13 +60,12 @@ class StringUtils {
     if (mimeType.contains('audio/x-aiff')) return 'AIFF';
     if (mimeType.contains('audio/dts')) return 'DTS';
 
-    
     return mimeType.split('/').last.toUpperCase();
   }
 
   static String simplifyCodec(String? codec) {
     if (codec == null) return '';
-    
+
     if (codec.contains('avc') || codec.contains('h264')) return 'H.264';
     if (codec.contains('hevc') || codec.contains('h265')) return 'H.265';
     if (codec.contains('vp8')) return 'VP8';
@@ -74,7 +77,6 @@ class StringUtils {
     if (codec.contains('divx')) return 'DivX';
     if (codec.contains('xvid')) return 'Xvid';
 
-    
     if (codec.contains('mp3')) return 'MP3';
     if (codec.contains('mp4a') || codec.contains('aac')) return 'AAC';
     if (codec.contains('vorbis')) return 'Vorbis';
@@ -89,7 +91,6 @@ class StringUtils {
     if (codec.contains('wma')) return 'WMA';
     if (codec.contains('aiff')) return 'AIFF';
 
-    
     return codec.toUpperCase();
   }
 
@@ -124,11 +125,20 @@ class StringUtils {
       if (width <= 0) return 'Unknown resolution';
     }();
 
-    final resolution = track.width !=null && track.height !=null? '${track.width}x${track.height}' : '';
+    final resolution =
+        track.width != null && track.height != null
+            ? '${track.width}x${track.height}'
+            : '';
 
-    final fps = (track.frameRate != null && track.frameRate! > 0) ? '@${track.frameRate!.toInt()}fps' : '';
+    final fps =
+        (track.frameRate != null && track.frameRate! > 0)
+            ? '@${track.frameRate!.toInt()}fps'
+            : '';
 
-    final bitrate = (track.bitrate != null && track.bitrate! > 0) ? ' (${formatBitrate(track.bitrate!)})' : '';
+    final bitrate =
+        (track.bitrate != null && track.bitrate! > 0)
+            ? ' (${formatBitrate(track.bitrate!)})'
+            : '';
 
     return '$label $resolutionName $resolution$fps $bitrate'.trim();
   }
@@ -141,11 +151,16 @@ class StringUtils {
     return '${bitrate ~/ 1000} kbps';
   }
 
-  static String getAudioTrackLabel({required AudioTrack track, required int index}) {
+  static String getAudioTrackLabel({
+    required AudioTrack track,
+    required int index,
+  }) {
     final parts = <String>[];
 
     if (track.language?.isNotEmpty == true) {
-      parts.add(_getLanguageName(track.language!).replaceAll('UND', 'Unspecified'));
+      parts.add(
+        _getLanguageName(track.language!).replaceAll('UND', 'Unspecified'),
+      );
     }
 
     if (track.label?.isNotEmpty == true) {
@@ -159,7 +174,10 @@ class StringUtils {
     return parts.join(' • ');
   }
 
-  static String getSubtitleTrackLabel({required SubtitleTrack track, required int index}) {
+  static String getSubtitleTrackLabel({
+    required SubtitleTrack track,
+    required int index,
+  }) {
     final String suffix;
     final int flags = track.roleFlags ?? 0;
 
@@ -170,7 +188,7 @@ class StringUtils {
     } else {
       suffix = '';
     }
-    String mainLabel='';
+    String mainLabel = '';
     if ((track.language ?? '').isNotEmpty) {
       mainLabel = '${_getLanguageName(track.language!)}, ';
     }
@@ -180,37 +198,41 @@ class StringUtils {
     } else if (track.codecs?.isNotEmpty == true) {
       mainLabel = '$mainLabel${track.codecs} Subtitle $index';
     }
-    if (mainLabel.isEmpty){
+    if (mainLabel.isEmpty) {
       mainLabel = 'Subtitle $index';
     }
     return '$mainLabel$suffix'.trim();
   }
 
   static String _getLanguageName(String languageCode) {
-
     return languageList[languageCode]?['nativeName'] ??
-        (languageCode.length > 2 ? '${languageCode[0].toUpperCase()}${languageCode.substring(2)}' : languageCode);
+        (languageCode.length > 2
+            ? '${languageCode[0].toUpperCase()}${languageCode.substring(2)}'
+            : languageCode);
   }
 
   static IconData getVideoQuality({int? width}) {
     if (width == null) return Icons.help_outline;
     if (width < 1280) {
-      return Icons.sd; 
+      return Icons.sd;
     } else if (width < 1920) {
-      return Icons.hd; 
+      return Icons.hd;
     } else if (width < 2560) {
-      return Icons.high_quality; 
+      return Icons.high_quality;
     } else if (width < 7680) {
-      return Icons.four_k; 
+      return Icons.four_k;
     } else {
-      return Icons.eight_k; 
+      return Icons.eight_k;
     }
   }
 }
 
 extension StringCasingExtension on String {
   String durationClear() =>
-      RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch(toString())?.group(1) ?? toString();
+      RegExp(
+        r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$',
+      ).firstMatch(toString())?.group(1) ??
+      toString();
 }
 
 List<T> distinctByIndex<T extends MediaTrack>(List<T> tracks) {

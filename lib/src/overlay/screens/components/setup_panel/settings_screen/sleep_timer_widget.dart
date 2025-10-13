@@ -25,17 +25,42 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
     final bool isDeferred = state.sleepAfter && state.sleepAfterNext;
     final bool canBeDeferred = state.sleepAfter && !state.sleepAfterNext;
     return [
-      _SleepTimerOption(label: OverlayLocalizations.get('off'), isOff: true, duration: Duration.zero),
       _SleepTimerOption(
-        label: isDeferred ? OverlayLocalizations.get('afterNextFile') : OverlayLocalizations.get('afterThisFile'),
-        isAfterFile: true,
-        subtitle: canBeDeferred ? OverlayLocalizations.get('tapToApplyAfterNextFile') : null,
+        label: OverlayLocalizations.get('off'),
+        isOff: true,
+        duration: Duration.zero,
       ),
-      _SleepTimerOption(label: OverlayLocalizations.get('min15'), duration: Duration(minutes: 15)),
-      _SleepTimerOption(label: OverlayLocalizations.get('min30'), duration: Duration(minutes: 30)),
-      _SleepTimerOption(label: OverlayLocalizations.get('min60'), duration: Duration(minutes: 60)),
-      _SleepTimerOption(label: OverlayLocalizations.get('min90'), duration: Duration(minutes: 90)),
-      _SleepTimerOption(label: OverlayLocalizations.get('min120'), duration: Duration(minutes: 120)),
+      _SleepTimerOption(
+        label:
+            isDeferred
+                ? OverlayLocalizations.get('afterNextFile')
+                : OverlayLocalizations.get('afterThisFile'),
+        isAfterFile: true,
+        subtitle:
+            canBeDeferred
+                ? OverlayLocalizations.get('tapToApplyAfterNextFile')
+                : null,
+      ),
+      _SleepTimerOption(
+        label: OverlayLocalizations.get('min15'),
+        duration: Duration(minutes: 15),
+      ),
+      _SleepTimerOption(
+        label: OverlayLocalizations.get('min30'),
+        duration: Duration(minutes: 30),
+      ),
+      _SleepTimerOption(
+        label: OverlayLocalizations.get('min60'),
+        duration: Duration(minutes: 60),
+      ),
+      _SleepTimerOption(
+        label: OverlayLocalizations.get('min90'),
+        duration: Duration(minutes: 90),
+      ),
+      _SleepTimerOption(
+        label: OverlayLocalizations.get('min120'),
+        duration: Duration(minutes: 120),
+      ),
     ];
   }
 
@@ -61,10 +86,14 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
   Widget build(BuildContext context) {
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _returnToMenu(context),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _returnToMenu(context),
-        const SingleActivator(LogicalKeyboardKey.contextMenu): () => _returnToMenu(context),
-        const SingleActivator(LogicalKeyboardKey.keyQ): () => _returnToMenu(context),
+        const SingleActivator(LogicalKeyboardKey.arrowLeft):
+            () => _returnToMenu(context),
+        const SingleActivator(LogicalKeyboardKey.arrowRight):
+            () => _returnToMenu(context),
+        const SingleActivator(LogicalKeyboardKey.contextMenu):
+            () => _returnToMenu(context),
+        const SingleActivator(LogicalKeyboardKey.keyQ):
+            () => _returnToMenu(context),
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -76,7 +105,8 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
               bloc: widget.bloc,
               buildWhen:
                   (oldState, newState) =>
-                      oldState.sleepTime != newState.sleepTime || oldState.sleepAfter != newState.sleepAfter,
+                      oldState.sleepTime != newState.sleepTime ||
+                      oldState.sleepAfter != newState.sleepAfter,
               builder: (context, state) {
                 final options = _getTimerOptions(state);
                 final selectedIndex = _getSelectedIndex(state, options);
@@ -102,12 +132,18 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
     );
   }
 
-  void _onOptionTap(BuildContext context, _SleepTimerOption option, OverlayUiState currentState) {
+  void _onOptionTap(
+    BuildContext context,
+    _SleepTimerOption option,
+    OverlayUiState currentState,
+  ) {
     if (option.isOff) {
       widget.bloc.add(const SetSleepTimer());
     } else if (option.isAfterFile) {
       if (currentState.sleepAfter && !currentState.sleepAfterNext) {
-        widget.bloc.add(const SetSleepTimer(sleepAfter: true, sleepAfterNext: true));
+        widget.bloc.add(
+          const SetSleepTimer(sleepAfter: true, sleepAfterNext: true),
+        );
       } else {
         widget.bloc.add(const SetSleepTimer(sleepAfter: true));
       }
@@ -120,7 +156,9 @@ class _SleepTimerWidgetState extends State<SleepTimerWidget> {
   int _getSelectedIndex(OverlayUiState state, List<_SleepTimerOption> options) {
     if (state.sleepAfter) return options.indexWhere((opt) => opt.isAfterFile);
     if (state.sleepTime != Duration.zero) {
-      final index = options.indexWhere((opt) => opt.duration != null && opt.duration! >= state.sleepTime);
+      final index = options.indexWhere(
+        (opt) => opt.duration != null && opt.duration! >= state.sleepTime,
+      );
       return index != -1 ? index : 2;
     }
     return options.indexWhere((opt) => opt.isOff);
@@ -144,20 +182,29 @@ class _SleepTimerHeader extends StatelessWidget {
       builder: (context, isTouch) {
         return BlocBuilder<OverlayUiBloc, OverlayUiState>(
           bloc: bloc,
-          buildWhen: (oldState, newState) => oldState.sleepTime != newState.sleepTime,
+          buildWhen:
+              (oldState, newState) => oldState.sleepTime != newState.sleepTime,
           builder: (context, state) {
             return ListTile(
-              leading: isTouch
-                  ? IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        bloc.add(SetActivePanel(playerPanel: PlayerPanel.settings));
-                      },
-                      icon: Icon(Icons.arrow_back),
-                    )
-                  : const Icon(Icons.timelapse),
+              leading:
+                  isTouch
+                      ? IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          bloc.add(
+                            SetActivePanel(playerPanel: PlayerPanel.settings),
+                          );
+                        },
+                        icon: Icon(Icons.arrow_back),
+                      )
+                      : const Icon(Icons.timelapse),
               trailing:
-                  isTouch ? IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close)) : null,
+                  isTouch
+                      ? IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(Icons.close),
+                      )
+                      : null,
               title: const Text('Sleep Timer'),
               titleTextStyle: Theme.of(context).textTheme.headlineMedium,
               subtitle: Visibility(
@@ -166,14 +213,19 @@ class _SleepTimerHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   spacing: 5,
                   children: [
-                    const Icon(Icons.access_time_filled_outlined, color: Colors.white60, size: 20),
+                    const Icon(
+                      Icons.access_time_filled_outlined,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
                     Text(
                       state.sleepTime.toString().durationClear(),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: state.sleepTime < const Duration(minutes: 4)
+                        color:
+                            state.sleepTime < const Duration(minutes: 4)
                                 ? AppTheme.timeWarningColor
                                 : Colors.white60,
-                          ),
+                      ),
                     ),
                   ],
                 ),
@@ -209,12 +261,13 @@ class _TimerOptionTile extends StatelessWidget {
         autofocus: isSelected,
         focusColor: AppTheme.focusColor,
         onFocusChange: (focus) {
-         if(focus == false) onFocusChange();
+          if (focus == false) onFocusChange();
         },
         title: Text(label),
         onTap: onTap,
         titleTextStyle: Theme.of(context).textTheme.titleLarge,
-        leading: isSelected ? const Icon(Icons.check) : const SizedBox(width: 24),
+        leading:
+            isSelected ? const Icon(Icons.check) : const SizedBox(width: 24),
         subtitle: subtitle != null ? Text(subtitle!) : null,
       ),
     );

@@ -19,7 +19,7 @@ class PlayerNotificationWidget extends StatelessWidget {
       case NotificationType.error:
         return Icons.error_outline;
       case NotificationType.info:
-      return Icons.info_outline;
+        return Icons.info_outline;
     }
   }
 
@@ -30,7 +30,7 @@ class PlayerNotificationWidget extends StatelessWidget {
       case NotificationType.error:
         return Colors.red;
       case NotificationType.info:
-      return Colors.blue;
+        return Colors.blue;
     }
   }
 

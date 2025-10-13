@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app_theme/app_theme.dart';
 
 class VideoInfoItem extends StatelessWidget {
-  const VideoInfoItem({
-    super.key,
-    required this.icon,
-    this.title,
-  });
+  const VideoInfoItem({super.key, required this.icon, this.title});
 
   final IconData icon;
   final String? title;
@@ -25,9 +21,7 @@ class VideoInfoItem extends StatelessWidget {
         spacing: 4,
         children: [
           Icon(icon, color: Colors.white70, size: 14),
-          if (title != null) ...[
-            Text(title!, style: AppTheme.infoTextStyle),
-          ],
+          if (title != null) ...[Text(title!, style: AppTheme.infoTextStyle)],
         ],
       ),
     );

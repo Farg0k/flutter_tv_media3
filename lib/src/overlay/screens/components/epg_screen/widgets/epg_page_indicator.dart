@@ -28,7 +28,12 @@ class EpgPageIndicator extends StatelessWidget {
             child: TabBar(
               controller: tabController,
               tabs: tabs,
-              indicator: UnderlineTabIndicator(borderSide: BorderSide(width: 2, color: AppTheme.fullFocusColor)),
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 2,
+                  color: AppTheme.fullFocusColor,
+                ),
+              ),
               indicatorSize: TabBarIndicatorSize.tab,
               indicatorPadding: const EdgeInsets.only(top: -4.0),
               labelPadding: EdgeInsets.zero,
@@ -46,4 +51,3 @@ class EpgPageIndicator extends StatelessWidget {
     );
   }
 }
-

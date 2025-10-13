@@ -1,3 +1,6 @@
+## 0.0.6
+- fix: analyzer and formatting issues
+- 
 ## 0.0.5
 - fix release v4
 

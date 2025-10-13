@@ -16,7 +16,13 @@ class TrackCoverWidget extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: Colors.grey[850],
-              boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 30, offset: Offset(0, 10))],
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 30,
+                  offset: Offset(0, 10),
+                ),
+              ],
               image: image,
             ),
             child: image != null ? null : Icon(Icons.music_note, size: 140),
@@ -26,4 +32,3 @@ class TrackCoverWidget extends StatelessWidget {
     );
   }
 }
-

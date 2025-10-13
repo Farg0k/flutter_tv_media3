@@ -55,7 +55,8 @@ class _OverlayScreenState extends State<OverlayScreen> {
     widget.controller.onBackPressed = () {
       final bloc = context.read<OverlayUiBloc>();
       final panel = bloc.state.playerPanel;
-      final isInitial = widget.controller.playerState.stateValue == StateValue.initial;
+      final isInitial =
+          widget.controller.playerState.stateValue == StateValue.initial;
 
       if (bloc.state.sideSheetOpen == true) {
         Navigator.of(context).pop();
@@ -119,7 +120,11 @@ class _OverlayScreenState extends State<OverlayScreen> {
           listener: (BuildContext context, OverlayUiState state) {
             if (state.playerPanel == PlayerPanel.sleep) {
               _openPanel(playerPanel: PlayerPanel.none);
-              showSideSheet(context: context, bloc: bloc, body: SleepTimerWidget(bloc: bloc, isAuto: true));
+              showSideSheet(
+                context: context,
+                bloc: bloc,
+                body: SleepTimerWidget(bloc: bloc, isAuto: true),
+              );
             }
             if (state.playerPanel == PlayerPanel.epg) {
               _openPanel(playerPanel: PlayerPanel.none);
@@ -135,12 +140,20 @@ class _OverlayScreenState extends State<OverlayScreen> {
                     widget.controller.playSelectedIndex(index: value.index);
                     Navigator.of(context).pop();
                   },
-                  deviceLocale: widget.controller.playerState.playerSettings.deviceLocale ?? const Locale('en', 'US'),
+                  deviceLocale:
+                      widget
+                          .controller
+                          .playerState
+                          .playerSettings
+                          .deviceLocale ??
+                      const Locale('en', 'US'),
                 ),
               );
             }
           },
-          buildWhen: (oldState, newState) => oldState.playerPanel != newState.playerPanel,
+          buildWhen:
+              (oldState, newState) =>
+                  oldState.playerPanel != newState.playerPanel,
           builder: (context, state) {
             if (state.playerPanel == PlayerPanel.placeholder) {
               return CallbackShortcuts(
@@ -148,7 +161,8 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 child: PlaceholderWidget(controller: widget.controller),
               );
             }
-            if (state.playerPanel == PlayerPanel.error && widget.controller.playerState.lastError != null) {
+            if (state.playerPanel == PlayerPanel.error &&
+                widget.controller.playerState.lastError != null) {
               if (state.sideSheetOpen == true) {
                 Navigator.of(context).pop();
               }
@@ -167,7 +181,10 @@ class _OverlayScreenState extends State<OverlayScreen> {
 
             if (state.playerPanel == PlayerPanel.setup) {
               bloc.add(const SetTouchMode(isTouch: false));
-              return SetupPanel(controller: widget.controller, selSettingsTab: state.tabIndex);
+              return SetupPanel(
+                controller: widget.controller,
+                selSettingsTab: state.tabIndex,
+              );
             }
             if (state.playerPanel == PlayerPanel.touchOverlay) {
               bloc.add(const SetTouchMode(isTouch: true));
@@ -225,10 +242,16 @@ class _OverlayScreenState extends State<OverlayScreen> {
               );
             }
             if (state.playerPanel == PlayerPanel.simple) {
-              return CallbackShortcuts(bindings: _simpleBindings(), child: SimplePanel(controller: widget.controller));
+              return CallbackShortcuts(
+                bindings: _simpleBindings(),
+                child: SimplePanel(controller: widget.controller),
+              );
             }
             if (state.playerPanel == PlayerPanel.info) {
-              return CallbackShortcuts(bindings: _generalBindings(), child: InfoPanel(controller: widget.controller));
+              return CallbackShortcuts(
+                bindings: _generalBindings(),
+                child: InfoPanel(controller: widget.controller),
+              );
             }
 
             return CallbackShortcuts(
@@ -255,27 +278,53 @@ class _OverlayScreenState extends State<OverlayScreen> {
                                 color: Colors.white,
                                 size: 48,
                                 shadows: [
-                                  Shadow(color: Colors.black, offset: Offset(2, 2)),
-                                  Shadow(color: Colors.black, offset: Offset(-2, -2)),
-                                  Shadow(color: Colors.black, offset: Offset(-2, 2)),
-                                  Shadow(color: Colors.black, offset: Offset(2, -2)),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(2, 2),
+                                  ),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(-2, -2),
+                                  ),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(-2, 2),
+                                  ),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(2, -2),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                         ),
                         Visibility(
-                          visible: playerState.stateValue == StateValue.paused && playerState.videoTracks.isNotEmpty,
+                          visible:
+                              playerState.stateValue == StateValue.paused &&
+                              playerState.videoTracks.isNotEmpty,
                           child: Center(
                             child: Icon(
                               Icons.pause,
                               color: Colors.white,
                               size: 140,
                               shadows: [
-                                Shadow(color: Colors.black, offset: Offset(2, 2)),
-                                Shadow(color: Colors.black, offset: Offset(-2, -2)),
-                                Shadow(color: Colors.black, offset: Offset(-2, 2)),
-                                Shadow(color: Colors.black, offset: Offset(2, -2)),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(2, 2),
+                                ),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(-2, -2),
+                                ),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(-2, 2),
+                                ),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(2, -2),
+                                ),
                               ],
                             ),
                           ),
@@ -324,15 +373,19 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.mediaStop): _stop,
       const SingleActivator(LogicalKeyboardKey.keyE): _stop,
 
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => widget.controller.playNext(),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => widget.controller.playPrevious(),
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => widget.controller.playNext(),
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => widget.controller.playPrevious(),
     };
   }
 
   Map<ShortcutActivator, VoidCallback> _simpleBindings() {
     Map<ShortcutActivator, VoidCallback> map = _generalBindings();
-    map[const SingleActivator(LogicalKeyboardKey.arrowUp)] = () => _arrowRewind(action: 60);
-    map[const SingleActivator(LogicalKeyboardKey.arrowDown)] = () => _arrowRewind(action: -60);
+    map[const SingleActivator(LogicalKeyboardKey.arrowUp)] =
+        () => _arrowRewind(action: 60);
+    map[const SingleActivator(LogicalKeyboardKey.arrowDown)] =
+        () => _arrowRewind(action: -60);
     return map;
   }
 
@@ -341,60 +394,92 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.mediaStop): _stop,
       const SingleActivator(LogicalKeyboardKey.keyE): _stop,
 
-      const SingleActivator(LogicalKeyboardKey.contextMenu): () => _openPanel(playerPanel: PlayerPanel.setup),
-      const SingleActivator(LogicalKeyboardKey.keyQ): () => _openPanel(playerPanel: PlayerPanel.setup),
+      const SingleActivator(LogicalKeyboardKey.contextMenu):
+          () => _openPanel(playerPanel: PlayerPanel.setup),
+      const SingleActivator(LogicalKeyboardKey.keyQ):
+          () => _openPanel(playerPanel: PlayerPanel.setup),
 
-      const SingleActivator(LogicalKeyboardKey.info): () => _openPanel(playerPanel: PlayerPanel.info),
-      const SingleActivator(LogicalKeyboardKey.keyW): () => _openPanel(playerPanel: PlayerPanel.info),
+      const SingleActivator(LogicalKeyboardKey.info):
+          () => _openPanel(playerPanel: PlayerPanel.info),
+      const SingleActivator(LogicalKeyboardKey.keyW):
+          () => _openPanel(playerPanel: PlayerPanel.info),
 
       const SingleActivator(LogicalKeyboardKey.enter): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.space): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.select): () => _playPause(),
-      const SingleActivator(LogicalKeyboardKey.mediaPlayPause): () => _playPause(),
+      const SingleActivator(LogicalKeyboardKey.mediaPlayPause):
+          () => _playPause(),
 
-      const SingleActivator(LogicalKeyboardKey.digit0): () => _goToVideoPercentage(percentage: 0),
-      const SingleActivator(LogicalKeyboardKey.digit1): () => _goToVideoPercentage(percentage: 0.1),
-      const SingleActivator(LogicalKeyboardKey.digit2): () => _goToVideoPercentage(percentage: 0.2),
-      const SingleActivator(LogicalKeyboardKey.digit3): () => _goToVideoPercentage(percentage: 0.3),
-      const SingleActivator(LogicalKeyboardKey.digit4): () => _goToVideoPercentage(percentage: 0.4),
-      const SingleActivator(LogicalKeyboardKey.digit5): () => _goToVideoPercentage(percentage: 0.5),
-      const SingleActivator(LogicalKeyboardKey.digit6): () => _goToVideoPercentage(percentage: 0.6),
-      const SingleActivator(LogicalKeyboardKey.digit7): () => _goToVideoPercentage(percentage: 0.7),
-      const SingleActivator(LogicalKeyboardKey.digit8): () => _goToVideoPercentage(percentage: 0.8),
-      const SingleActivator(LogicalKeyboardKey.digit9): () => _goToVideoPercentage(percentage: 0.9),
+      const SingleActivator(LogicalKeyboardKey.digit0):
+          () => _goToVideoPercentage(percentage: 0),
+      const SingleActivator(LogicalKeyboardKey.digit1):
+          () => _goToVideoPercentage(percentage: 0.1),
+      const SingleActivator(LogicalKeyboardKey.digit2):
+          () => _goToVideoPercentage(percentage: 0.2),
+      const SingleActivator(LogicalKeyboardKey.digit3):
+          () => _goToVideoPercentage(percentage: 0.3),
+      const SingleActivator(LogicalKeyboardKey.digit4):
+          () => _goToVideoPercentage(percentage: 0.4),
+      const SingleActivator(LogicalKeyboardKey.digit5):
+          () => _goToVideoPercentage(percentage: 0.5),
+      const SingleActivator(LogicalKeyboardKey.digit6):
+          () => _goToVideoPercentage(percentage: 0.6),
+      const SingleActivator(LogicalKeyboardKey.digit7):
+          () => _goToVideoPercentage(percentage: 0.7),
+      const SingleActivator(LogicalKeyboardKey.digit8):
+          () => _goToVideoPercentage(percentage: 0.8),
+      const SingleActivator(LogicalKeyboardKey.digit9):
+          () => _goToVideoPercentage(percentage: 0.9),
 
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => widget.controller.playNext(),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => widget.controller.playPrevious(),
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => widget.controller.playNext(),
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => widget.controller.playPrevious(),
 
-      const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _arrowRewind(action: -10),
-      const SingleActivator(LogicalKeyboardKey.arrowRight): () => _arrowRewind(action: 10),
-      const SingleActivator(LogicalKeyboardKey.pageUp): () => _arrowRewind(action: 600),
-      const SingleActivator(LogicalKeyboardKey.pageDown): () => _arrowRewind(action: -600),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft):
+          () => _arrowRewind(action: -10),
+      const SingleActivator(LogicalKeyboardKey.arrowRight):
+          () => _arrowRewind(action: 10),
+      const SingleActivator(LogicalKeyboardKey.pageUp):
+          () => _arrowRewind(action: 600),
+      const SingleActivator(LogicalKeyboardKey.pageDown):
+          () => _arrowRewind(action: -600),
 
       const SingleActivator(LogicalKeyboardKey.backspace): () => _clockRandom(),
     };
   }
 
   Future<void> _arrowRewind({required int action}) async {
-    if (widget.controller.playItem.programs != null) _openPanel(playerPanel: PlayerPanel.epg);
+    if (widget.controller.playItem.programs != null) {
+      _openPanel(playerPanel: PlayerPanel.epg);
+    }
     if (widget.controller.playerState.isLive == true) return;
     final bloc = context.read<OverlayUiBloc>();
     await debouncerThrottler.throttle(Duration(milliseconds: 200), () async {
       await _seekTo(action: action);
-      bloc.add(const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true));
+      bloc.add(
+        const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true),
+      );
     });
   }
 
-  Future<void> _handleHorizontalDrag({required DragUpdateDetails details}) async {
+  Future<void> _handleHorizontalDrag({
+    required DragUpdateDetails details,
+  }) async {
     if (widget.controller.playerState.isLive == true) return;
 
     final seekOffset = details.delta.dx.round();
     final bloc = context.read<OverlayUiBloc>();
 
-    await debouncerThrottler.throttle(const Duration(milliseconds: 50), () async {
-      await _seekTo(action: seekOffset);
-      bloc.add(const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true));
-    });
+    await debouncerThrottler.throttle(
+      const Duration(milliseconds: 50),
+      () async {
+        await _seekTo(action: seekOffset);
+        bloc.add(
+          const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true),
+        );
+      },
+    );
   }
 
   Future<void> _seekTo({required int action}) async {
@@ -419,22 +504,32 @@ class _OverlayScreenState extends State<OverlayScreen> {
       Navigator.of(context).pop();
     }
     context.read<OverlayUiBloc>().add(
-      SetActivePanel(playerPanel: bloc.state.playerPanel == playerPanel ? PlayerPanel.none : playerPanel),
+      SetActivePanel(
+        playerPanel:
+            bloc.state.playerPanel == playerPanel
+                ? PlayerPanel.none
+                : playerPanel,
+      ),
     );
   }
 
   Future<void> _playPause() async {
     final bloc = context.read<OverlayUiBloc>();
     await widget.controller.playPause();
-    bloc.add(const SetActivePanel(playerPanel: PlayerPanel.info, debounce: true));
+    bloc.add(
+      const SetActivePanel(playerPanel: PlayerPanel.info, debounce: true),
+    );
   }
 
   void _goToVideoPercentage({required double percentage}) {
     if (widget.controller.playerState.isLive == true) return;
     final bloc = context.read<OverlayUiBloc>();
-    final positionSeconds = widget.controller.playbackState.duration * percentage;
+    final positionSeconds =
+        widget.controller.playbackState.duration * percentage;
     widget.controller.seekTo(positionSeconds: positionSeconds.toInt());
-    bloc.add(const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true));
+    bloc.add(
+      const SetActivePanel(playerPanel: PlayerPanel.simple, debounce: true),
+    );
   }
 
   void _clockRandom() {

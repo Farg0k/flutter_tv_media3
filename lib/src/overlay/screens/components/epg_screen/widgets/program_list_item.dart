@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-
 import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 
 import '../../../../../app_theme/app_theme.dart';
@@ -13,11 +12,12 @@ class ProgramListItem extends StatefulWidget {
   final bool isSelected;
   final bool isTheActiveProgram;
 
-  const ProgramListItem(
-      {super.key,
-      required this.program,
-      required this.isSelected,
-      required this.isTheActiveProgram});
+  const ProgramListItem({
+    super.key,
+    required this.program,
+    required this.isSelected,
+    required this.isTheActiveProgram,
+  });
 
   @override
   State<ProgramListItem> createState() => _ProgramListItemState();
@@ -82,10 +82,7 @@ class _ProgramListItemState extends State<ProgramListItem> {
     setState(() {
       _progress = (now.difference(program.startTime).inSeconds /
               program.endTime.difference(program.startTime).inSeconds)
-          .clamp(
-        0.0,
-        1.0,
-      );
+          .clamp(0.0, 1.0);
     });
   }
 
@@ -96,27 +93,33 @@ class _ProgramListItemState extends State<ProgramListItem> {
     final isPassed = program.endTime.isBefore(now);
 
     return Container(
-      color: widget.isTheActiveProgram && !widget.isSelected
-          ? AppTheme.focusColor.withValues(alpha: 0.2)
-          : null,
+      color:
+          widget.isTheActiveProgram && !widget.isSelected
+              ? AppTheme.focusColor.withValues(alpha: 0.2)
+              : null,
       child: ListTile(
         leading: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text(
               OverlayLocalizations.formatShortTimeRange(
-                  program.startTime, program.endTime),
-              style: isPassed
-                  ? AppTheme.programListPassedItemTimeStyle
-                  : AppTheme.programListItemTimeStyle,
+                program.startTime,
+                program.endTime,
+              ),
+              style:
+                  isPassed
+                      ? AppTheme.programListPassedItemTimeStyle
+                      : AppTheme.programListItemTimeStyle,
             ),
             Text(
               OverlayLocalizations.dateFormat(date: program.startTime),
               style: (isPassed
-                  ? AppTheme.programListPassedItemTimeStyle.copyWith(fontSize: 12)
-                  : AppTheme.programListItemTimeStyle).copyWith(fontSize: 12)
+                      ? AppTheme.programListPassedItemTimeStyle.copyWith(
+                        fontSize: 12,
+                      )
+                      : AppTheme.programListItemTimeStyle)
+                  .copyWith(fontSize: 12)
                   .copyWith(fontWeight: FontWeight.w300),
             ),
           ],
@@ -124,38 +127,44 @@ class _ProgramListItemState extends State<ProgramListItem> {
         title: MarqueeWidget(
           text: program.title,
           style: TextStyle(
-            fontWeight: widget.isSelected || widget.isTheActiveProgram
-                ? FontWeight.bold
-                : FontWeight.normal,
-            color: isPassed
-                ? AppTheme.colorSecondary.withValues(alpha: 0.5)
-                : AppTheme.colorPrimary,
+            fontWeight:
+                widget.isSelected || widget.isTheActiveProgram
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+            color:
+                isPassed
+                    ? AppTheme.colorSecondary.withValues(alpha: 0.5)
+                    : AppTheme.colorPrimary,
           ),
           focus: widget.isSelected,
         ),
         subtitle: null,
-        trailing: widget.isTheActiveProgram
-            ? Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3.0,
-                        value: _progress,
-                        color: AppTheme.fullFocusColor,
-                        backgroundColor: AppTheme.divider,
+        trailing:
+            widget.isTheActiveProgram
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3.0,
+                          value: _progress,
+                          color: AppTheme.fullFocusColor,
+                          backgroundColor: AppTheme.divider,
+                        ),
                       ),
-                    ),
-                    Icon(Icons.play_arrow,
-                        color: AppTheme.colorPrimary, size: 18),
-                  ],
-                ),
-              )
-            : null,
+                      Icon(
+                        Icons.play_arrow,
+                        color: AppTheme.colorPrimary,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                )
+                : null,
       ),
     );
   }

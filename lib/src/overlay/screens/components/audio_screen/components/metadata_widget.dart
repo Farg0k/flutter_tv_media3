@@ -53,4 +53,3 @@ class MetaDataWidget extends StatelessWidget {
     );
   }
 }
-

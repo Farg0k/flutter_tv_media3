@@ -16,7 +16,13 @@ class _ClockWidgetState extends State<ClockWidget> {
   late TextStyle style;
   @override
   void initState() {
-    style = widget.style ?? const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18);
+    style =
+        widget.style ??
+        const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 18,
+        );
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {});
@@ -31,6 +37,9 @@ class _ClockWidgetState extends State<ClockWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(OverlayLocalizations.timeFormat(date: DateTime.now()), style: style);
+    return Text(
+      OverlayLocalizations.timeFormat(date: DateTime.now()),
+      style: style,
+    );
   }
 }

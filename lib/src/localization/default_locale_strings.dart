@@ -103,7 +103,7 @@ class DefaultLocaleStrings {
     "enterToEdit": "Enter to edit",
     "enterToSaveAndExit": "Enter to Save & Exit",
     "auto": "Auto",
-        "subtitles": "Subtitles %d",
+    "subtitles": "Subtitles %d",
     "subtitles_found_and_added": "Found and added new subtitles",
     "audio_tracks": "Audio Tracks",
     "apply_system_settings": "Apply system settings",

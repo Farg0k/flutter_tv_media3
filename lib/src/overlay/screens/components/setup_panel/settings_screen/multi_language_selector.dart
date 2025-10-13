@@ -47,7 +47,10 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _listFocusNode.requestFocus();
-      final code = widget.initiallySelected.isNotEmpty ? widget.initiallySelected.first : null;
+      final code =
+          widget.initiallySelected.isNotEmpty
+              ? widget.initiallySelected.first
+              : null;
       if (code != null) {
         final initialIndex = languageList.keys.toList().indexOf(code);
         if (initialIndex != -1) {
@@ -87,31 +90,40 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) {
+      return;
+    }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredLanguageList = _searchString.isEmpty
-        ? languageList
-        : Map.fromEntries(
-            languageList.entries.where((entry) {
-              final name = entry.value['name']?.toLowerCase() ?? '';
-              final native = entry.value['nativeName']?.toLowerCase() ?? '';
-              final code = entry.key.toLowerCase();
-              return name.contains(_searchString.toLowerCase()) ||
-                  native.contains(_searchString.toLowerCase()) ||
-                  code.contains(_searchString.toLowerCase());
-            }),
-          );
+    final filteredLanguageList =
+        _searchString.isEmpty
+            ? languageList
+            : Map.fromEntries(
+              languageList.entries.where((entry) {
+                final name = entry.value['name']?.toLowerCase() ?? '';
+                final native = entry.value['nativeName']?.toLowerCase() ?? '';
+                final code = entry.key.toLowerCase();
+                return name.contains(_searchString.toLowerCase()) ||
+                    native.contains(_searchString.toLowerCase()) ||
+                    code.contains(_searchString.toLowerCase());
+              }),
+            );
 
     final filteredKeys = filteredLanguageList.keys.toList();
 
@@ -123,24 +135,28 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
     }
 
     final listShortcuts = {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => handleListKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => handleListKeyEvent(() {
             if (_selectedIndex > 0) {
               _selectedIndex--;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => handleListKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => handleListKeyEvent(() {
             if (_selectedIndex < filteredKeys.length - 1) {
               _selectedIndex++;
               _scrollToIndex(_selectedIndex);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => handleListKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => handleListKeyEvent(() {
             if (_selectedIndex < filteredKeys.length) {
               _toggleSelection(filteredKeys[_selectedIndex]);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.select): () => handleListKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => handleListKeyEvent(() {
             if (_selectedIndex < filteredKeys.length) {
               _toggleSelection(filteredKeys[_selectedIndex]);
             }
@@ -157,14 +173,19 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
               context: context,
               bloc: widget.bloc,
               widthFactor: 0.35,
-              body: PlayerSettingsWidget(controller: widget.controller, bloc: widget.bloc),
+              body: PlayerSettingsWidget(
+                controller: widget.controller,
+                bloc: widget.bloc,
+              ),
             );
           },
           const SingleActivator(LogicalKeyboardKey.arrowRight): () {
             if (mounted) _searchFocusNode.requestFocus();
           },
-          const SingleActivator(LogicalKeyboardKey.contextMenu): () => Navigator.of(context).pop(),
-          const SingleActivator(LogicalKeyboardKey.keyQ): () => Navigator.of(context).pop(),
+          const SingleActivator(LogicalKeyboardKey.contextMenu):
+              () => Navigator.of(context).pop(),
+          const SingleActivator(LogicalKeyboardKey.keyQ):
+              () => Navigator.of(context).pop(),
         },
         child: Column(
           children: [
@@ -174,7 +195,9 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
               titleTextStyle: Theme.of(context).textTheme.titleLarge,
               subtitle: Text(
                 _selectedCodes.join(', '),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppTheme.fullFocusColor),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppTheme.fullFocusColor,
+                ),
               ),
             ),
             ListTile(
@@ -225,21 +248,36 @@ class _MultiLanguageSelectorState extends State<MultiLanguageSelector> {
                         itemBuilder: (context, index) {
                           final code = filteredKeys[index];
                           final data = filteredLanguageList[code];
-                          final displayName = data?['nativeName'] ?? data?['name'] ?? code;
+                          final displayName =
+                              data?['nativeName'] ?? data?['name'] ?? code;
                           final name = data?['name'] ?? code;
                           final isSelected = _selectedCodes.contains(code);
                           final isFocused = index == _selectedIndex;
 
                           return Container(
-                            color: isFocused ? AppTheme.focusColor : Colors.transparent,
+                            color:
+                                isFocused
+                                    ? AppTheme.focusColor
+                                    : Colors.transparent,
                             child: ListTile(
                               title: Text(displayName.toString()),
                               subtitle: Text(name),
-                              trailing: isSelected
-                                  ? Icon(Icons.check_circle, color: AppTheme.fullFocusColor)
-                                  : Text(code, style: Theme.of(context).textTheme.titleMedium),
+                              trailing:
+                                  isSelected
+                                      ? Icon(
+                                        Icons.check_circle,
+                                        color: AppTheme.fullFocusColor,
+                                      )
+                                      : Text(
+                                        code,
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.titleMedium,
+                                      ),
                               selected: isSelected,
-                              selectedTileColor: AppTheme.fullFocusColor.withValues(alpha: 0.3),
+                              selectedTileColor: AppTheme.fullFocusColor
+                                  .withValues(alpha: 0.3),
                               onTap: () => _toggleSelection(code),
                             ),
                           );

@@ -163,31 +163,33 @@ class VideoTrack extends MediaTrack {
       averageBitrate: map['averageBitrate'],
       peakBitrate: map['peakBitrate'],
       stereoMode: map['stereoMode'],
-      colorInfo: map['colorInfo'] != null ? Map<String, dynamic>.from(map['colorInfo']) : null,
+      colorInfo:
+          map['colorInfo'] != null
+              ? Map<String, dynamic>.from(map['colorInfo'])
+              : null,
       url: map['url'],
     );
   }
 
   @override
   Map<String, dynamic> toMap() {
-    return super.toMap()
-      ..addAll({
-        'width': width,
-        'height': height,
-        'bitrate': bitrate,
-        'frameRate': frameRate,
-        'sampleMimeType': sampleMimeType,
-        'codecs': codecs,
-        'selectionFlags': selectionFlags,
-        'roleFlags': roleFlags,
-        'pixelWidthHeightRatio': pixelWidthHeightRatio,
-        'containerMimeType': containerMimeType,
-        'averageBitrate': averageBitrate,
-        'peakBitrate': peakBitrate,
-        'stereoMode': stereoMode,
-        'colorInfo': colorInfo,
-        'url': url,
-      });
+    return super.toMap()..addAll({
+      'width': width,
+      'height': height,
+      'bitrate': bitrate,
+      'frameRate': frameRate,
+      'sampleMimeType': sampleMimeType,
+      'codecs': codecs,
+      'selectionFlags': selectionFlags,
+      'roleFlags': roleFlags,
+      'pixelWidthHeightRatio': pixelWidthHeightRatio,
+      'containerMimeType': containerMimeType,
+      'averageBitrate': averageBitrate,
+      'peakBitrate': peakBitrate,
+      'stereoMode': stereoMode,
+      'colorInfo': colorInfo,
+      'url': url,
+    });
   }
 
   @override
@@ -295,19 +297,18 @@ class AudioTrack extends MediaTrack {
 
   @override
   Map<String, dynamic> toMap() {
-    return super.toMap()
-      ..addAll({
-        'language': language,
-        'codec': codec,
-        'mimeType': mimeType,
-        'bitrate': bitrate,
-        'averageBitrate': averageBitrate,
-        'peakBitrate': peakBitrate,
-        'sampleRate': sampleRate,
-        'channelCount': channelCount,
-        'selectionFlags': selectionFlags,
-        'roleFlags': roleFlags,
-      });
+    return super.toMap()..addAll({
+      'language': language,
+      'codec': codec,
+      'mimeType': mimeType,
+      'bitrate': bitrate,
+      'averageBitrate': averageBitrate,
+      'peakBitrate': peakBitrate,
+      'sampleRate': sampleRate,
+      'channelCount': channelCount,
+      'selectionFlags': selectionFlags,
+      'roleFlags': roleFlags,
+    });
   }
 
   @override
@@ -390,15 +391,14 @@ class SubtitleTrack extends MediaTrack {
 
   @override
   Map<String, dynamic> toMap() {
-    return super.toMap()
-      ..addAll({
-        'language': language,
-        'selectionFlags': selectionFlags,
-        'roleFlags': roleFlags,
-        'codecs': codecs,
-        'containerMimeType': containerMimeType,
-        'sampleMimeType': sampleMimeType,
-      });
+    return super.toMap()..addAll({
+      'language': language,
+      'selectionFlags': selectionFlags,
+      'roleFlags': roleFlags,
+      'codecs': codecs,
+      'containerMimeType': containerMimeType,
+      'sampleMimeType': sampleMimeType,
+    });
   }
 
   @override

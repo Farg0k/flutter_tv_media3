@@ -13,12 +13,7 @@ class VolumeState {
     this.volume = 0.0,
   });
 
-  VolumeState copyWith({
-    int? current,
-    int? max,
-    bool? isMute,
-    double? volume,
-  }) {
+  VolumeState copyWith({int? current, int? max, bool? isMute, double? volume}) {
     return VolumeState(
       current: current ?? this.current,
       max: max ?? this.max,
@@ -33,12 +28,7 @@ class VolumeState {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'current': current,
-      'max': max,
-      'isMute': isMute,
-      'volume': volume,
-    };
+    return {'current': current, 'max': max, 'isMute': isMute, 'volume': volume};
   }
 
   factory VolumeState.fromMap(Map<String, dynamic> map) {
@@ -86,10 +76,10 @@ class PlayerState {
     VolumeState? volumeState,
     this.activityDestroyed = false,
     this.customInfoText,
-  })  : subtitleStyle = subtitleStyle ?? SubtitleStyle(),
-        clockSettings = clockSettings ?? ClockSettings(),
-        volumeState = volumeState ?? VolumeState(),
-        playerSettings = playerSettings ?? PlayerSettings();
+  }) : subtitleStyle = subtitleStyle ?? SubtitleStyle(),
+       clockSettings = clockSettings ?? ClockSettings(),
+       volumeState = volumeState ?? VolumeState(),
+       playerSettings = playerSettings ?? PlayerSettings();
 
   /// A flag indicating whether the native player Activity is ready.
   final bool activityReady;
@@ -272,8 +262,12 @@ class PlayerState {
     return PlayerState(
       activityReady: map['activityReady'] as bool? ?? false,
       stateValue: StateValue.values[map['stateValue'] as int? ?? 0],
-      playlist: (map['playlist'] as List<dynamic>?)
-              ?.map((item) => PlaylistMediaItem.fromMap(item as Map<String, dynamic>))
+      playlist:
+          (map['playlist'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    PlaylistMediaItem.fromMap(item as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
       playIndex: map['playIndex'] as int? ?? -1,
@@ -283,34 +277,53 @@ class PlayerState {
       isSeekable: map['isSeekable'] as bool? ?? false,
       loadingStatus: map['loadingStatus'] as String?,
       loadingProgress: map['loadingProgress'] as double?,
-      videoTracks: (map['videoTracks'] as List<dynamic>?)
-              ?.map((track) => VideoTrack.fromMap(track as Map<String, dynamic>))
+      videoTracks:
+          (map['videoTracks'] as List<dynamic>?)
+              ?.map(
+                (track) => VideoTrack.fromMap(track as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
-      audioTracks: (map['audioTracks'] as List<dynamic>?)
-              ?.map((track) => AudioTrack.fromMap(track as Map<String, dynamic>))
+      audioTracks:
+          (map['audioTracks'] as List<dynamic>?)
+              ?.map(
+                (track) => AudioTrack.fromMap(track as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
-      subtitleTracks: (map['subtitleTracks'] as List<dynamic>?)
-              ?.map((track) => SubtitleTrack.fromMap(track as Map<String, dynamic>))
+      subtitleTracks:
+          (map['subtitleTracks'] as List<dynamic>?)
+              ?.map(
+                (track) => SubtitleTrack.fromMap(track as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
       zoom: PlayerZoom.values[map['zoom'] as int? ?? 0],
       speed: map['speed'] as double? ?? 1.0,
       repeatMode: RepeatMode.values[map['repeatMode'] as int? ?? 0],
       isShuffleModeEnabled: map['isShuffleModeEnabled'] as bool? ?? false,
-      subtitleStyle: map['subtitleStyle'] != null
-          ? SubtitleStyle.fromMap(map['subtitleStyle'] as Map<String, dynamic>)
-          : null,
-      clockSettings: map['clockSettings'] != null
-          ? ClockSettings.fromMap(map['clockSettings'] as Map<String, dynamic>)
-          : null,
-      playerSettings: map['playerSettings'] != null
-          ? PlayerSettings.fromMap(map['playerSettings'] as Map<String, dynamic>)
-          : null,
-      volumeState: map['volumeState'] != null
-          ? VolumeState.fromMap(map['volumeState'] as Map<String, dynamic>)
-          : null,
+      subtitleStyle:
+          map['subtitleStyle'] != null
+              ? SubtitleStyle.fromMap(
+                map['subtitleStyle'] as Map<String, dynamic>,
+              )
+              : null,
+      clockSettings:
+          map['clockSettings'] != null
+              ? ClockSettings.fromMap(
+                map['clockSettings'] as Map<String, dynamic>,
+              )
+              : null,
+      playerSettings:
+          map['playerSettings'] != null
+              ? PlayerSettings.fromMap(
+                map['playerSettings'] as Map<String, dynamic>,
+              )
+              : null,
+      volumeState:
+          map['volumeState'] != null
+              ? VolumeState.fromMap(map['volumeState'] as Map<String, dynamic>)
+              : null,
       customInfoText: map['customInfoText'] as String?,
       activityDestroyed: map['activityDestroyed'] as bool? ?? false,
     );

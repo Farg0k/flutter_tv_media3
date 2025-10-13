@@ -27,7 +27,6 @@ enum BasicColors {
   final Color color;
   final String hexString;
 
-  
   static BasicColors? fromColor(Color color) {
     for (BasicColors colorEnum in BasicColors.values) {
       if (colorEnum.color == color) {
@@ -47,7 +46,9 @@ enum BasicColors {
   }
 
   static Map<Color, String> get colorMap {
-    return Map.fromEntries(BasicColors.values.map((e) => MapEntry(e.color, e.hexString)));
+    return Map.fromEntries(
+      BasicColors.values.map((e) => MapEntry(e.color, e.hexString)),
+    );
   }
 
   static List<Color> get allColors {

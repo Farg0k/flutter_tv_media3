@@ -66,15 +66,25 @@ class _ColorSelectorWidgetState extends State<ColorSelectorWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || widget.colorList.isEmpty || index < 0 || index >= widget.colorList.length) return;
+    if (!_scrollController.hasClients ||
+        widget.colorList.isEmpty ||
+        index < 0 ||
+        index >= widget.colorList.length) {
+      return;
+    }
 
     final viewportWidth = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportWidth / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportWidth / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -82,7 +92,8 @@ class _ColorSelectorWidgetState extends State<ColorSelectorWidget> {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.arrowLeft):
-            () => _setSelectItem(action: -1, itemCount: widget.colorList.length),
+            () =>
+                _setSelectItem(action: -1, itemCount: widget.colorList.length),
         const SingleActivator(LogicalKeyboardKey.arrowRight):
             () => _setSelectItem(action: 1, itemCount: widget.colorList.length),
       },
@@ -107,7 +118,10 @@ class _ColorSelectorWidgetState extends State<ColorSelectorWidget> {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isFocus == true ? AppTheme.fullFocusColor : Theme.of(context).dividerColor,
+                    color:
+                        isFocus == true
+                            ? AppTheme.fullFocusColor
+                            : Theme.of(context).dividerColor,
                     width: 2.0,
                   ),
                   borderRadius: AppTheme.borderRadius,
@@ -132,10 +146,15 @@ class _ColorSelectorWidgetState extends State<ColorSelectorWidget> {
                           decoration: BoxDecoration(
                             color: widget.colorList[index],
                             border: Border.all(
-                              color: index == _selectedIndex ? Colors.white : Colors.white,
+                              color:
+                                  index == _selectedIndex
+                                      ? Colors.white
+                                      : Colors.white,
                               width: index == _selectedIndex ? 4 : 1.0,
                             ),
-                            borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(5.0),
+                            ),
                           ),
                           height: 20,
                           width: 20,

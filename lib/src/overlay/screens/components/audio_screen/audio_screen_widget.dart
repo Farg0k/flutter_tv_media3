@@ -20,15 +20,20 @@ class AudioPlayerTVScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-        buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
+        buildWhen:
+            (oldState, newState) => oldState.playIndex != newState.playIndex,
         builder: (context, state) {
           final playItem = controller.playerState.playlist[state.playIndex];
 
-          final String? albumArtUrl = playItem.coverImg ?? controller.currentMetadata.artworkUri;
+          final String? albumArtUrl =
+              playItem.coverImg ?? controller.currentMetadata.artworkUri;
           final artworkData = controller.currentMetadata.artworkData;
           final image =
               albumArtUrl != null
-                  ? DecorationImage(image: NetworkImage(albumArtUrl), fit: BoxFit.cover)
+                  ? DecorationImage(
+                    image: NetworkImage(albumArtUrl),
+                    fit: BoxFit.cover,
+                  )
                   : artworkData != null
                   ? DecorationImage(image: MemoryImage(artworkData))
                   : null;
@@ -50,7 +55,10 @@ class AudioPlayerTVScreen extends StatelessWidget {
                     Column(
                       children: [
                         TrackCoverWidget(image: image),
-                        ButtonPanelWidget(controller: controller, playIndex: state.playIndex),
+                        ButtonPanelWidget(
+                          controller: controller,
+                          playIndex: state.playIndex,
+                        ),
                       ],
                     ),
                     Expanded(
@@ -60,7 +68,10 @@ class AudioPlayerTVScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 8,
                         children: [
-                          TrackInfoWidget(controller: controller, playItem: playItem),
+                          TrackInfoWidget(
+                            controller: controller,
+                            playItem: playItem,
+                          ),
                           MetaDataWidget(controller: controller),
                           Spacer(),
                           ProgressLineWidget(controller: controller),

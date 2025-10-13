@@ -44,7 +44,10 @@ class SetPlayIndex extends OverlayUiEvent {
 class DebounceActivePanel extends OverlayUiEvent {
   final PlayerPanel playerPanel;
   final PlayerPanel debouncePanel;
-  const DebounceActivePanel({required this.playerPanel, required this.debouncePanel});
+  const DebounceActivePanel({
+    required this.playerPanel,
+    required this.debouncePanel,
+  });
 
   @override
   List<Object?> get props => [];

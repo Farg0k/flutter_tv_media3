@@ -12,7 +12,8 @@ class RefreshRateSelectorWidget extends StatefulWidget {
   const RefreshRateSelectorWidget({super.key, required this.controller});
 
   @override
-  State<RefreshRateSelectorWidget> createState() => _RefreshRateSelectorWidgetState();
+  State<RefreshRateSelectorWidget> createState() =>
+      _RefreshRateSelectorWidgetState();
 }
 
 class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
@@ -51,7 +52,9 @@ class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
           _refreshRateInfo = info;
           _isLoading = false;
           // Find the index of the active rate to focus it
-          final activeRateIndex = info.supportedRates.indexWhere((rate) => (info.activeRate - rate).abs() < 0.1);
+          final activeRateIndex = info.supportedRates.indexWhere(
+            (rate) => (info.activeRate - rate).abs() < 0.1,
+          );
           if (activeRateIndex != -1) {
             _selectedIndex = activeRateIndex;
           }
@@ -78,8 +81,14 @@ class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
-    final targetOffset = (index * _itemExtent) - (_scrollController.position.viewportDimension / 2) + (_itemExtent / 2);
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) {
+      return;
+    }
+    final targetOffset =
+        (index * _itemExtent) -
+        (_scrollController.position.viewportDimension / 2) +
+        (_itemExtent / 2);
     _scrollController.animateTo(
       targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 200),
@@ -127,8 +136,10 @@ class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
           const SingleActivator(LogicalKeyboardKey.arrowRight): () {
             if (mounted) _doneButtonFocusNode.requestFocus();
           },
-          const SingleActivator(LogicalKeyboardKey.contextMenu): () => Navigator.of(context).pop(),
-          const SingleActivator(LogicalKeyboardKey.keyQ): () => Navigator.of(context).pop(),
+          const SingleActivator(LogicalKeyboardKey.contextMenu):
+              () => Navigator.of(context).pop(),
+          const SingleActivator(LogicalKeyboardKey.keyQ):
+              () => Navigator.of(context).pop(),
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -139,44 +150,60 @@ class _RefreshRateSelectorWidgetState extends State<RefreshRateSelectorWidget> {
               titleTextStyle: Theme.of(context).textTheme.headlineMedium,
             ),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : rates.isEmpty
-                      ? Center(child: Text(OverlayLocalizations.get('refreshRateNotAvailable')))
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : rates.isEmpty
+                      ? Center(
+                        child: Text(
+                          OverlayLocalizations.get('refreshRateNotAvailable'),
+                        ),
+                      )
                       : CallbackShortcuts(
-                          bindings: listShortcuts,
-                          child: Focus(
-                            focusNode: _listFocusNode,
-                            autofocus: true,
-                            child: Scrollbar(
-                              controller: _scrollController,
-                              thumbVisibility: true,
-                              trackVisibility: true,
-                              radius: const Radius.circular(50),
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ListView.builder(
-                                  controller: _scrollController,
-                                  itemCount: rates.length,
-                                  itemExtent: _itemExtent,
-                                  itemBuilder: (context, index) {
-                                    final rate = rates[index];
-                                    final isActive = (_refreshRateInfo!.activeRate - rate).abs() < 0.1;
-                                    final isFocused = index == _selectedIndex;
-                                    return Container(
-                                      color: isFocused ? AppTheme.focusColor : Colors.transparent,
-                                      child: ListTile(
-                                        leading: isActive ? const Icon(Icons.check) : const SizedBox(width: 24),
-                                        title: Text('${rate.toStringAsFixed(3)} Hz'),
-                                        onTap: () => _setRate(rate),
+                        bindings: listShortcuts,
+                        child: Focus(
+                          focusNode: _listFocusNode,
+                          autofocus: true,
+                          child: Scrollbar(
+                            controller: _scrollController,
+                            thumbVisibility: true,
+                            trackVisibility: true,
+                            radius: const Radius.circular(50),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ListView.builder(
+                                controller: _scrollController,
+                                itemCount: rates.length,
+                                itemExtent: _itemExtent,
+                                itemBuilder: (context, index) {
+                                  final rate = rates[index];
+                                  final isActive =
+                                      (_refreshRateInfo!.activeRate - rate)
+                                          .abs() <
+                                      0.1;
+                                  final isFocused = index == _selectedIndex;
+                                  return Container(
+                                    color:
+                                        isFocused
+                                            ? AppTheme.focusColor
+                                            : Colors.transparent,
+                                    child: ListTile(
+                                      leading:
+                                          isActive
+                                              ? const Icon(Icons.check)
+                                              : const SizedBox(width: 24),
+                                      title: Text(
+                                        '${rate.toStringAsFixed(3)} Hz',
                                       ),
-                                    );
-                                  },
-                                ),
+                                      onTap: () => _setRate(rate),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
                         ),
+                      ),
             ),
           ],
         ),

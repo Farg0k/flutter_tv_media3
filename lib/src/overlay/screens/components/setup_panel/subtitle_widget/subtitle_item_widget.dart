@@ -40,16 +40,27 @@ class SubtitleItemWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             children: [
-              SizedBox(width: 40, height: 40, child: _buildIcon(track, isSelected, isFocused)),
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: _buildIcon(track, isSelected, isFocused),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: MarqueeWidget(
-                  text: StringUtils.getSubtitleTrackLabel(track: track, index: index),
+                  text: StringUtils.getSubtitleTrackLabel(
+                    track: track,
+                    index: index,
+                  ),
                   focus: isFocused,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: isFocused || isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isFocused || isSelected ? Colors.white : Colors.white70,
+                    fontWeight:
+                        isFocused || isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                    color:
+                        isFocused || isSelected ? Colors.white : Colors.white70,
                   ),
                 ),
               ),
@@ -58,7 +69,10 @@ class SubtitleItemWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Text(
                     stateInfoLabel!,
-                    style: TextStyle(fontSize: 14, color: isFocused ? Colors.white : Colors.white70),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isFocused ? Colors.white : Colors.white70,
+                    ),
                   ),
                 ),
               if (track.isExternal == true)
@@ -83,7 +97,10 @@ class SubtitleItemWidget extends StatelessWidget {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(color)),
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
             ),
           );
         case SubtitleSearchStatus.error:
@@ -96,6 +113,10 @@ class SubtitleItemWidget extends StatelessWidget {
     if (track.index == -1) {
       return Icon(Icons.subtitles_off_outlined, size: 40, color: color);
     }
-    return Icon(isSelected ? Icons.subtitles : Icons.subtitles_outlined, size: 40, color: color);
+    return Icon(
+      isSelected ? Icons.subtitles : Icons.subtitles_outlined,
+      size: 40,
+      color: color,
+    );
   }
 }

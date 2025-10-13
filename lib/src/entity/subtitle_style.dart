@@ -1,4 +1,3 @@
-
 import '../const/basic_colors.dart';
 import '../const/extended_colors.dart';
 
@@ -69,14 +68,16 @@ class SubtitleStyle {
       'bottomPadding': bottomPadding,
       'leftPadding': leftPadding,
       'rightPadding': rightPadding,
-      'topPadding': topPadding
+      'topPadding': topPadding,
     };
   }
 
   factory SubtitleStyle.fromMap(Map<dynamic, dynamic> map) {
     return SubtitleStyle(
       foregroundColor: BasicColors.fromHex(map['foregroundColor'] as String?),
-      backgroundColor: ExtendedColors.fromHex(map['backgroundColor'] as String?),
+      backgroundColor: ExtendedColors.fromHex(
+        map['backgroundColor'] as String?,
+      ),
       edgeType: SubtitleEdgeType.values[map['edgeType'] as int],
       edgeColor: BasicColors.fromHex(map['edgeColor'] as String?),
       textSizeFraction: map['textSizeFraction'] as double,
@@ -138,17 +139,24 @@ class SubtitleStyle {
 /// Defines the type of visual effect for the edges of the subtitle text.
 enum SubtitleEdgeType {
   /// No effect.
-  none, 
+  none,
+
   /// Outline.
-  outline, 
+  outline,
+
   /// Drop shadow.
-  dropShadow, 
+  dropShadow,
+
   /// Raised effect.
-  raised, 
+  raised,
+
   /// Depressed effect.
   depressed;
 
-  static SubtitleEdgeType changeValue({required int index, required int direction}) {
+  static SubtitleEdgeType changeValue({
+    required int index,
+    required int direction,
+  }) {
     final length = SubtitleEdgeType.values.length;
     final newIndex = (index + direction + length) % length;
     return SubtitleEdgeType.values[newIndex];

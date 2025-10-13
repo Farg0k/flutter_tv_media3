@@ -81,7 +81,13 @@ class EventMessage {
   /// The binary message data.
   final Uint8List? messageData;
 
-  EventMessage({this.schemeIdUri, this.value, this.durationMs, this.id, this.messageData});
+  EventMessage({
+    this.schemeIdUri,
+    this.value,
+    this.durationMs,
+    this.id,
+    this.messageData,
+  });
 
   /// Returns [messageData] as a JSON map, if possible.
   Map<String, dynamic>? get messageDataAsJson {

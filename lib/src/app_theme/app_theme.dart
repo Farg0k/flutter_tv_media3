@@ -19,8 +19,14 @@ class AppTheme {
   static const Color divider = Color(0xFF616161);
   static const Color errColor = Color(0xFFF44336);
 
-  static const TextStyle boldTextStyle = TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.bold);
-  static const TextStyle extraLightTextStyle = TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.w300);
+  static const TextStyle boldTextStyle = TextStyle(
+    color: AppTheme.colorPrimary,
+    fontWeight: FontWeight.bold,
+  );
+  static const TextStyle extraLightTextStyle = TextStyle(
+    color: AppTheme.colorPrimary,
+    fontWeight: FontWeight.w300,
+  );
 
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
@@ -36,7 +42,9 @@ class AppTheme {
           }
           return BorderSide(color: Colors.white30, width: 1);
         }),
-        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: AppTheme.borderRadius)),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(borderRadius: AppTheme.borderRadius),
+        ),
       ),
     ),
   );
@@ -48,7 +56,9 @@ class AppTheme {
     letterSpacing: 0.5,
   );
 
-  static const TextStyle noDataTextStyle = TextStyle(color: AppTheme.colorSecondary);
+  static const TextStyle noDataTextStyle = TextStyle(
+    color: AppTheme.colorSecondary,
+  );
 
   static const TextStyle detailsChannelNameStyle = TextStyle(
     fontSize: 20,
@@ -66,7 +76,11 @@ class AppTheme {
     color: colorSecondary,
     fontWeight: FontWeight.w500,
   );
-  static const TextStyle detailsProgramDescriptionStyle = TextStyle(fontSize: 16, height: 1.5, color: colorSecondary);
+  static const TextStyle detailsProgramDescriptionStyle = TextStyle(
+    fontSize: 16,
+    height: 1.5,
+    color: colorSecondary,
+  );
   static const TextStyle programsChannelNameStyle = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
@@ -83,17 +97,23 @@ class AppTheme {
     fontSize: 12,
   );
 
-  static const TextStyle indicatorSelectedLabelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-  static const TextStyle indicatorUnselectedLabelStyle = TextStyle(fontSize: 14);
+  static const TextStyle indicatorSelectedLabelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
+  static const TextStyle indicatorUnselectedLabelStyle = TextStyle(
+    fontSize: 14,
+  );
 
   static const TextStyle programListItemTimeStyle = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: colorSecondary,
   );
-  static final TextStyle programListPassedItemTimeStyle = programListItemTimeStyle.copyWith(
-    color: colorSecondary.withValues(alpha:0.7),
-  );
+  static final TextStyle programListPassedItemTimeStyle =
+      programListItemTimeStyle.copyWith(
+        color: colorSecondary.withValues(alpha: 0.7),
+      );
   static const TextStyle timelineTimeStyle = TextStyle(
     fontSize: 16,
     color: colorSecondary,

@@ -34,8 +34,12 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     super.initState();
     _scrollController = ScrollController();
 
-    widget.controller.findSubtitlesStateNotifier.addListener(_onFindSubtitlesStateChanged);
-    _streamSubscription = widget.controller.playerStateStream.listen((_) => _updateState());
+    widget.controller.findSubtitlesStateNotifier.addListener(
+      _onFindSubtitlesStateChanged,
+    );
+    _streamSubscription = widget.controller.playerStateStream.listen(
+      (_) => _updateState(),
+    );
 
     _updateState(isInitial: true);
 
@@ -52,9 +56,13 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     final newState = widget.controller.findSubtitlesStateNotifier.value;
     if (mounted) {
       // Show error messages immediately from the search state.
-      if (newState.status == SubtitleSearchStatus.error && _previousFindSubtitlesState?.status != SubtitleSearchStatus.error) {
+      if (newState.status == SubtitleSearchStatus.error &&
+          _previousFindSubtitlesState?.status != SubtitleSearchStatus.error) {
         if (newState.errorMessage != null) {
-          _showOverlayNotification(message: newState.errorMessage!, type: NotificationType.error);
+          _showOverlayNotification(
+            message: newState.errorMessage!,
+            type: NotificationType.error,
+          );
         }
       }
     }
@@ -63,22 +71,23 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     _updateState();
   }
 
-  void _showOverlayNotification({required String message, required NotificationType type}) {
+  void _showOverlayNotification({
+    required String message,
+    required NotificationType type,
+  }) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: 50.0,
-        left: 0,
-        right: 0,
-        child: Center(
-          child: PlayerNotificationWidget(
-            message: message,
-            type: type,
+      builder:
+          (context) => Positioned(
+            bottom: 50.0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: PlayerNotificationWidget(message: message, type: type),
+            ),
           ),
-        ),
-      ),
     );
 
     overlay.insert(overlayEntry);
@@ -92,11 +101,14 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     if (!mounted) return;
 
     String? focusedTrackId;
-    if (!isInitial && _selectedIndex >= 0 && _selectedIndex < _subtitleTracks.length) {
+    if (!isInitial &&
+        _selectedIndex >= 0 &&
+        _selectedIndex < _subtitleTracks.length) {
       focusedTrackId = _subtitleTracks[_selectedIndex].id;
     }
 
-    final oldTracksCount = _subtitleTracks.where((t) => t.id != '-1' && t.id != '-2').length;
+    final oldTracksCount =
+        _subtitleTracks.where((t) => t.id != '-1' && t.id != '-2').length;
 
     setState(() {
       _subtitleTracks = _getProcessedTracks(
@@ -104,7 +116,8 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
         widget.controller.findSubtitlesStateNotifier.value,
       );
 
-      final newTracksCount = _subtitleTracks.where((t) => t.id != '-1' && t.id != '-2').length;
+      final newTracksCount =
+          _subtitleTracks.where((t) => t.id != '-1' && t.id != '-2').length;
       final bool newTracksAdded = !isInitial && newTracksCount > oldTracksCount;
 
       if (newTracksAdded) {
@@ -115,7 +128,9 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
       }
 
       if (focusedTrackId != null && !newTracksAdded) {
-        final newIndex = _subtitleTracks.indexWhere((t) => t.id == focusedTrackId);
+        final newIndex = _subtitleTracks.indexWhere(
+          (t) => t.id == focusedTrackId,
+        );
         if (newIndex != -1) {
           _selectedIndex = newIndex;
         } else {
@@ -135,12 +150,16 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     });
   }
 
-  List<SubtitleTrack> _getProcessedTracks(List<SubtitleTrack> subtitleTracks, FindSubtitlesState findState) {
+  List<SubtitleTrack> _getProcessedTracks(
+    List<SubtitleTrack> subtitleTracks,
+    FindSubtitlesState findState,
+  ) {
     final processedTracks = <SubtitleTrack>[];
 
     if (findState.isVisible) {
       // Use the label from the state, or fall back to the default localized string.
-      final String buttonLabel = findState.label ?? OverlayLocalizations.get('find_subtitle');
+      final String buttonLabel =
+          findState.label ?? OverlayLocalizations.get('find_subtitle');
 
       processedTracks.add(
         SubtitleTrack(
@@ -179,7 +198,9 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
 
   @override
   void dispose() {
-    widget.controller.findSubtitlesStateNotifier.removeListener(_onFindSubtitlesStateChanged);
+    widget.controller.findSubtitlesStateNotifier.removeListener(
+      _onFindSubtitlesStateChanged,
+    );
     _streamSubscription?.cancel();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -187,17 +208,25 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
   }
 
   void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients || _subtitleTracks.isEmpty || index < 0 || index >= _subtitleTracks.length) {
+    if (!_scrollController.hasClients ||
+        _subtitleTracks.isEmpty ||
+        index < 0 ||
+        index >= _subtitleTracks.length) {
       return;
     }
 
     final viewportHeight = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
+    double targetOffset =
+        (index * _itemExtent) - (viewportHeight / 2) + (_itemExtent / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -214,7 +243,8 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
     final bloc = context.read<OverlayUiBloc>();
     if (track.id == '-2') {
       // Prevent starting a new search if one is already in progress.
-      if (widget.controller.findSubtitlesStateNotifier.value.status == SubtitleSearchStatus.loading) {
+      if (widget.controller.findSubtitlesStateNotifier.value.status ==
+          SubtitleSearchStatus.loading) {
         return;
       }
       _findSubtitles();
@@ -226,22 +256,28 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
 
   Map<ShortcutActivator, VoidCallback> _getShortcuts() {
     return {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          () => _handleKeyEvent(() {
             if (_subtitleTracks.isEmpty) return;
-            _selectedIndex = (_selectedIndex - 1 + _subtitleTracks.length) % _subtitleTracks.length;
+            _selectedIndex =
+                (_selectedIndex - 1 + _subtitleTracks.length) %
+                _subtitleTracks.length;
             _scrollToIndex(_selectedIndex);
           }),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          () => _handleKeyEvent(() {
             if (_subtitleTracks.isEmpty) return;
             _selectedIndex = (_selectedIndex + 1) % _subtitleTracks.length;
             _scrollToIndex(_selectedIndex);
           }),
-      const SingleActivator(LogicalKeyboardKey.enter): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _subtitleTracks.length) {
               _handleSelect(_subtitleTracks[_selectedIndex]);
             }
           }),
-      const SingleActivator(LogicalKeyboardKey.select): () => _handleKeyEvent(() {
+      const SingleActivator(LogicalKeyboardKey.select):
+          () => _handleKeyEvent(() {
             if (_selectedIndex < _subtitleTracks.length) {
               _handleSelect(_subtitleTracks[_selectedIndex]);
             }
@@ -282,8 +318,12 @@ class _SubtitleWidgetState extends State<SubtitleWidget> {
                         track: track,
                         index: index,
                         isFocused: index == _selectedIndex,
-                        searchStatus: track.id == '-2' ? findState.status : SubtitleSearchStatus.idle,
-                        stateInfoLabel: track.id == '-2' ? findState.stateInfoLabel : null,
+                        searchStatus:
+                            track.id == '-2'
+                                ? findState.status
+                                : SubtitleSearchStatus.idle,
+                        stateInfoLabel:
+                            track.id == '-2' ? findState.stateInfoLabel : null,
                         onTap: () {
                           setState(() {
                             _selectedIndex = index;

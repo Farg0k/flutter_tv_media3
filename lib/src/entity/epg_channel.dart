@@ -81,10 +81,22 @@ class EpgChannel {
   /// The list of programs broadcast on this channel.
   final List<EpgProgram> programs;
 
-  EpgChannel({required this.id, required this.index, required this.name, this.logoUrl, required this.programs});
+  EpgChannel({
+    required this.id,
+    required this.index,
+    required this.name,
+    this.logoUrl,
+    required this.programs,
+  });
 
   Map<String, dynamic> toMap() {
-    return {'id': id, 'index': index, 'name': name, 'logoUrl': logoUrl, 'programs': programs};
+    return {
+      'id': id,
+      'index': index,
+      'name': name,
+      'logoUrl': logoUrl,
+      'programs': programs,
+    };
   }
 
   factory EpgChannel.fromMap(Map<String, dynamic> map) {
@@ -97,7 +109,10 @@ class EpgChannel {
     );
   }
 
-  factory EpgChannel.fromPlaylistMediaItem({required PlaylistMediaItem item, required int index}) {
+  factory EpgChannel.fromPlaylistMediaItem({
+    required PlaylistMediaItem item,
+    required int index,
+  }) {
     return EpgChannel(
       id: item.id,
       index: index,
