@@ -108,7 +108,9 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
             .then((_) {
               if (!mounted || !widget.focus) return;
               _timer = Timer(endPause, () {
-                if (!mounted || !widget.focus || !_scrollController.hasClients) {
+                if (!mounted ||
+                    !widget.focus ||
+                    !_scrollController.hasClients) {
                   return;
                 }
 

@@ -1,3 +1,6 @@
+## 0.0.7
+- fix: analyzer and formatting issues v2
+- 
 ## 0.0.6
 - fix: analyzer and formatting issues
 - 
