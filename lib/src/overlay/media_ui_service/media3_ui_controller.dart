@@ -259,7 +259,7 @@ class Media3UiController {
         );
         if (index != null && index < currentPlaylist.length) {
           final currentItem = currentPlaylist[index];
-          if (currentItem.saveWatchTime != null) {
+          if (currentItem.updateWatchTime == true) {
             final item = currentItem.copyWith(
               startPosition: (position / 1000).round(),
               duration: (duration / 1000).round(),

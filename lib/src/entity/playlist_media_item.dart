@@ -125,6 +125,9 @@ class PlaylistMediaItem {
   /// item if it is a TV channel.
   final List<EpgProgram>? programs;
 
+  ///disable or enable update WatchTime in UI
+  final bool updateWatchTime;
+
   PlaylistMediaItem({
     required this.id,
     required this.url,
@@ -149,6 +152,7 @@ class PlaylistMediaItem {
     this.getDirectLink,
     this.mediaItemType = MediaItemType.video,
     this.programs,
+    this.updateWatchTime = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -172,7 +176,7 @@ class PlaylistMediaItem {
       'userAgent': userAgent,
       'subtitles': subtitles?.map((sub) => sub.toMap()).toList(),
       'audioTracks': audioTracks?.map((audio) => audio.toMap()).toList(),
-      'saveWatchTime': saveWatchTime != null,
+      'updateWatchTime': saveWatchTime != null,
       'mediaItemType': mediaItemType.index,
       'programs': programs?.map(((program) => program.toMap())).toList(),
     };
@@ -210,7 +214,7 @@ class PlaylistMediaItem {
                     MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>),
               )
               .toList(),
-      // saveWatchTime is not deserialized as it's a function.
+      updateWatchTime: json['updateWatchTime'] as bool,
       mediaItemType: MediaItemType.fromIndex(
         json['mediaItemType'] as int? ?? 0,
       ),
@@ -247,6 +251,7 @@ class PlaylistMediaItem {
     GetDirectLinkCallback? getDirectLink,
     SaveWatchTimeSeconds? saveWatchTime,
     MediaItemType? mediaItemType,
+    bool? updateWatchTime,
   }) {
     return PlaylistMediaItem(
       id: id ?? this.id,
@@ -271,6 +276,7 @@ class PlaylistMediaItem {
       getDirectLink: getDirectLink ?? this.getDirectLink,
       saveWatchTime: saveWatchTime ?? this.saveWatchTime,
       mediaItemType: mediaItemType ?? this.mediaItemType,
+      updateWatchTime: updateWatchTime ?? this.updateWatchTime,
     );
   }
 }
