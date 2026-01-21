@@ -19,6 +19,11 @@ class PlayerSettings {
     this.forcedAutoEnable = true,
     this.deviceLocale,
     this.isAfrEnabled = false,
+    this.forceHighestBitrate = true,
+    this.stuckBufferingDetectionTimeoutMs = 240000,
+    this.stuckPlayingDetectionTimeoutMs = 120000,
+    this.stuckPlayingNotEndingTimeoutMs = 180000,
+    this.stuckSuppressedDetectionTimeoutMs = 480000,
   });
 
   /// The desired video quality. The player will try to select a stream
@@ -47,6 +52,27 @@ class PlayerSettings {
   /// Defaults to `false`.
   final bool isAfrEnabled;
 
+  /// Whether to force the highest supported bitrate within the
+  /// selected quality constraints.
+  /// Defaults to `true`.
+  final bool forceHighestBitrate;
+
+  /// The timeout in milliseconds for detecting stuck buffering.
+  /// Defaults to 240,000 (4 minutes).
+  final int stuckBufferingDetectionTimeoutMs;
+
+  /// The timeout in milliseconds for detecting stuck playing.
+  /// Defaults to 120,000 (2 minutes).
+  final int stuckPlayingDetectionTimeoutMs;
+
+  /// The timeout in milliseconds for detecting stuck playing not ending.
+  /// Defaults to 180,000 (3 minutes).
+  final int stuckPlayingNotEndingTimeoutMs;
+
+  /// The timeout in milliseconds for detecting stuck suppressed.
+  /// Defaults to 480,000 (8 minutes).
+  final int stuckSuppressedDetectionTimeoutMs;
+
   Map<String, dynamic> toMap() {
     return {
       'videoQuality': videoQuality.index,
@@ -57,6 +83,11 @@ class PlayerSettings {
       'forcedAutoEnable': forcedAutoEnable,
       'deviceLocale': _localeToString(deviceLocale),
       'isAfrEnabled': isAfrEnabled,
+      'forceHighestBitrate': forceHighestBitrate,
+      'stuckBufferingDetectionTimeoutMs': stuckBufferingDetectionTimeoutMs,
+      'stuckPlayingDetectionTimeoutMs': stuckPlayingDetectionTimeoutMs,
+      'stuckPlayingNotEndingTimeoutMs': stuckPlayingNotEndingTimeoutMs,
+      'stuckSuppressedDetectionTimeoutMs': stuckSuppressedDetectionTimeoutMs,
     };
   }
 
@@ -74,6 +105,15 @@ class PlayerSettings {
       forcedAutoEnable: map['forcedAutoEnable'] as bool? ?? true,
       deviceLocale: _localeFromString(map['deviceLocale']),
       isAfrEnabled: map['isAfrEnabled'] as bool? ?? false,
+      forceHighestBitrate: map['forceHighestBitrate'] as bool? ?? true,
+      stuckBufferingDetectionTimeoutMs:
+          map['stuckBufferingDetectionTimeoutMs'] as int? ?? 240000,
+      stuckPlayingDetectionTimeoutMs:
+          map['stuckPlayingDetectionTimeoutMs'] as int? ?? 120000,
+      stuckPlayingNotEndingTimeoutMs:
+          map['stuckPlayingNotEndingTimeoutMs'] as int? ?? 180000,
+      stuckSuppressedDetectionTimeoutMs:
+          map['stuckSuppressedDetectionTimeoutMs'] as int? ?? 480000,
     );
   }
 
@@ -83,6 +123,11 @@ class PlayerSettings {
     List<String>? preferredTextLanguages,
     bool? forcedAutoEnable,
     bool? isAfrEnabled,
+    bool? forceHighestBitrate,
+    int? stuckBufferingDetectionTimeoutMs,
+    int? stuckPlayingDetectionTimeoutMs,
+    int? stuckPlayingNotEndingTimeoutMs,
+    int? stuckSuppressedDetectionTimeoutMs,
   }) {
     return PlayerSettings(
       videoQuality: videoQuality ?? this.videoQuality,
@@ -92,6 +137,17 @@ class PlayerSettings {
           preferredTextLanguages ?? this.preferredTextLanguages,
       forcedAutoEnable: forcedAutoEnable ?? this.forcedAutoEnable,
       isAfrEnabled: isAfrEnabled ?? this.isAfrEnabled,
+      forceHighestBitrate: forceHighestBitrate ?? this.forceHighestBitrate,
+      stuckBufferingDetectionTimeoutMs:
+          stuckBufferingDetectionTimeoutMs ??
+          this.stuckBufferingDetectionTimeoutMs,
+      stuckPlayingDetectionTimeoutMs:
+          stuckPlayingDetectionTimeoutMs ?? this.stuckPlayingDetectionTimeoutMs,
+      stuckPlayingNotEndingTimeoutMs:
+          stuckPlayingNotEndingTimeoutMs ?? this.stuckPlayingNotEndingTimeoutMs,
+      stuckSuppressedDetectionTimeoutMs:
+          stuckSuppressedDetectionTimeoutMs ??
+          this.stuckSuppressedDetectionTimeoutMs,
     );
   }
 
@@ -102,7 +158,12 @@ class PlayerSettings {
       preferredAudioLanguages: $preferredAudioLanguages, 
       preferredTextLanguages: $preferredTextLanguages, 
       forcedAutoEnable: $forcedAutoEnable,
-      isAfrEnabled: $isAfrEnabled
+      isAfrEnabled: $isAfrEnabled,
+      forceHighestBitrate: $forceHighestBitrate,
+      stuckBufferingDetectionTimeoutMs: $stuckBufferingDetectionTimeoutMs,
+      stuckPlayingDetectionTimeoutMs: $stuckPlayingDetectionTimeoutMs,
+      stuckPlayingNotEndingTimeoutMs: $stuckPlayingNotEndingTimeoutMs,
+      stuckSuppressedDetectionTimeoutMs: $stuckSuppressedDetectionTimeoutMs
     }''';
   }
 

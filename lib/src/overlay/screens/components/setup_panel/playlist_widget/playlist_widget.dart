@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tv_media3/src/entity/playlist_media_item.dart';
 
+import '../../../../../entity/player_state.dart';
 import '../../../../bloc/overlay_ui_bloc.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 import '../../../../../app_theme/app_theme.dart';
@@ -85,8 +87,9 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
     });
   }
 
-  Map<ShortcutActivator, VoidCallback> _getShortcuts() {
-    final playlist = widget.controller.playerState.playlist;
+  Map<ShortcutActivator, VoidCallback> _getShortcuts(
+    List<PlaylistMediaItem> playlist,
+  ) {
     return {
       const SingleActivator(LogicalKeyboardKey.arrowUp):
           () => _handleKeyEvent(() {
@@ -137,12 +140,15 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-        buildWhen:
-            (oldState, newState) => oldState.playIndex != newState.playIndex,
-        builder: (context, state) {
+      child: StreamBuilder<PlayerState>(
+        stream: widget.controller.playerStateStream,
+        initialData: widget.controller.playerState,
+        builder: (context, snapshot) {
+          final playerState = snapshot.data ?? widget.controller.playerState;
+          final playlist = playerState.playlist;
+
           return CallbackShortcuts(
-            bindings: _getShortcuts(),
+            bindings: _getShortcuts(playlist),
             child: Focus(
               focusNode: _focusNode,
               autofocus: true,
@@ -157,19 +163,17 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ListView.builder(
                       controller: _scrollController,
-                      itemCount: widget.controller.playerState.playlist.length,
+                      itemCount: playlist.length,
                       itemExtent: _itemExtent,
                       itemBuilder: (BuildContext context, int index) {
-                        final item =
-                            widget.controller.playerState.playlist[index];
-                        final playlistItemWidget = PlaylistItemWidget(
+                        final item = playlist[index];
+                        return PlaylistItemWidget(
                           controller: widget.controller,
                           item: item,
                           index: index,
                           autofocus: index == _selectedIndex,
-                          isActive: index == state.playIndex,
+                          isActive: index == playerState.playIndex,
                         );
-                        return playlistItemWidget;
                       },
                     ),
                   ),

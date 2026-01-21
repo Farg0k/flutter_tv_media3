@@ -29,28 +29,17 @@ class InfoPanel extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-                buildWhen:
-                    (oldState, newState) =>
-                        oldState.playIndex != newState.playIndex,
+                buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
                 builder: (context, state) {
-                  final playItem =
-                      controller.playerState.playlist[state.playIndex];
+                  final playItem = controller.playerState.playlist[state.playIndex];
                   final hasEpg = playItem.programs != null;
                   final programs = playItem.programs ?? [];
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.only(
-                        top: 8,
-                        bottom: 6,
-                        left: 16,
-                        right: 16,
-                      ),
-                      constraints: BoxConstraints(
-                        minHeight: playItem.coverImg != null ? 170 : 120,
-                        maxHeight: 350,
-                      ),
+                      padding: const EdgeInsets.only(top: 8, bottom: 6, left: 16, right: 16),
+                      constraints: BoxConstraints(minHeight: playItem.coverImg != null ? 170 : 120, maxHeight: 360),
                       decoration: BoxDecoration(
                         color: AppTheme.backgroundColor,
                         borderRadius: AppTheme.borderRadius,
@@ -66,17 +55,14 @@ class InfoPanel extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 3,
                         children: [
                           Flexible(
                             child: Row(
                               children: [
                                 if (playItem.coverImg != null)
                                   Padding(
-                                    padding: const EdgeInsets.only(
-                                      right: 16.0,
-                                      top: 8,
-                                      bottom: 8,
-                                    ),
+                                    padding: const EdgeInsets.only(top: 8.0, right: 16.0, bottom: 16.0),
                                     child: Container(
                                       clipBehavior: Clip.antiAlias,
                                       decoration: BoxDecoration(
@@ -90,19 +76,12 @@ class InfoPanel extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      constraints: const BoxConstraints(
-                                        maxHeight: 170,
-                                        minWidth: 120,
-                                      ),
+                                      constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
                                       child: Image.network(
                                         playItem.coverImg!,
                                         fit: BoxFit.cover,
                                         height: 170,
-                                        loadingBuilder: (
-                                          context,
-                                          child,
-                                          loadingProgress,
-                                        ) {
+                                        loadingBuilder: (context, child, loadingProgress) {
                                           if (loadingProgress == null) {
                                             return child;
                                           }
@@ -110,28 +89,15 @@ class InfoPanel extends StatelessWidget {
                                             child: CircularProgressIndicator(
                                               color: Colors.white,
                                               value:
-                                                  loadingProgress
-                                                              .expectedTotalBytes !=
-                                                          null
-                                                      ? loadingProgress
-                                                              .cumulativeBytesLoaded /
-                                                          loadingProgress
-                                                              .expectedTotalBytes!
+                                                  loadingProgress.expectedTotalBytes != null
+                                                      ? loadingProgress.cumulativeBytesLoaded /
+                                                          loadingProgress.expectedTotalBytes!
                                                       : null,
                                             ),
                                           );
                                         },
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) {
-                                          return const Center(
-                                            child: Icon(
-                                              Icons.image,
-                                              color: Colors.white38,
-                                            ),
-                                          );
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Center(child: Icon(Icons.image, color: Colors.white38));
                                         },
                                       ),
                                     ),
@@ -139,18 +105,13 @@ class InfoPanel extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     spacing: 3,
                                     children: [
-                                      if (playItem.title != null ||
-                                          playItem.label != null)
+                                      if (playItem.title != null || playItem.label != null)
                                         Text(
                                           playItem.title ?? playItem.label!,
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.titleLarge,
+                                          style: Theme.of(context).textTheme.titleLarge,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -159,16 +120,12 @@ class InfoPanel extends StatelessWidget {
                                           _EpgInfo(programs: programs)
                                         else
                                           Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 8.0,
-                                            ),
+                                            padding: const EdgeInsets.only(top: 8.0),
                                             child: Text(
                                               OverlayLocalizations.get('live'),
                                               style: Theme.of(
                                                 context,
-                                              ).textTheme.headlineSmall?.merge(
-                                                AppTheme.extraLightTextStyle,
-                                              ),
+                                              ).textTheme.headlineSmall?.merge(AppTheme.extraLightTextStyle),
                                             ),
                                           )
                                       else ...[
@@ -177,45 +134,36 @@ class InfoPanel extends StatelessWidget {
                                             playItem.subTitle!,
                                             style: Theme.of(
                                               context,
-                                            ).textTheme.titleMedium?.merge(
-                                              AppTheme.extraLightTextStyle,
-                                            ),
+                                            ).textTheme.titleMedium?.merge(AppTheme.extraLightTextStyle),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         if (playItem.title != null &&
-                                            playItem.label != null)
+                                            playItem.label != null &&
+                                            playItem.title != playItem.label)
                                           Text(
                                             playItem.label!,
                                             style: Theme.of(
                                               context,
-                                            ).textTheme.titleSmall?.merge(
-                                              AppTheme.extraLightTextStyle,
-                                            ),
+                                            ).textTheme.titleSmall?.merge(AppTheme.extraLightTextStyle),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         if (playItem.description != null)
                                           Text(
                                             playItem.description!,
-                                            style:
-                                                Theme.of(
-                                                  context,
-                                                ).textTheme.bodyLarge,
+                                            style: Theme.of(context).textTheme.bodyLarge,
                                             maxLines: 5,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                       ],
-                                      VideoInfoWidget(
-                                        controller: controller,
-                                        state: state,
-                                      ),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                          VideoInfoWidget(controller: controller, state: state),
                           TimeLinePanel(controller: controller),
                         ],
                       ),
@@ -261,8 +209,7 @@ class _EpgInfoState extends State<_EpgInfo> {
   void _updateProgram() {
     final now = DateTime.now();
     final currentProgram = widget.programs.firstWhere(
-      (program) =>
-          now.isAfter(program.startTime) && now.isBefore(program.endTime),
+      (program) => now.isAfter(program.startTime) && now.isBefore(program.endTime),
     );
     if (currentProgram != _currentProgram) {
       setState(() {
@@ -279,16 +226,10 @@ class _EpgInfoState extends State<_EpgInfo> {
     final now = DateTime.now();
     final progress =
         now.difference(_currentProgram!.startTime).inSeconds /
-        _currentProgram!.endTime
-            .difference(_currentProgram!.startTime)
-            .inSeconds;
+        _currentProgram!.endTime.difference(_currentProgram!.startTime).inSeconds;
 
-    final startTime = OverlayLocalizations.timeFormat(
-      date: _currentProgram!.startTime,
-    );
-    final endTime = OverlayLocalizations.timeFormat(
-      date: _currentProgram!.endTime,
-    );
+    final startTime = OverlayLocalizations.timeFormat(date: _currentProgram!.startTime);
+    final endTime = OverlayLocalizations.timeFormat(date: _currentProgram!.endTime);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,18 +237,14 @@ class _EpgInfoState extends State<_EpgInfo> {
       children: [
         Text(
           _currentProgram!.title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium?.merge(AppTheme.extraLightTextStyle),
+          style: Theme.of(context).textTheme.headlineMedium?.merge(AppTheme.extraLightTextStyle),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
         if (_currentProgram!.description != null) ...[
           Text(
             _currentProgram!.description!,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.merge(AppTheme.infoTextStyle),
+            style: Theme.of(context).textTheme.bodyLarge?.merge(AppTheme.infoTextStyle),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),

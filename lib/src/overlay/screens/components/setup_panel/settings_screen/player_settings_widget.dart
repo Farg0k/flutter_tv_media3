@@ -112,6 +112,38 @@ class PlayerSettingsWidget extends StatelessWidget {
                             leftCallback:
                                 () async => await controller.savePlayerSettings(
                                   playerSettings: playerSettings.copyWith(
+                                    forceHighestBitrate:
+                                        !playerSettings.forceHighestBitrate,
+                                  ),
+                                ),
+                            rightCallback:
+                                () async => await controller.savePlayerSettings(
+                                  playerSettings: playerSettings.copyWith(
+                                    forceHighestBitrate:
+                                        !playerSettings.forceHighestBitrate,
+                                  ),
+                                ),
+                            enterCallback:
+                                () async => await controller.savePlayerSettings(
+                                  playerSettings: playerSettings.copyWith(
+                                    forceHighestBitrate:
+                                        defaultPlayerSettings
+                                            .forceHighestBitrate,
+                                  ),
+                                ),
+                            valueTitle:
+                                playerSettings.forceHighestBitrate == true
+                                    ? OverlayLocalizations.get('on')
+                                    : OverlayLocalizations.get('off'),
+                            title: OverlayLocalizations.get(
+                              'forceHighestBitrate',
+                            ),
+                          ),
+                          StringSettingsWidget(
+                            bloc: bloc,
+                            leftCallback:
+                                () async => await controller.savePlayerSettings(
+                                  playerSettings: playerSettings.copyWith(
                                     isAfrEnabled: !playerSettings.isAfrEnabled,
                                   ),
                                 ),

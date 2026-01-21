@@ -173,6 +173,24 @@ class Media3UiController {
         );
         break;
 
+      case 'onPlaylistUpdated':
+      case 'onItemRemoved':
+        final playlistStr = call.arguments['playlist'] as String?;
+        final playIndex = call.arguments['playlist_index'] as int?;
+        if (playlistStr != null) {
+          final playlistList = jsonDecode(playlistStr) as List<dynamic>;
+          final currentPlaylist =
+              playlistList.map((e) => PlaylistMediaItem.fromMap(e)).toList();
+          newState = newState.copyWith(
+            playlist: currentPlaylist,
+            playIndex: playIndex ?? newState.playIndex,
+          );
+          if (newState.playlist.length > newState.playIndex) {
+            playItem = newState.playlist[newState.playIndex];
+          }
+        }
+        break;
+
       case 'onStateChanged':
         final stateValue = call.arguments['state'] as String?;
         final isLive = call.arguments['isLive'] as bool? ?? false;

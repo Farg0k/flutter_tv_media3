@@ -4,7 +4,7 @@
 
 A Flutter plugin for playing video on Android TV using the native Media3 player, which runs in its own `Activity`. 
 **Note: This plugin is for Android  only.**
-Android (minSdk = 21).
+Android (minSdk = 23).
 The main difference of this plugin is that the player is launched in a separate native Android window, not as a widget in the Flutter hierarchy. This approach allows for the use of native features like **Auto Frame Rate (AFR) switching** and potential support for **HDR/Dolby Vision**, which may not be available in standard widget-based player implementations.
 
 ## Table of Contents
@@ -18,6 +18,7 @@ The main difference of this plugin is that the player is launched in a separate 
     *   [Plugin and Controller Initialization](#1-plugin-and-controller-initialization)
     *   [Creating a Playlist](#2-creating-a-playlist)
     *   [Launching the Player](#3-launching-the-player)
+*   [Preview Player (Inline Video)](#preview-player-inline-video)
 *   [Advanced Usage](#advanced-usage)
     *   [Dynamic Link Resolution (`getDirectLink`)](#dynamic-link-resolution-getdirectlink)
     *   [Full Configuration and Callbacks](#full-configuration-and-callbacks)
@@ -123,18 +124,18 @@ To play videos from `http` links (not `https`):
 
 ## Basic Usage
 
-### 1. Controller Lifecycle: `init()` and `close()`
+### 1. Controller Lifecycle: `setConfig()` and `close()`
 
 Properly managing the lifecycle of the `FtvMedia3PlayerController` is crucial for the stability of your application.
 
-*   **`init()`**: This method must be called **once** before any other interaction with the controller. It configures all the necessary callbacks, initial settings, and localization strings. A good place to call it is in the `initState` of your main widget. The configuration can be changed after initialization.
+*   **`setConfig()`**: This method is used to configure all the necessary callbacks, initial settings, and localization strings. It should be called before launching the player. A good place to call it is in the `initState` of your main widget. The configuration can be updated at any time.
 *   **`close()`**: This method should be called when the controller is no longer needed, typically in the `dispose` method of your widget. It closes all internal streams and releases resources, preventing memory leaks.
 
 ```dart
 @override
 void initState() {
   super.initState();
-  controller.init(...);
+  controller.setConfig(...);
 }
 
 @override
@@ -148,9 +149,9 @@ void dispose() {
 
 First, get the singleton instance of the `FtvMedia3PlayerController`. It's best to do this in a `StatefulWidget`.
 
-The controller must be configured **once** before launching the player for the first time. This is done exclusively through the `init()` method, typically in your widget's `initState`. All configuration properties are private and cannot be changed after initialization.
+The controller should be configured before launching the player. This is done through the `setConfig()` method, typically in your widget's `initState`.
 
-The `init()` method accepts a variety of parameters to customize the player's behavior and set up callbacks. Below is a complete list of available parameters.
+The `setConfig()` method accepts a variety of parameters to customize the player's behavior and set up callbacks. Below is a complete list of available parameters.
 
 **General Configuration and Callbacks:**
 
@@ -163,7 +164,6 @@ These parameters are detailed in the [Full Configuration and Callbacks](#full-co
 *   `saveSubtitleStyle`: A callback that is triggered when the user changes subtitle settings in the UI.
 *   `savePlayerSettings`: A callback that is triggered when the user changes player settings.
 *   `saveClockSettings`: A callback that is triggered when the user changes clock settings.
-*   `saveWatchTime`: A callback to save the playback progress for a media item.
 *   `sleepTimerExec`: A callback that is executed when the sleep timer is triggered from the player UI.
 
 **External Subtitle Search:**
@@ -185,12 +185,11 @@ final controller = FtvMedia3PlayerController();
 void initState() {
   super.initState();
   
-  // A comprehensive initialization example
-  controller.init(
+  // A comprehensive configuration example
+  controller.setConfig(
     // General settings
     localeStrings: {'loading': 'Loading...'},
     clockSettings: ClockSettings(clockPosition: ClockPosition.topLeft),
-    saveWatchTime: _mySaveWatchTimeFunction,
     
     // Subtitle search settings
     searchExternalSubtitle: _mySubtitleSearchFunction,
@@ -290,9 +289,119 @@ controller.openNativePlayer(
 );
 ```
 
+## Preview Player (Inline Video)
+
+The `Media3PreviewPlayer` is a specialized widget for displaying video previews directly within your Flutter UI (e.g., in a list of movies or a focused card). Unlike the main player, which runs in a separate Activity, the Preview Player renders video to a Flutter `Texture`.
+
+### Key Features
+*   **Resource Pooling:** Automatically manages a pool of native players to ensure smooth performance and low memory usage.
+*   **Visibility Awareness:** Automatically plays/pauses based on its visibility on the screen and the app's lifecycle.
+*   **Highly Optimized:** Uses a LIFO pooling strategy on the native side to reuse "warm" player instances.
+*   **Clipping Support:** Can play specific segments of a video.
+
+### Basic Usage
+
+```dart
+Media3PreviewPlayer(
+  url: 'https://example.com/preview.mp4',
+  isActive: isFocused, // Only initializes and plays when true
+  width: 320,
+  height: 180,
+  borderRadius: BorderRadius.circular(12),
+  volume: 0.0, // Previews are usually muted
+  placeholder: Image.network('https://example.com/thumbnail.jpg', fit: BoxFit.cover),
+  initDelay: Duration(milliseconds: 500), // Delay before loading to handle fast scrolling
+)
+```
+
+### Dynamic Link Support
+
+Just like the main player, the Preview Player supports dynamic URL resolution:
+
+```dart
+Media3PreviewPlayer(
+  url: 'api://video/123',
+  getDirectLink: () async {
+    final directUrl = await myApi.getLink('123');
+    return directUrl;
+  },
+  isActive: isFocused,
+  width: 320,
+  height: 180,
+)
+```
+
 ## Advanced Usage
 
+### Dynamic Playlist and Pagination
+
+This plugin provides robust features for dynamically managing the playback playlist while the player is active, including adding/removing items and automatic pagination.
+
+#### Dynamic Playlist Management (`addMediaItems`, `removeMediaItem`)
+
+The `FtvMedia3PlayerController` now allows you to modify the playlist after the player has been launched. All changes are synchronized in real-time between your main application, the native Android player, and the Flutter UI overlay.
+
+*   **`addMediaItems({required List<PlaylistMediaItem> items})`**:
+    Adds a list of new media items to the end of the current playlist. This is useful for implementing "Add to Queue" functionality or appending content during pagination.
+    ```dart
+    // Example of adding new items to the playlist
+    final newItems = [
+      PlaylistMediaItem(id: 'new1', title: 'New Video 1', url: 'https://example.com/new1.mp4'),
+      PlaylistMediaItem(id: 'new2', title: 'New Video 2', url: 'https://example.com/new2.mp4'),
+    ];
+    await controller.addMediaItems(items: newItems);
+    ```
+
+*   **`removeMediaItem({required int index})`**:
+    Removes the media item at the specified `index` from the playlist. The player will automatically adjust the `playIndex` if the removed item affects the current playback position. If the currently playing item is removed, playback will advance to the next item or stop if no more items are left.
+    ```dart
+    // Example of removing an item by index (e.g., the 0th item)
+    await controller.removeMediaItem(index: 0);
+    ```
+
+#### Automatic Pagination (`onLoadMore`, `paginationThreshold`)
+
+To handle large playlists efficiently, the plugin includes a built-in pagination mechanism. You can define a callback that automatically fetches more content when the player approaches the end of the current playlist.
+
+*   **`onLoadMore`** (`Future<void> Function()?`):
+    An asynchronous callback function that is triggered when the player's `playIndex` is within the `paginationThreshold` of the playlist's end. Use this to fetch additional `PlaylistMediaItem` objects and add them using `addMediaItems`.
+
+*   **`paginationThreshold`** (`int`):
+    Defines how many items from the end of the playlist `onLoadMore` should be triggered. For example, if `paginationThreshold` is `5`, `onLoadMore` will be called when the player starts preparing the 5th item from the end of the current playlist.
+
+**Example of Pagination Setup:**
+
+```dart
+@override
+void initState() {
+  super.initState();
+  // ... other controller configurations
+
+  controller.onLoadMore = () async {
+    print('PAGINATION: Triggered to load more items...');
+    // Simulate fetching data from an API
+    await Future.delayed(const Duration(seconds: 2));
+    
+    final currentPage = (controller.playerState.playlist.length / 5).ceil();
+    final newItems = List.generate(5, (i) => PlaylistMediaItem(
+      id: 'page_${currentPage + 1}_item_${i}',
+      title: 'Dynamic Item ${currentPage * 5 + i + 1}',
+      url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+    ));
+
+    await controller.addMediaItems(items: newItems);
+    print('PAGINATION: Added ${newItems.length} new items.');
+  };
+
+  // Set the threshold for when to trigger onLoadMore
+  controller.paginationThreshold = 3; // Load more when 3 items are left
+}
+```
+
 ### Dynamic Link Resolution (`getDirectLink`)
+
+If the playback URL is not known in advance (e.g., it needs to be fetched from your server), use the `getDirectLink` callback. The plugin will call this function before starting playback.
+
 
 If the playback URL is not known in advance (e.g., it needs to be fetched from your server), use the `getDirectLink` callback. The plugin will call this function before starting playback.
 
@@ -322,7 +431,7 @@ PlaylistMediaItem(
 
 ### Full Configuration and Callbacks
 
-You can configure the player and handle events from its UI by passing all configurations to the `controller.init()` method.
+You can configure the player and handle events from its UI by passing all configurations to the `controller.setConfig()` method.
 
 Here is a full example of configuration:
 

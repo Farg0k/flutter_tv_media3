@@ -40,6 +40,10 @@ class DefaultLocaleStrings {
     "epgNoDates": "No dates",
     "playbackError": "Playback Error",
     "playlistIndexError": "(Playlist index is out of range)",
+    "linkResolutionStart": "Resolving link...",
+    "linkResolutionTimeout": "Request timeout",
+    "linkResolutionNetworkError": "Network error",
+    "linkResolutionUnknownError": "Unknown error",
     // other
     "liveStatus": "LIVE",
     "sleepTimerAfterFile": "After File",
@@ -71,6 +75,7 @@ class DefaultLocaleStrings {
     "goSearch": "go search",
     "playerSettings": "Player Settings",
     "videoQuality": "Video Quality",
+    "forceHighestBitrate": "Force Highest Bitrate",
     "afr": "Auto Frame Rate (AFR)",
     "autoEnableSubtitle": "Auto Enable Subtitle",
     "preferredAudioLanguages": "Preferred audio languages",

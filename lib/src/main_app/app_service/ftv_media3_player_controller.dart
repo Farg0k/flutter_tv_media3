@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -75,6 +77,30 @@ class FtvMedia3PlayerController {
   PlayerSettings? _playerSettings;
   bool _isSearchingSubtitles = false;
   bool _isSavingWatchTime = false;
+
+  /// Callback for pagination. Triggered when the current playIndex
+  /// is close to the end of the playlist.
+  ///
+  /// Use this to fetch more data from your API and add it to the player
+  /// using [addMediaItems].
+  ///
+  /// Example:
+  /// ```dart
+  /// controller.onLoadMore = () async {
+  ///   final newItems = await fetchNextPage();
+  ///   await controller.addMediaItems(items: newItems);
+  /// };
+  /// ```
+  Future<void> Function()? onLoadMore;
+
+  /// The number of items from the end of the playlist at which
+  /// [onLoadMore] should be triggered.
+  ///
+  /// For example, if set to 5, [onLoadMore] will be called when the player
+  /// starts preparing the 5th item from the end of the current playlist.
+  /// Defaults to 5.
+  int paginationThreshold = 5;
+  bool _isLoadingMore = false;
 
   /// The current overall state of the player.
   PlayerState _playerState = PlayerState();
@@ -184,6 +210,24 @@ class FtvMedia3PlayerController {
     _pluginChannel.setMethodCallHandler(null);
   }
 
+  String _formatErrorMessage(dynamic error) {
+    if (error is TimeoutException) {
+      return OverlayLocalizations.get('linkResolutionTimeout');
+    }
+    if (error is SocketException) {
+      return OverlayLocalizations.get('linkResolutionNetworkError');
+    }
+    if (error is PlatformException) {
+      return error.message ??
+          OverlayLocalizations.get('linkResolutionUnknownError');
+    }
+
+    final msg = error.toString().replaceAll("Exception: ", "");
+    return msg.isNotEmpty
+        ? msg
+        : OverlayLocalizations.get('linkResolutionUnknownError');
+  }
+
   /// Handles incoming method calls from the native side.
   ///
   /// This method acts as a router, dispatching actions based on the method name
@@ -217,19 +261,21 @@ class FtvMedia3PlayerController {
             return null;
           }
 
-          _sendLoadProgressToUI(
-            state: 'Start load link',
-            progress: null,
-            requestId: requestId,
-          );
-
           if (item.getDirectLink != null) {
+            _sendLoadProgressToUI(
+              state: OverlayLocalizations.get('linkResolutionStart'),
+              progress: null,
+              requestId: requestId,
+            );
+
             try {
-              item = await item.getDirectLink!(
-                item: item,
-                onProgress: _sendLoadProgressToUI,
-                requestId: requestId,
-              );
+              item = await item
+                  .getDirectLink!(
+                    item: item,
+                    onProgress: _sendLoadProgressToUI,
+                    requestId: requestId,
+                  )
+                  .timeout(const Duration(seconds: 15));
 
               if (!MediaRequestManager.isCurrentRequest(requestId)) {
                 _sendLoadProgressToUI(
@@ -241,11 +287,15 @@ class FtvMedia3PlayerController {
               }
             } catch (e) {
               if (MediaRequestManager.isCurrentRequest(requestId)) {
+                final errorMessage = _formatErrorMessage(e);
                 _sendLoadProgressToUI(
-                  state: 'Error: ${e.toString()}',
+                  state:
+                      "${OverlayLocalizations.get('errorPrefix')} $errorMessage",
                   progress: null,
                   requestId: requestId,
                 );
+                // Wait a bit so the user can see the error
+                await Future.delayed(const Duration(seconds: 2));
                 _updateState(_playerState.copyWith(activityReady: true));
               }
               throw PlatformException(
@@ -520,6 +570,22 @@ class FtvMedia3PlayerController {
           volumeState: volumeState,
         );
         break;
+
+      case 'onPlaylistUpdated':
+      case 'onItemRemoved':
+        final playlistStr = call.arguments['playlist'] as String?;
+        final playIndex = call.arguments['playlist_index'] as int?;
+        if (playlistStr != null) {
+          final playlistList = jsonDecode(playlistStr) as List<dynamic>;
+          final currentPlaylist =
+              playlistList.map((e) => PlaylistMediaItem.fromMap(e)).toList();
+          newState = newState.copyWith(
+            playlist: currentPlaylist,
+            playIndex: playIndex ?? newState.playIndex,
+          );
+        }
+        break;
+
       case 'onActivityDestroyed':
         newState = PlayerState(activityDestroyed: true);
         break;
@@ -535,6 +601,17 @@ class FtvMedia3PlayerController {
           playerSettings: newState.playerSettings,
         );
         _updatePlaybackState(PlaybackState());
+
+        // Pagination logic
+        if (playIndex != null &&
+            onLoadMore != null &&
+            !_isLoadingMore &&
+            newState.playlist.length - playIndex <= paginationThreshold) {
+          _isLoadingMore = true;
+          onLoadMore!().whenComplete(() {
+            _isLoadingMore = false;
+          });
+        }
         break;
       case "loadMediaInfoState":
         final state = call.arguments['state'] as String?;
@@ -755,6 +832,14 @@ class FtvMedia3PlayerController {
         "player_settings": _playerSettings?.toMap(),
         "locale_strings": jsonEncode(_localeStrings),
         "subtitle_search": jsonEncode(subtitleSearch),
+        "stuck_buffering_detection_timeout_ms":
+            _playerSettings?.stuckBufferingDetectionTimeoutMs,
+        "stuck_playing_detection_timeout_ms":
+            _playerSettings?.stuckPlayingDetectionTimeoutMs,
+        "stuck_playing_not_ending_timeout_ms":
+            _playerSettings?.stuckPlayingNotEndingTimeoutMs,
+        "stuck_suppressed_detection_timeout_ms":
+            _playerSettings?.stuckSuppressedDetectionTimeoutMs,
       });
       _updateState(_playerState.copyWith(playlist: playlist));
     } catch (e) {
@@ -1184,6 +1269,57 @@ class FtvMedia3PlayerController {
         errorCode: 'OverlayPlayerController',
       );
       _updateState(newState);
+    }
+  }
+
+  /// Adds new media items to the end of the current playlist.
+  ///
+  /// This method updates the [playerState] in the main app, notifies the
+  /// native Android player about the new playlist length, and synchronizes
+  /// the new items with the UI overlay (the separate Flutter Engine).
+  ///
+  /// This is the primary method for implementing pagination or allowing
+  /// users to append content to their queue while the player is active.
+  Future<void> addMediaItems({required List<PlaylistMediaItem> items}) async {
+    final updatedPlaylist = List<PlaylistMediaItem>.from(_playerState.playlist)
+      ..addAll(items);
+    _updateState(_playerState.copyWith(playlist: updatedPlaylist));
+
+    if (_playerState.activityReady) {
+      final playlistMap = updatedPlaylist.map((e) => e.toMap()).toList();
+      final playlistStr = jsonEncode(playlistMap);
+      await _invokeMethodGuarded<void>(_activityChannel, 'updatePlaylist', {
+        'playlist': playlistStr,
+        'playlist_length': updatedPlaylist.length,
+      });
+    }
+  }
+
+  /// Removes an item from the playlist at the specified [index].
+  ///
+  /// This method performs the following:
+  /// 1. Updates the local [playerState] playlist.
+  /// 2. Notifies the native player to adjust its internal `playlistLength`.
+  /// 3. If the removed item is before the currently playing item, the native
+  ///    player automatically decrements its `playlistIndex` to maintain continuity.
+  /// 4. If the currently playing item is removed, the player skips to the
+  ///    next available item or closes if the list becomes empty.
+  /// 5. Synchronizes the updated playlist with the UI overlay.
+  Future<void> removeMediaItem({required int index}) async {
+    if (index < 0 || index >= _playerState.playlist.length) return;
+
+    final updatedPlaylist = List<PlaylistMediaItem>.from(_playerState.playlist)
+      ..removeAt(index);
+    _updateState(_playerState.copyWith(playlist: updatedPlaylist));
+
+    if (_playerState.activityReady) {
+      final playlistMap = updatedPlaylist.map((e) => e.toMap()).toList();
+      final playlistStr = jsonEncode(playlistMap);
+      await _invokeMethodGuarded<void>(_activityChannel, 'onItemRemoved', {
+        'index': index,
+        'playlist': playlistStr,
+        'playlist_length': updatedPlaylist.length,
+      });
     }
   }
 

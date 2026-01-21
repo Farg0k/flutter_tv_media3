@@ -17,7 +17,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-
+import pro.appexp.flutter_tv_media3.PreviewMethodChannel
 /**
  * The main plugin class that handles communication between the main Flutter app
  * and the native Android side.
@@ -34,6 +34,7 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private lateinit var appChannel : MethodChannel
   private lateinit var context: Context
   private var activity: Activity? = null
+  private var previewMethodChannel: PreviewMethodChannel? = null
   private val aTag = "Media3TvPlugin"
   private val flutterEngineId = "media3_player_engine_cache_id"
   private val appEngineId = "app_engine_cache_id"
@@ -53,6 +54,11 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     appChannel.setMethodCallHandler(this)
     val engine = flutterPluginBinding.flutterEngine
     FlutterEngineCache.getInstance().put(appEngineId, engine)
+      previewMethodChannel = PreviewMethodChannel(
+          context = flutterPluginBinding.applicationContext,
+          messenger = flutterPluginBinding.binaryMessenger,
+          textureRegistry = flutterPluginBinding.textureRegistry  // v2 TextureRegistry
+      )
   }
 
   /**
@@ -160,6 +166,10 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
         playerSettings?.let {
           val playerSettingsBundle = Bundle().apply {
             putInt("videoQuality", (playerSettings["videoQuality"] as? Number)?.toInt() ?: 0)
+            putBoolean(
+                "forceHighestBitrate",
+                playerSettings["forceHighestBitrate"] as? Boolean ?: true
+            )
             (playerSettings["width"] as? Number)?.toInt()?.let { putInt("width", it) }
             (playerSettings["height"] as? Number)?.toInt()?.let { putInt("height", it) }
             (playerSettings["preferredAudioLanguages"] as? List<*>)?.let {
@@ -222,5 +232,7 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
    */
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     appChannel.setMethodCallHandler(null)
+    previewMethodChannel?.dispose()
+    previewMethodChannel = null
   }
 }

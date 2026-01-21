@@ -55,6 +55,8 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Metadata
+import androidx.media3.common.PlayerTransferState
+import androidx.media3.common.util.StuckPlayerException
 import androidx.media3.extractor.metadata.emsg.EventMessage
 import androidx.media3.extractor.metadata.icy.IcyInfo
 import androidx.media3.extractor.metadata.id3.ApicFrame
@@ -154,10 +156,11 @@ class PlayerActivity : AppCompatActivity() {
     private var currentVideoQualityIndex: Int = 0
     private var currentVideoWidth: Int = 0
     private var currentVideoHeight: Int = 0
+    private var currentForceHighestBitrate: Boolean = true
     private var currentMediaRequestToken: Any? = null
     private var isAfrEnabled: Boolean = false
     private var lastActiveSubtitleId: String? = null
-
+    private var stuckRetryCount = 0
     /**
      * Called when the Activity is first created.
      *
@@ -241,6 +244,11 @@ class PlayerActivity : AppCompatActivity() {
             .setEnableDecoderFallback(true)
 
         mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)
+        
+        val stuckBufferingDetectionTimeoutMs = intent.getIntExtra("stuck_buffering_detection_timeout_ms", 240_000)
+        val stuckPlayingDetectionTimeoutMs = intent.getIntExtra("stuck_playing_detection_timeout_ms", 120_000)
+        val stuckPlayingNotEndingTimeoutMs = intent.getIntExtra("stuck_playing_not_ending_timeout_ms", 180_000)
+        val stuckSuppressedDetectionTimeoutMs = intent.getIntExtra("stuck_suppressed_detection_timeout_ms", 480_000)
 
         player = ExoPlayer.Builder(this)
             .setTrackSelector(trackSelector)
@@ -250,6 +258,10 @@ class PlayerActivity : AppCompatActivity() {
             .setHandleAudioBecomingNoisy(true)
             .setSeekParameters(SeekParameters.EXACT)
             .setRenderersFactory(renderersFactory)
+            .setStuckBufferingDetectionTimeoutMs(stuckBufferingDetectionTimeoutMs)
+            .setStuckPlayingDetectionTimeoutMs(stuckPlayingDetectionTimeoutMs)
+            .setStuckPlayingNotEndingTimeoutMs(stuckPlayingNotEndingTimeoutMs)
+            .setStuckSuppressedDetectionTimeoutMs(stuckSuppressedDetectionTimeoutMs)
             .build()
 
         frameRateManager = FrameRateManager(this, player, playerView)
@@ -343,6 +355,7 @@ class PlayerActivity : AppCompatActivity() {
                         ?.let { "preferredTextLanguages" to it },
                     "forcedAutoEnable" to bundle.getBoolean("forcedAutoEnable", true),
                     "isAfrEnabled" to bundle.getBoolean("isAfrEnabled", false),
+                    "forceHighestBitrate" to bundle.getBoolean("forceHighestBitrate", true),
                     bundle.getString("deviceLocale")?.let { "deviceLocale" to it }
                 ).toMap()
             }
@@ -482,6 +495,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun loadAndPlayMedia(
         videoUrl: String,
         startPosition: Long = 0L,
+        transferState: PlayerTransferState? = null
     ) {
         try {
             if (currentUserAgent != null) {
@@ -489,23 +503,63 @@ class PlayerActivity : AppCompatActivity() {
             }
             httpDataSourceFactory.setDefaultRequestProperties(currentHeaders ?: emptyMap())
             hasSeekedToStartPosition = false
-            val finalSource = createCombinedMediaSource(videoUrl)
-            try {
-                player.setMediaSource(finalSource, startPosition)
-                player.prepare()
-                player.play()
-            } catch (e: Exception) {
-                invokeOnBothChannels(
-                    "onError", mapOf(
-                        "code" to "PREPARATION_FAILED",
-                        "message" to "Failed to create media source: ${e.message}"
+
+            if (transferState != null) {
+                try {
+                    val currentIndex = transferState.currentMediaItemIndex
+                    val mediaItemsMutable = transferState.mediaItems.toMutableList()
+
+                    if (currentIndex >= 0 && currentIndex < mediaItemsMutable.size) {
+                        val currentItem = mediaItemsMutable[currentIndex]
+                        val updatedItem = currentItem.buildUpon()
+                            .setUri(Uri.parse(videoUrl))
+                            .build()
+                        mediaItemsMutable[currentIndex] = updatedItem
+                        val updatedStateBuilder = transferState.buildUpon()
+                            .setMediaItems(ImmutableList.copyOf(mediaItemsMutable))
+                        val updatedState = updatedStateBuilder.build()
+                        updatedState.setToPlayer(player)
+                        player.prepare()
+                    } else {
+                        loadWithoutTransferState(videoUrl, startPosition)
+                    }
+                } catch (e: Exception) {
+                    loadWithoutTransferState(videoUrl, startPosition)
+                    invokeOnBothChannels(
+                        "onError",
+                        mapOf(
+                            "code" to "TRANSFER_STATE_FAILED",
+                            "message" to "Failed to apply transfer state: ${e.message}"
+                        )
                     )
-                )
+                }
+            } else {
+                loadWithoutTransferState(videoUrl, startPosition)
             }
         } catch (e: Exception) {
             invokeOnBothChannels(
                 "onError",
-                mapOf("code" to "LOAD_FAILED", "message" to "Failed to load media: ${e.message}")
+                mapOf(
+                    "code" to "LOAD_FAILED",
+                    "message" to "Failed to load media: ${e.message}"
+                )
+            )
+        }
+    }
+
+    private fun loadWithoutTransferState(videoUrl: String, startPosition: Long) {
+        try {
+            val finalSource = createCombinedMediaSource(videoUrl)
+            player.setMediaSource(finalSource, startPosition)
+            player.prepare()
+            player.play()
+        } catch (e: Exception) {
+            invokeOnBothChannels(
+                "onError",
+                mapOf(
+                    "code" to "PREPARATION_FAILED",
+                    "message" to "Failed to create media source: ${e.message}"
+                )
             )
         }
     }
@@ -521,7 +575,7 @@ class PlayerActivity : AppCompatActivity() {
         val requestToken = Any()
         currentMediaRequestToken = requestToken
         try {
-            methodUIChannel.invokeMethod(
+            invokeOnBothChannels(
                 "loadMediaInfo", mapOf("playlist_index" to index)
             )
 
@@ -940,6 +994,71 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
 
+            /**
+             * Handles the "updatePlaylist" method call from Flutter.
+             *
+             * This method is invoked when the main Flutter application adds new items
+             * to the playlist. It updates the internal `playlistLength` and then
+             * notifies both the main app and the UI overlay about the updated playlist.
+             * The actual `MediaItem` objects are still fetched on demand via `getMediaInfo`.
+             *
+             * @param newLength The new total length of the playlist.
+             * @param playlistStr The JSON string representation of the entire updated playlist.
+             */
+            "updatePlaylist" -> {
+                val newLength = call.argument<Int>("playlist_length") ?: playlistLength
+                val playlistStr = call.argument<String>("playlist")
+                playlistLength = newLength
+                
+                invokeOnBothChannels("onPlaylistUpdated", mapOf(
+                    "playlist" to playlistStr,
+                    "playlist_index" to playlistIndex
+                ))
+                result.success(null)
+            }
+
+            /**
+             * Handles the "onItemRemoved" method call from Flutter.
+             *
+             * This method is invoked when an item is removed from the playlist in the
+             * main Flutter application. It adjusts `playlistLength` and `playlistIndex`
+             * accordingly. If the currently playing item is removed, it attempts to
+             * play the next available item or closes the player if the playlist is empty.
+             * Both the main app and the UI overlay are notified about the change.
+             *
+             * @param removedIndex The index of the item that was removed.
+             * @param newLength The new total length of the playlist after removal.
+             * @param playlistStr The JSON string representation of the entire updated playlist.
+             */
+            "onItemRemoved" -> {
+                val removedIndex = call.argument<Int>("index") ?: -1
+                val newLength = call.argument<Int>("playlist_length") ?: (playlistLength - 1)
+                val playlistStr = call.argument<String>("playlist")
+                
+                if (removedIndex != -1) {
+                    if (removedIndex < playlistIndex) {
+                        playlistIndex--
+                    } else if (removedIndex == playlistIndex) {
+                        // Current item removed - play next or finish
+                        if (newLength > 0) {
+                             if (playlistIndex >= newLength) {
+                                 playlistIndex = 0
+                             }
+                             requestMediaInfo(playlistIndex)
+                        } else {
+                            finish()
+                        }
+                    }
+                    playlistLength = newLength
+                    
+                    invokeOnBothChannels("onItemRemoved", mapOf(
+                        "playlist" to playlistStr,
+                        "playlist_index" to playlistIndex
+                    ))
+                }
+                result.success(null)
+            }
+
             "setExternalSubtitles" -> {
                 val newSubtitles = call.argument<List<Map<String, Any>>>("subtitleTracks")
                 if (newSubtitles != null) {
@@ -1227,19 +1346,95 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                if (isRecoverableHlsError(error)) {
-                    player.seekToDefaultPosition()
-                    player.prepare()
-                    player.play()
-                } else {
-                    invokeOnBothChannels(
-                        "onError", mapOf(
-                            "code" to error.errorCodeName,
-                            "message" to error.localizedMessage
+                val stuckError = error.cause as? StuckPlayerException
+                if (stuckError != null){
+                    Log.e(aTag, "Player stuck: stuckType=${stuckError.stuckType}, timeoutMs=${stuckError.timeoutMs}")
+                    val customMessage = when (stuckError.stuckType) {
+                        0 -> {
+                            "The player is stuck because it's in STATE_BUFFERING, needs to load more data to make progress, but is not loading. (${error.localizedMessage})"
+                        }
+                        1 -> {
+                            "The player is stuck because it's in STATE_BUFFERING, but no loading progress is made and the player is also not able to become ready. (${error.localizedMessage})"
+                        }
+                        2 -> {
+                            "The player is stuck because it's in STATE_READY, but no progress is made. (${error.localizedMessage})"
+                        }
+                        3 -> {
+                            "The player is stuck because it's in STATE_READY, but it's not able to end playback despite exceeding the declared duration. (${error.localizedMessage})"
+                        }
+                        4 -> {
+                            "The player is stuck with a suppression reason other than PLAYBACK_SUPPRESSION_REASON_NONE or PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS. (${error.localizedMessage})"
+                        }
+                        else -> {
+                            "Unknown stuck type ${stuckError.stuckType}. (${error.localizedMessage})"
+                        }
+                    }
+
+                    if (stuckRetryCount > 1) {
+                        invokeOnBothChannels(
+                            "onError",
+                            mapOf(
+                                "code" to error.errorCodeName,
+                                "message" to customMessage
+                            )
                         )
-                    )
-                    positionHandler.removeCallbacks(positionRunnable)
+                        stuckRetryCount = 0
+                        positionHandler.removeCallbacks(positionRunnable)
+                        return
+                    }
+
+                    stuckRetryCount++
+                    Log.d(aTag, "Stuck retry attempt ${stuckRetryCount} for stuckType=${stuckError.stuckType}")
+
+                    val transferState = PlayerTransferState.fromPlayer(player)
+                    try {
+                        transferState.setToPlayer(player)
+                        player.prepare()
+                        if (transferState.playWhenReady) {
+                            player.play()
+                        }
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            if (player.isPlaying) {
+                                stuckRetryCount = 0
+                                Log.d(aTag, "Stuck recovered after retry ${stuckRetryCount}")
+                            }
+                        }, 3000)
+                        return
+                    } catch (e: Exception) {
+                        Log.e(aTag, "Failed to recover from stuck: ${e.message}")
+                        stuckRetryCount = 0
+                        player.seekToDefaultPosition()
+                        player.prepare()
+                        player.play()
+                        return
+                    }
                 }
+
+                if (isRecoverableHlsError(error)) {
+                    val transferState = PlayerTransferState.fromPlayer(player)
+                    try {
+                        transferState.setToPlayer(player)
+                        player.prepare()
+                        if (transferState.playWhenReady) {
+                            player.play()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("PlayerError", "Failed to restore state: ${e.message}")
+                        player.seekToDefaultPosition()
+                        player.prepare()
+                        player.play()
+                    }
+                    return
+                }
+
+                invokeOnBothChannels(
+                    "onError",
+                    mapOf(
+                        "code" to error.errorCodeName,
+                        "message" to error.localizedMessage
+                    )
+                )
+                positionHandler.removeCallbacks(positionRunnable)
             }
         }
     }
@@ -1256,7 +1451,7 @@ class PlayerActivity : AppCompatActivity() {
         return false
     }
 
-    private fun debugTracksShort(currentTracks: Tracks) {
+/*    private fun debugTracksShort(currentTracks: Tracks) {
 
         Log.d("PlayerActivity", "=== TRACKS SUMMARY ===")
 
@@ -1292,7 +1487,7 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         Log.d("PlayerActivity", "===================")
-    }
+    }*/
 
     private fun getCurrentTracks(): List<Map<String, Any?>> {
         val tracksList = mutableListOf<Map<String, Any?>>()
@@ -1304,7 +1499,7 @@ class PlayerActivity : AppCompatActivity() {
 
         val currentTracks = player.currentTracks
         val activeVideoFormat = player.videoFormat
-        debugTracksShort(currentTracks)
+        //debugTracksShort(currentTracks)
         var externalAudioTrackIndex = 0
         for (group in currentTracks.groups) {
             val trackType = group.type
@@ -1611,13 +1806,9 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
 
-        val currentPosition = player.currentPosition
-        val wasPlaying = player.isPlaying
+        val state = PlayerTransferState.fromPlayer(player)
         try {
-            loadAndPlayMedia(videoUrl = selectedUrl, startPosition = currentPosition)
-            if (!wasPlaying) {
-                player.pause()
-            }
+            loadAndPlayMedia(videoUrl = selectedUrl, transferState = state)
             result.success(null)
         } catch (e: Exception) {
             reportErrorToOther(
@@ -1946,13 +2137,14 @@ class PlayerActivity : AppCompatActivity() {
             (effectiveSettings["videoQuality"] as? Number)?.toInt() ?: currentVideoQualityIndex
         currentVideoWidth = (effectiveSettings["width"] as? Number)?.toInt() ?: currentVideoWidth
         currentVideoHeight = (effectiveSettings["height"] as? Number)?.toInt() ?: currentVideoHeight
+        currentForceHighestBitrate = effectiveSettings["forceHighestBitrate"] as? Boolean ?: currentForceHighestBitrate
 
         when (currentVideoQualityIndex) {
             0 -> {
                 parametersBuilder
                     .clearVideoSizeConstraints()
                     .setForceLowestBitrate(false)
-                    .setForceHighestSupportedBitrate(true)
+                    .setForceHighestSupportedBitrate(currentForceHighestBitrate)
             }
 
             4 -> {
@@ -1967,12 +2159,12 @@ class PlayerActivity : AppCompatActivity() {
                     parametersBuilder
                         .setMaxVideoSize(currentVideoWidth, currentVideoHeight)
                         .setForceLowestBitrate(false)
-                        .setForceHighestSupportedBitrate(true)
+                        .setForceHighestSupportedBitrate(currentForceHighestBitrate)
                 } else {
                     parametersBuilder
                         .clearVideoSizeConstraints()
                         .setForceLowestBitrate(false)
-                        .setForceHighestSupportedBitrate(true)
+                        .setForceHighestSupportedBitrate(currentForceHighestBitrate)
                 }
             }
         }
@@ -2183,18 +2375,19 @@ class PlayerActivity : AppCompatActivity() {
     private fun rebuildMediaSourceAndResume() {
         val currentMediaItem = player.currentMediaItem ?: return
         val videoUrl = currentMediaItem.localConfiguration?.uri?.toString() ?: return
-        val currentPosition = player.currentPosition
-        val wasPlaying = player.isPlaying
-        val finalSource = createCombinedMediaSource(videoUrl)
+        val transferState = PlayerTransferState.fromPlayer(player)
         try {
-            player.setMediaSource(finalSource, currentPosition)
+            transferState.setToPlayer(player)
+            val finalSource = createCombinedMediaSource(videoUrl)
+            player.setMediaSource(finalSource, transferState.currentPosition)
             player.prepare()
-            if (wasPlaying) {
-                player.play()
-            }
+//            if (transferState.playWhenReady) { //todo check this
+//                player.play()
+//            }
         } catch (e: Exception) {
             invokeOnBothChannels(
-                "onError", mapOf(
+                "onError",
+                mapOf(
                     "code" to "PREPARATION_FAILED",
                     "message" to "Failed to create media source: ${e.message}"
                 )
@@ -2206,7 +2399,6 @@ class PlayerActivity : AppCompatActivity() {
         val cleanUrl = url.substringBefore("?")
         val extension = cleanUrl.substringAfterLast(".", "").lowercase()
         val mimeType = when (extension) {
-            // Субтитри
             "srt" -> MimeTypes.APPLICATION_SUBRIP // .srt → application/x-subrip
             "vtt" -> MimeTypes.TEXT_VTT // .vtt → text/vtt
             "webvtt" -> MimeTypes.TEXT_VTT // .webvtt → text/vtt

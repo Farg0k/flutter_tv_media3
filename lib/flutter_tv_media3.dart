@@ -54,6 +54,7 @@ export 'src/entity/epg_channel.dart';
 export 'src/const/basic_colors.dart';
 export 'src/const/extended_colors.dart';
 import 'flutter_tv_media3.dart';
+export '/src/preview/media3_preview.dart';
 
 /// The main class for accessing the media player controller.
 class FlutterTvMedia3 {
