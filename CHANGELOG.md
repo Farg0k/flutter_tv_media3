@@ -2,7 +2,8 @@
 - update minSdk to 23
 - update media3 to 1.9.0
 - Update libraries(decoder_av1-release.aar,decoder_ffmpeg-release.aar,decoder_iamf-release.aar, 
-decoder_mpegh-release.aar, decoder_vp9-release.aar). media3 v1.9.0.
+decoder_mpegh-release.aar, decoder_vp9-release.aar, decoder_flac-release.aar, 
+decoder_opus-release.aar). media3 v1.9.0.
 - Add PlayerTransferState, which facilitates transferring the playback state across 
 Player instances. media3 v1.9.0.
 - Add a stuck player detection that triggers a StuckPlayerException player error 

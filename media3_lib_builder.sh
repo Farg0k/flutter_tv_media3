@@ -53,6 +53,8 @@ ENVIRONMENT VARIABLES:
     OUTPUT_COPY_PATH         Additional path for copying AAR
     BUILD_AV1=false          Don't build AV1 decoder
     BUILD_VP9=false          Don't build VP9 decoder
+    BUILD_OPUS=false         Don't build Opus decoder
+    BUILD_FLAC=false         Don't build FLAC decoder
     BUILD_IAMF=false         Don't build IAMF decoder
     BUILD_MPEGH=false        Don't build MPEG-H decoder
 
@@ -78,7 +80,8 @@ done
 # ==============================================================================
 
 BUILD_LOG="$HOME/media3-build.log"
-exec > >(tee -a "$BUILD_LOG") 2>&1
+rm -f "$BUILD_LOG"
+exec > >(tee "$BUILD_LOG") 2>&1
 echo "=== Build started: $(date) ==="
 
 if [ "$EUID" -eq 0 ]; then
@@ -132,6 +135,8 @@ ENABLED_DECODERS=(vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac a
 # Modules to build
 BUILD_AV1="${BUILD_AV1:-true}"
 BUILD_VP9="${BUILD_VP9:-true}"
+BUILD_OPUS="${BUILD_OPUS:-true}"
+BUILD_FLAC="${BUILD_FLAC:-true}"
 BUILD_IAMF="${BUILD_IAMF:-true}"
 BUILD_MPEGH="${BUILD_MPEGH:-true}"
 
@@ -246,147 +251,286 @@ EOF
 setup_vp9_dependencies() {
     local vp9_module="$MEDIA3_PATH/libraries/decoder_vp9/src/main"
     local vp9_jni="$vp9_module/jni"
+    local libvpx_dir="$vp9_jni/libvpx"
 
     mkdir -p "$vp9_jni"
-    cd "$vp9_jni"
+    cd "$vp9_jni" || exit 1
 
+    # ------------------------------------------------------------------
     # Clone libvpx
-    if [ ! -d "libvpx" ]; then
-        log "Cloning libvpx v1.14.1..."
-        git clone https://chromium.googlesource.com/webm/libvpx --branch v1.14.1 --depth 1
+    # ------------------------------------------------------------------
+    if [ ! -d "$libvpx_dir" ]; then
+        log "Cloning libvpx v1.14.1"
+        git clone https://chromium.googlesource.com/webm/libvpx \
+            --branch v1.14.1 \
+            --depth 1
     fi
 
-    # Compile libvpx for Android
-    if [ ! -f "nativelib/arm64-v8a/libvpx.a" ]; then
-        log "Compiling libvpx..."
+    # ------------------------------------------------------------------
+    # Android NDK toolchain
+    # ------------------------------------------------------------------
+    local TOOLCHAIN="$NDK_PATH/toolchains/llvm/prebuilt/$NDK_HOST"
+    export PATH="$TOOLCHAIN/bin:$PATH"
+
+    local API=21
+    mkdir -p "$vp9_jni/nativelib"
+
+    # ------------------------------------------------------------------
+        # Build function for libvpx
+        # ------------------------------------------------------------------
+        build_vpx() {
+            local abi=$1
+            local target=$2
+            local triple=$3
+            local cpu=$4
+            local enable_asm=$5
+
+            log "Building libvpx for $abi"
+
+            local build_dir="$vp9_jni/build-$abi"
+            rm -rf "$build_dir"
+            mkdir -p "$build_dir"
+            cd "$build_dir" || exit 1
+
+            # Setup toolchain paths
+            export CC="$TOOLCHAIN/bin/${triple}${API}-clang"
+            export CXX="$TOOLCHAIN/bin/${triple}${API}-clang++"
+            export AR="$TOOLCHAIN/bin/llvm-ar"
+            export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+            export STRIP="$TOOLCHAIN/bin/llvm-strip"
+            export NM="$TOOLCHAIN/bin/llvm-nm"
+
+            # FIX: Add "-c" to the assembler (AS).
+            # Prevents "undefined symbol: main" error in NDK 27+
+            export AS="$TOOLCHAIN/bin/${triple}${API}-clang -c"
+
+            # Setup assembly flags based on architecture
+            local ASM_FLAGS=""
+            if [ "$enable_asm" = "no" ]; then
+                if [[ "$abi" == "x86" ]] || [[ "$abi" == "x86_64" ]]; then
+                    # libvpx uses specific flags to disable x86 optimizations
+                    ASM_FLAGS="--disable-mmx --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4_1 --disable-avx --disable-avx2 --disable-avx512"
+                else
+                    # For other architectures, this is the generic way to reduce optimizations
+                    ASM_FLAGS="--disable-optimizations"
+                fi
+            elif [ "$abi" = "armeabi-v7a" ]; then
+                # Fix for ARMv7: disable standalone NEON assembly but keep C intrinsics
+                ASM_FLAGS="--disable-neon-asm"
+            fi
+
+            # Run libvpx configure script
+            CROSS="$TOOLCHAIN/bin/" \
+            CFLAGS="-fPIC" \
+            "$libvpx_dir/configure" \
+                --target="$target" \
+                --libc="$TOOLCHAIN/sysroot" \
+                --disable-examples \
+                --disable-unit-tests \
+                --disable-tools \
+                --disable-docs \
+                --disable-shared \
+                --enable-static \
+                --enable-pic \
+                --enable-vp8 \
+                --enable-vp9 \
+                --enable-realtime-only \
+                --size-limit=16384x16384 \
+                --cpu="$cpu" \
+                $ASM_FLAGS
+
+            # Perform the build
+            make clean || true
+
+            # CPU count detection for Linux & macOS
+            local JOBS=$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+            make -j"$JOBS"
+
+            # Validation and deployment
+            mkdir -p "$vp9_jni/nativelib/$abi"
+            if [ -f "libvpx.a" ]; then
+                cp libvpx.a "$vp9_jni/nativelib/$abi/"
+                ok "libvpx.a successfully built for $abi"
+            else
+                error "Build finished but libvpx.a not found for $abi"
+            fi
+
+            cd "$vp9_jni" || exit 1
+        }
+
+        # ------------------------------------------------------------------
+        # ABI matrix (Media3-safe execution)
+        # ------------------------------------------------------------------
+
+        # ARM64: Safe to use full assembly
+        build_vpx arm64-v8a  arm64-android-gcc   aarch64-linux-android   cortex-a57  yes
+
+        # ARMv7: Use "yes" here because build_vpx() will automatically
+        # handle --disable-neon-asm for stability while keeping C-optimizations.
+        build_vpx armeabi-v7a armv7-android-gcc  armv7a-linux-androideabi cortex-a8  yes
+
+        # x86/x86_64: Assembly disabled to avoid dependency on NASM/YASM in toolchain
+        build_vpx x86     x86-android-gcc     i686-linux-android     atom    no
+        build_vpx x86_64  x86_64-android-gcc  x86_64-linux-android  x86-64  no
+
+    # ------------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------------
+    if [ ! -f "$vp9_jni/nativelib/arm64-v8a/libvpx.a" ]; then
+        error "VP9 build failed"
+    fi
+
+    ok "VP9 decoder configured successfully"
+}
+
+
+setup_opus_dependencies() {
+    local opus_module="$MEDIA3_PATH/libraries/decoder_opus/src/main"
+    local opus_jni="$opus_module/jni"
+
+    mkdir -p "$opus_jni"
+    cd "$opus_jni"
+
+    # Clone libopus
+    if [ ! -d "libopus" ]; then
+        log "Cloning libopus v1.5.2..."
+        git clone https://gitlab.xiph.org/xiph/opus.git libopus --branch v1.5.2 --depth 1
+    fi
+
+    # Compile libopus for Android
+    if [ ! -f "nativelib/arm64-v8a/libopus.a" ]; then
+        log "Compiling libopus..."
 
         # Check if build script exists
-        if [ -f "build_vpx.sh" ]; then
-            dos2unix build_vpx.sh 2>/dev/null || true
-            chmod +x build_vpx.sh
-            local full_module_path=$(realpath "$vp9_module")
-            ./build_vpx.sh "$full_module_path" "$NDK_PATH" "$NDK_HOST"
+        if [ -f "build_opus.sh" ]; then
+            dos2unix build_opus.sh 2>/dev/null || true
+            chmod +x build_opus.sh
+            local full_module_path=$(realpath "$opus_module")
+            ./build_opus.sh "$full_module_path" "$NDK_PATH" "$NDK_HOST"
         else
             # Manual build if script doesn't exist
-            warn "build_vpx.sh not found, attempting manual build..."
+            warn "build_opus.sh not found, attempting manual build..."
 
             local TOOLCHAIN="$NDK_PATH/toolchains/llvm/prebuilt/$NDK_HOST"
             export PATH="$TOOLCHAIN/bin:$PATH"
 
-            build_vpx_arch() {
-                local arch=$1
-                local target=$2
-                local abi=$3
+            # Generate configure script if needed
+            cd "$opus_jni/libopus"
+            if [ ! -f "configure" ]; then
+                log "Generating configure script for libopus..."
+                ./autogen.sh
+            fi
+            cd "$opus_jni"
+
+            build_opus_arch() {
+                local abi=$1
                 local api_level=21
-                local cpu_target=$4
+                local host_triple=$2
 
-                log "Building libvpx for $abi..."
+                log "Building libopus for $abi..."
 
-                local build_dir="$vp9_jni/libvpx-build-$abi"
+                local build_dir="$opus_jni/libopus-build-$abi"
                 rm -rf "$build_dir"
                 mkdir -p "$build_dir"
                 cd "$build_dir"
 
-                # Set compiler paths
+                # Set compiler
                 case "$abi" in
                     arm64-v8a)
                         export CC="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang"
                         export CXX="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang++"
-                        export AR="$TOOLCHAIN/bin/llvm-ar"
-                        export AS="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang"
-                        export LD="$TOOLCHAIN/bin/ld"
-                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
-                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
                         ;;
                     armeabi-v7a)
                         export CC="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang"
                         export CXX="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang++"
-                        export AR="$TOOLCHAIN/bin/llvm-ar"
-                        export AS="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang"
-                        export LD="$TOOLCHAIN/bin/ld"
-                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
-                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
                         ;;
                     x86)
                         export CC="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang"
                         export CXX="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang++"
-                        export AR="$TOOLCHAIN/bin/llvm-ar"
-                        export AS="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang"
-                        export LD="$TOOLCHAIN/bin/ld"
-                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
-                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
                         ;;
                     x86_64)
                         export CC="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang"
                         export CXX="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang++"
-                        export AR="$TOOLCHAIN/bin/llvm-ar"
-                        export AS="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang"
-                        export LD="$TOOLCHAIN/bin/ld"
-                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
-                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
                         ;;
                 esac
 
-                # Additional CFLAGS for ARM NEON headers
-                local EXTRA_CFLAGS=""
-                if [[ "$abi" == "arm64-v8a" ]] || [[ "$abi" == "armeabi-v7a" ]]; then
-                    EXTRA_CFLAGS="-I$TOOLCHAIN/sysroot/usr/include"
-                fi
+                export AR="$TOOLCHAIN/bin/llvm-ar"
+                export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+                export STRIP="$TOOLCHAIN/bin/llvm-strip"
 
                 # Configure
-                CROSS="$TOOLCHAIN/bin/" \
-                CFLAGS="$EXTRA_CFLAGS" \
-                CXXFLAGS="$EXTRA_CFLAGS" \
-                "$vp9_jni/libvpx/configure" \
-                    --target="$target" \
-                    --sdk-path="$NDK_PATH" \
-                    --libc="$TOOLCHAIN/sysroot" \
-                    --disable-examples \
-                    --disable-unit-tests \
-                    --disable-tools \
-                    --disable-docs \
-                    --enable-vp9 \
-                    --enable-vp8 \
-                    --enable-multi-res-encoding \
-                    --enable-temporal-denoising \
-                    --enable-vp9-temporal-denoising \
-                    --enable-vp9-postproc \
-                    --size-limit=16384x16384 \
-                    --enable-realtime-only \
-                    --enable-pic \
+                CFLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64" \
+                CPPFLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64" \
+                "$opus_jni/libopus/configure" \
+                    --host="$host_triple" \
                     --disable-shared \
                     --enable-static \
-                    --cpu="$cpu_target"
+                    --disable-doc \
+                    --disable-extra-programs \
+                    --enable-float-approx
 
                 # Build
                 make clean 2>/dev/null || true
                 make -j$(nproc 2>/dev/null || echo 4)
 
                 # Copy library
-                mkdir -p "$vp9_jni/nativelib/$abi"
-                if [ -f "libvpx.a" ]; then
-                    cp libvpx.a "$vp9_jni/nativelib/$abi/"
-                    ok "Built libvpx.a for $abi"
+                mkdir -p "$opus_jni/nativelib/$abi"
+                if [ -f ".libs/libopus.a" ]; then
+                    cp .libs/libopus.a "$opus_jni/nativelib/$abi/"
+                    ok "Built libopus.a for $abi"
                 else
-                    error "libvpx.a not found for $abi"
+                    error "libopus.a not found for $abi"
                 fi
 
-                cd "$vp9_jni"
+                cd "$opus_jni"
             }
 
             # Build for all architectures
-            build_vpx_arch "arm64" "arm64-android-gcc" "arm64-v8a" "cortex-a57"
-            build_vpx_arch "arm" "armv7-android-gcc" "armeabi-v7a" "cortex-a8"
-            build_vpx_arch "x86" "x86-android-gcc" "x86" "atom"
-            build_vpx_arch "x86_64" "x86_64-android-gcc" "x86_64" "x86-64"
+            build_opus_arch "arm64-v8a" "aarch64-linux-android"
+            build_opus_arch "armeabi-v7a" "arm-linux-androideabi"
+            build_opus_arch "x86" "i686-linux-android"
+            build_opus_arch "x86_64" "x86_64-linux-android"
         fi
 
-        if [ ! -f "nativelib/arm64-v8a/libvpx.a" ]; then
-            error "libvpx compilation failed, library not found."
+        if [ ! -f "nativelib/arm64-v8a/libopus.a" ]; then
+            error "libopus compilation failed, library not found."
         fi
     fi
 
-    ok "VP9 decoder configured"
+    ok "Opus decoder configured"
+}
+
+setup_flac_dependencies() {
+    local flac_jni="$MEDIA3_PATH/libraries/decoder_flac/src/main/jni"
+    mkdir -p "$flac_jni" && cd "$flac_jni"
+
+    if [ ! -d "libflac" ]; then
+        log "Cloning libflac 1.4.3..."
+        git clone https://github.com/xiph/flac.git libflac --branch 1.4.3 --depth 1
+    fi
+
+    log "Applying NDK 27 Hard-Fix for FLAC (API 23 compatibility)..."
+
+    # ПРАВИЛЬНИЙ ШЛЯХ: створюємо файл прямо всередині папки libflac
+    cat > "libflac/flac_fix.cmake" <<EOF
+add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64)
+if(ANDROID_ABI STREQUAL "armeabi-v7a" OR ANDROID_ABI STREQUAL "x86")
+    add_definitions(-Dfseeko=fseek -Dftello=ftell)
+endif()
+add_compile_options(-Wno-error=implicit-function-declaration)
+EOF
+
+    local cmake_file="libflac/CMakeLists.txt"
+
+    # Вимикаємо асемблер
+    sed -i 's/option(ENABLE_ASSEMBLY ".*" ON)/option(ENABLE_ASSEMBLY ".*" OFF)/g' "$cmake_file" || true
+
+    # Вставляємо include (якщо його там ще немає)
+    if ! grep -q "flac_fix.cmake" "$cmake_file"; then
+        sed -i '2i include(${CMAKE_CURRENT_SOURCE_DIR}/flac_fix.cmake)' "$cmake_file"
+    fi
+
+    ok "FLAC patched successfully"
 }
 
 setup_iamf_dependencies() {
@@ -470,19 +614,19 @@ log "Checking system tools..."
 if command -v apt >/dev/null 2>&1; then
     PKG_MGR="apt"
     PKG_CMD="sudo apt update && sudo apt install -y"
-    PKGS=(build-essential git wget unzip cmake ninja-build yasm nasm python3 python3-pip openjdk-17-jdk dos2unix meson pkg-config)
+    PKGS=(build-essential git wget unzip cmake ninja-build yasm nasm python3 python3-pip openjdk-17-jdk dos2unix meson pkg-config automake autoconf libtool libtool-bin gettext)
 elif command -v dnf >/dev/null 2>&1; then
     PKG_MGR="dnf"
     PKG_CMD="sudo dnf install -y"
-    PKGS=(gcc gcc-c++ make git wget unzip cmake ninja-build yasm nasm python3 python3-pip java-17-openjdk-devel dos2unix meson pkgconfig)
+    PKGS=(gcc gcc-c++ make git wget unzip cmake ninja-build yasm nasm python3 python3-pip java-17-openjdk-devel dos2unix meson pkgconfig automake autoconf libtool gettext)
 elif command -v pacman >/dev/null 2>&1; then
     PKG_MGR="pacman"
     PKG_CMD="sudo pacman -Sy --noconfirm"
-    PKGS=(base-devel git wget unzip cmake ninja yasm nasm python python-pip jdk17-openjdk dos2unix meson pkgconf)
+    PKGS=(base-devel git wget unzip cmake ninja yasm nasm python python-pip jdk17-openjdk dos2unix meson pkgconf automake autoconf libtool gettext)
 elif command -v brew >/dev/null 2>&1; then
     PKG_MGR="brew"
     PKG_CMD="brew install"
-    PKGS=(git wget cmake ninja yasm nasm python3 openjdk@17 dos2unix meson pkg-config)
+    PKGS=(git wget cmake ninja yasm nasm python3 openjdk@17 dos2unix meson pkg-config automake autoconf libtool gettext)
 else
     error "Package manager not found (apt/dnf/pacman/brew)"
 fi
@@ -576,6 +720,8 @@ smart_clone "FFmpeg" "$WORK_DIR/ffmpeg" "$FFMPEG_URL" "$FFMPEG_BRANCH"
 
 [ "$BUILD_AV1" = true ] && setup_av1_dependencies
 [ "$BUILD_VP9" = true ] && setup_vp9_dependencies
+[ "$BUILD_OPUS" = true ] && setup_opus_dependencies
+[ "$BUILD_FLAC" = true ] && setup_flac_dependencies
 [ "$BUILD_IAMF" = true ] && setup_iamf_dependencies
 [ "$BUILD_MPEGH" = true ] && setup_mpegh_dependencies
 
@@ -647,10 +793,12 @@ export ANDROID_SDK_ROOT="$ANDROID_SDK"
 chmod +x gradlew
 ./gradlew --version || error "Gradle not working"
 
-# Modules
+# Modules - ДОДАНО :lib-decoder-flac ТА :lib-decoder-opus
 GRADLE_MODULES=(":lib-decoder-ffmpeg")
 [ "$BUILD_AV1" = true ] && GRADLE_MODULES+=(":lib-decoder-av1")
 [ "$BUILD_VP9" = true ] && GRADLE_MODULES+=(":lib-decoder-vp9")
+[ "$BUILD_OPUS" = true ] && GRADLE_MODULES+=(":lib-decoder-opus")
+[ "$BUILD_FLAC" = true ] && GRADLE_MODULES+=(":lib-decoder-flac")
 [ "$BUILD_IAMF" = true ] && GRADLE_MODULES+=(":lib-decoder-iamf")
 [ "$BUILD_MPEGH" = true ] && GRADLE_MODULES+=(":lib-decoder-mpegh")
 
@@ -661,34 +809,36 @@ for gradle_mod in "${GRADLE_MODULES[@]}"; do
     mod_name="${gradle_mod//:/}"
     mod_name="${mod_name//lib-/}"
     mod_name="${mod_name//-/_}"
-    
+
     AAR_TARGET="$OUTPUT_AARS/${mod_name}-release.aar"
-    
+
     if [ -f "$AAR_TARGET" ]; then
         ok "$mod_name: already built"
         continue
     fi
-    
+
     log "Building $gradle_mod..."
-    
+
     # Cleanup
     mod_dir="libraries/$mod_name"
-    rm -rf "$mod_dir/build/outputs/aar" "$mod_dir/build/outputs/aar" 2>/dev/null || true
-    
-    # Gradle
-    ./gradlew --no-daemon "${gradle_mod}:assembleRelease" || error "Build $gradle_mod failed"
-    
-    # Find AAR
+    rm -rf "$mod_dir/build/outputs/aar" 2>/dev/null || true
+
+# Gradle збірка з виправленням для fseeko/ftello та вимкненням ASM
+./gradlew --no-daemon "${gradle_mod}:assembleRelease" \
+        -Pandroid.native.build_arguments="-DENABLE_ASSEMBLY=OFF -DENABLE_ASM=OFF" \
+        -Pandroid.native.cflags="-Wno-error=implicit-function-declaration -Dfseeko=fseek -Dftello=ftell" \
+        || error "Build $gradle_mod failed"
+
+    # Пошук AAR
     SRC_AAR=$(find "$mod_dir" -name "*-release.aar" -type f 2>/dev/null | head -n 1)
-    
+
     if [ -n "$SRC_AAR" ] && [ -f "$SRC_AAR" ]; then
         cp "$SRC_AAR" "$AAR_TARGET"
         FILE_SIZE=$(du -h "$AAR_TARGET" | cut -f1)
         ok "✓ ${mod_name}-release.aar ($FILE_SIZE)"
     else
         warn "AAR not found for $gradle_mod"
-        find "$mod_dir" -name "*.aar" 2>/dev/null || true
-        error "AAR build failed"
+        error "AAR build failed for $gradle_mod"
     fi
 done
 
