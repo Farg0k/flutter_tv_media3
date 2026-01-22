@@ -78,7 +78,7 @@ class TexturePreviewPlayer(
             )
             .setLoadControl(
                 DefaultLoadControl.Builder()
-                    .setBufferDurationsMs(1500, 5000, 500, 1000)
+                    .setBufferDurationsMs(10000, 20000, 1000, 2000)
                     .build()
             )
             .build().apply {

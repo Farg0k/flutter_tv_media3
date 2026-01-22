@@ -47,5 +47,6 @@ dependencies {
     implementation(files("libs/decoder_av1-release.aar"))
     implementation(files("libs/decoder_iamf-release.aar"))
     implementation(files("libs/decoder_mpegh-release.aar"))
+    implementation(files("libs/decoder_vp9-release.aar"))
     //api 'org.jellyfin.media3:media3-ffmpeg-decoder:1.6.1+1'
 }

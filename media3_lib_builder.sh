@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# MEDIA3 LIBS COMPLETE BUILDER (FFmpeg, AV1, IAMF, MPEG-H) - v 0.0.1 29/12/25
+# MEDIA3 LIBS COMPLETE BUILDER (FFmpeg, AV1, VP9, IAMF, MPEG-H) - v 0.0.2
 # ==============================================================================
 
 set -euo pipefail
@@ -52,9 +52,10 @@ ENVIRONMENT VARIABLES:
     ANDROID_SDK              Path to Android SDK (default: \$HOME/android-sdk)
     OUTPUT_COPY_PATH         Additional path for copying AAR
     BUILD_AV1=false          Don't build AV1 decoder
+    BUILD_VP9=false          Don't build VP9 decoder
     BUILD_IAMF=false         Don't build IAMF decoder
     BUILD_MPEGH=false        Don't build MPEG-H decoder
-    
+
 EOF
     exit 0
 }
@@ -80,7 +81,7 @@ BUILD_LOG="$HOME/media3-build.log"
 exec > >(tee -a "$BUILD_LOG") 2>&1
 echo "=== Build started: $(date) ==="
 
-if [ "$EUID" -eq 0 ]; then 
+if [ "$EUID" -eq 0 ]; then
     error "Don't run this script with sudo! Just: ./$(basename "$0")"
 fi
 
@@ -130,6 +131,7 @@ ENABLED_DECODERS=(vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac a
 
 # Modules to build
 BUILD_AV1="${BUILD_AV1:-true}"
+BUILD_VP9="${BUILD_VP9:-true}"
 BUILD_IAMF="${BUILD_IAMF:-true}"
 BUILD_MPEGH="${BUILD_MPEGH:-true}"
 
@@ -151,10 +153,10 @@ mkdir -p "$WORK_DIR" "$OUTPUT_AARS"
 setup_av1_dependencies() {
     local av1_module="$MEDIA3_PATH/libraries/decoder_av1/src/main"
     local av1_jni="$av1_module/jni"
-    
+
     mkdir -p "$av1_jni"
     cd "$av1_jni"
-    
+
     # 1. Clone dav1d
     if [ ! -d "dav1d" ]; then
         log "Cloning dav1d 1.4.3..."
@@ -168,7 +170,6 @@ setup_av1_dependencies() {
     fi
 
     # 3. FIX: Generate extended version.h for dav1d 1.4.3
-    # We add macros expected by dav1d tools (tools/dav1d.c)
     local version_h="dav1d/include/dav1d/version.h"
     log "Generating compatible version.h..."
     mkdir -p "$(dirname "$version_h")"
@@ -222,37 +223,181 @@ EOF
         create_meson_file "$cross_dir/x86_64-android.meson" "x86_64" "x86-64"
     fi
 
-    # 5. Compile dav1d (Absolute path required)
+    # 5. Compile dav1d
     if [ ! -f "nativelib/arm64-v8a/libdav1d.a" ]; then
         log "Compiling dav1d..."
-        # Remove old build attempts in /tmp so Meson starts fresh
         rm -rf /tmp/meson-* 2>/dev/null || true
-        
+
         if [ -f "build_dav1d.sh" ]; then
             dos2unix build_dav1d.sh 2>/dev/null || true
             chmod +x build_dav1d.sh
-            # Use real full path to module
             local full_module_path=$(realpath "$av1_module")
             ./build_dav1d.sh "$full_module_path" "$NDK_PATH" "$NDK_HOST"
         fi
-        
+
         if [ ! -f "nativelib/arm64-v8a/libdav1d.a" ]; then
              error "dav1d compilation succeeded by code, but libdav1d.a not found."
         fi
     fi
-    
+
     ok "AV1 decoder configured"
+}
+
+setup_vp9_dependencies() {
+    local vp9_module="$MEDIA3_PATH/libraries/decoder_vp9/src/main"
+    local vp9_jni="$vp9_module/jni"
+
+    mkdir -p "$vp9_jni"
+    cd "$vp9_jni"
+
+    # Clone libvpx
+    if [ ! -d "libvpx" ]; then
+        log "Cloning libvpx v1.14.1..."
+        git clone https://chromium.googlesource.com/webm/libvpx --branch v1.14.1 --depth 1
+    fi
+
+    # Compile libvpx for Android
+    if [ ! -f "nativelib/arm64-v8a/libvpx.a" ]; then
+        log "Compiling libvpx..."
+
+        # Check if build script exists
+        if [ -f "build_vpx.sh" ]; then
+            dos2unix build_vpx.sh 2>/dev/null || true
+            chmod +x build_vpx.sh
+            local full_module_path=$(realpath "$vp9_module")
+            ./build_vpx.sh "$full_module_path" "$NDK_PATH" "$NDK_HOST"
+        else
+            # Manual build if script doesn't exist
+            warn "build_vpx.sh not found, attempting manual build..."
+
+            local TOOLCHAIN="$NDK_PATH/toolchains/llvm/prebuilt/$NDK_HOST"
+            export PATH="$TOOLCHAIN/bin:$PATH"
+
+            build_vpx_arch() {
+                local arch=$1
+                local target=$2
+                local abi=$3
+                local api_level=21
+                local cpu_target=$4
+
+                log "Building libvpx for $abi..."
+
+                local build_dir="$vp9_jni/libvpx-build-$abi"
+                rm -rf "$build_dir"
+                mkdir -p "$build_dir"
+                cd "$build_dir"
+
+                # Set compiler paths
+                case "$abi" in
+                    arm64-v8a)
+                        export CC="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang"
+                        export CXX="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang++"
+                        export AR="$TOOLCHAIN/bin/llvm-ar"
+                        export AS="$TOOLCHAIN/bin/aarch64-linux-android${api_level}-clang"
+                        export LD="$TOOLCHAIN/bin/ld"
+                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
+                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+                        ;;
+                    armeabi-v7a)
+                        export CC="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang"
+                        export CXX="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang++"
+                        export AR="$TOOLCHAIN/bin/llvm-ar"
+                        export AS="$TOOLCHAIN/bin/armv7a-linux-androideabi${api_level}-clang"
+                        export LD="$TOOLCHAIN/bin/ld"
+                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
+                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+                        ;;
+                    x86)
+                        export CC="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang"
+                        export CXX="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang++"
+                        export AR="$TOOLCHAIN/bin/llvm-ar"
+                        export AS="$TOOLCHAIN/bin/i686-linux-android${api_level}-clang"
+                        export LD="$TOOLCHAIN/bin/ld"
+                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
+                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+                        ;;
+                    x86_64)
+                        export CC="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang"
+                        export CXX="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang++"
+                        export AR="$TOOLCHAIN/bin/llvm-ar"
+                        export AS="$TOOLCHAIN/bin/x86_64-linux-android${api_level}-clang"
+                        export LD="$TOOLCHAIN/bin/ld"
+                        export STRIP="$TOOLCHAIN/bin/llvm-strip"
+                        export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+                        ;;
+                esac
+
+                # Additional CFLAGS for ARM NEON headers
+                local EXTRA_CFLAGS=""
+                if [[ "$abi" == "arm64-v8a" ]] || [[ "$abi" == "armeabi-v7a" ]]; then
+                    EXTRA_CFLAGS="-I$TOOLCHAIN/sysroot/usr/include"
+                fi
+
+                # Configure
+                CROSS="$TOOLCHAIN/bin/" \
+                CFLAGS="$EXTRA_CFLAGS" \
+                CXXFLAGS="$EXTRA_CFLAGS" \
+                "$vp9_jni/libvpx/configure" \
+                    --target="$target" \
+                    --sdk-path="$NDK_PATH" \
+                    --libc="$TOOLCHAIN/sysroot" \
+                    --disable-examples \
+                    --disable-unit-tests \
+                    --disable-tools \
+                    --disable-docs \
+                    --enable-vp9 \
+                    --enable-vp8 \
+                    --enable-multi-res-encoding \
+                    --enable-temporal-denoising \
+                    --enable-vp9-temporal-denoising \
+                    --enable-vp9-postproc \
+                    --size-limit=16384x16384 \
+                    --enable-realtime-only \
+                    --enable-pic \
+                    --disable-shared \
+                    --enable-static \
+                    --cpu="$cpu_target"
+
+                # Build
+                make clean 2>/dev/null || true
+                make -j$(nproc 2>/dev/null || echo 4)
+
+                # Copy library
+                mkdir -p "$vp9_jni/nativelib/$abi"
+                if [ -f "libvpx.a" ]; then
+                    cp libvpx.a "$vp9_jni/nativelib/$abi/"
+                    ok "Built libvpx.a for $abi"
+                else
+                    error "libvpx.a not found for $abi"
+                fi
+
+                cd "$vp9_jni"
+            }
+
+            # Build for all architectures
+            build_vpx_arch "arm64" "arm64-android-gcc" "arm64-v8a" "cortex-a57"
+            build_vpx_arch "arm" "armv7-android-gcc" "armeabi-v7a" "cortex-a8"
+            build_vpx_arch "x86" "x86-android-gcc" "x86" "atom"
+            build_vpx_arch "x86_64" "x86_64-android-gcc" "x86_64" "x86-64"
+        fi
+
+        if [ ! -f "nativelib/arm64-v8a/libvpx.a" ]; then
+            error "libvpx compilation failed, library not found."
+        fi
+    fi
+
+    ok "VP9 decoder configured"
 }
 
 setup_iamf_dependencies() {
     local iamf_jni="$MEDIA3_PATH/libraries/decoder_iamf/src/main/jni"
     mkdir -p "$iamf_jni"
     cd "$iamf_jni"
-    
+
     if [ ! -d "libiamf" ]; then
         git clone https://github.com/AOMediaCodec/libiamf.git --depth 1
     fi
-    
+
     # CMake for IAMF
     local cmake_file="$MEDIA3_PATH/libraries/decoder_iamf/src/main/cpp/CMakeLists.txt"
     if [ ! -f "$cmake_file" ]; then
@@ -273,7 +418,7 @@ target_link_libraries(iamf_jni iamf log)
 target_include_directories(iamf_jni PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../jni/libiamf/code/include)
 EOF
     fi
-    
+
     ok "IAMF decoder configured"
 }
 
@@ -281,11 +426,11 @@ setup_mpegh_dependencies() {
     local mpegh_jni="$MEDIA3_PATH/libraries/decoder_mpegh/src/main/jni"
     mkdir -p "$mpegh_jni"
     cd "$mpegh_jni"
-    
+
     if [ ! -d "libmpegh" ]; then
         git clone https://github.com/Fraunhofer-IIS/mpeghdec.git libmpegh --branch r2.0.0 --depth 1
     fi
-    
+
     ok "MPEG-H decoder configured"
 }
 
@@ -347,7 +492,7 @@ log "Package manager: $PKG_MGR"
 MISSING=()
 for p in "${PKGS[@]}"; do
     PKG_INSTALLED=false
-    
+
     if [ "$PKG_MGR" = "brew" ]; then
         brew list "$p" &>/dev/null && PKG_INSTALLED=true
     elif [ "$PKG_MGR" = "pacman" ]; then
@@ -355,7 +500,7 @@ for p in "${PKGS[@]}"; do
     else
         dpkg -s "$p" &>/dev/null 2>&1 && PKG_INSTALLED=true
     fi
-    
+
     [ "$PKG_INSTALLED" = false ] && MISSING+=("$p")
 done
 
@@ -380,7 +525,7 @@ if [ -d "$NDK_PATH" ] && [ -f "$NDK_PATH/ndk-build" ]; then
 else
     log "Installing NDK..."
     mkdir -p "$ANDROID_SDK/cmdline-tools"
-    
+
     if [ ! -d "$ANDROID_SDK/cmdline-tools/latest" ]; then
         SDK_URL="https://dl.google.com/android/repository/commandlinetools-${SDK_TOOLS_SUFFIX}-11076708_latest.zip"
         wget -q "$SDK_URL" -O /tmp/cmdline.zip
@@ -389,14 +534,14 @@ else
         mv /tmp/cmdline-tools/* "$ANDROID_SDK/cmdline-tools/latest/"
         rm -rf /tmp/cmdline.zip /tmp/cmdline-tools
     fi
-    
+
     set +o pipefail
     yes | "$ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK" --licenses &>/dev/null || true
     set -o pipefail
-    
+
     export JAVA_OPTS="-Xmx2048m"
     "$ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK" "ndk;$NDK_VERSION"
-    
+
     [ -f "$NDK_PATH/ndk-build" ] || error "NDK installed but invalid"
     ok "NDK installed"
 fi
@@ -407,7 +552,7 @@ fi
 
 smart_clone() {
     local name=$1 path=$2 url=$3 branch=$4
-    
+
     if [ -d "$path/.git" ]; then
         if [ "$SKIP_GIT_UPDATE" = true ]; then
             ok "$name: skipping update"
@@ -430,6 +575,7 @@ smart_clone "Media3" "$MEDIA3_PATH" "https://github.com/androidx/media.git" "rel
 smart_clone "FFmpeg" "$WORK_DIR/ffmpeg" "$FFMPEG_URL" "$FFMPEG_BRANCH"
 
 [ "$BUILD_AV1" = true ] && setup_av1_dependencies
+[ "$BUILD_VP9" = true ] && setup_vp9_dependencies
 [ "$BUILD_IAMF" = true ] && setup_iamf_dependencies
 [ "$BUILD_MPEGH" = true ] && setup_mpegh_dependencies
 
@@ -463,18 +609,18 @@ fi
 
 if [ ! -d "ffmpeg/android-libs" ] || [ "$(find ffmpeg/android-libs -name "libav*" 2>/dev/null | wc -l)" -eq 0 ]; then
     log "Building FFmpeg (10-20 min)..."
-    
+
     [ -f build_ffmpeg.sh ] || error "build_ffmpeg.sh not found"
     dos2unix build_ffmpeg.sh 2>/dev/null || true
-    
+
     # Patch for symlink
     if grep -q 'cd "${FFMPEG_MODULE_PATH}/jni/ffmpeg"' build_ffmpeg.sh; then
         sed -i.bak 's|cd "${FFMPEG_MODULE_PATH}/jni/ffmpeg"|cd "${FFMPEG_MODULE_PATH}"|g' build_ffmpeg.sh
     fi
-    
+
     chmod +x build_ffmpeg.sh
     ./build_ffmpeg.sh "$WORK_DIR/ffmpeg" "$NDK_PATH" "$NDK_HOST" 21 "${ENABLED_DECODERS[@]}"
-    
+
     # Verification
     LIBS=$(find ffmpeg/android-libs -name "libav*" 2>/dev/null | wc -l)
     [ "$LIBS" -eq 0 ] && error "FFmpeg libraries not created"
@@ -504,6 +650,7 @@ chmod +x gradlew
 # Modules
 GRADLE_MODULES=(":lib-decoder-ffmpeg")
 [ "$BUILD_AV1" = true ] && GRADLE_MODULES+=(":lib-decoder-av1")
+[ "$BUILD_VP9" = true ] && GRADLE_MODULES+=(":lib-decoder-vp9")
 [ "$BUILD_IAMF" = true ] && GRADLE_MODULES+=(":lib-decoder-iamf")
 [ "$BUILD_MPEGH" = true ] && GRADLE_MODULES+=(":lib-decoder-mpegh")
 

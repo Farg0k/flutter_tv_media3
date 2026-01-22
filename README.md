@@ -738,6 +738,7 @@ In the example (`/example/android/app/libs`), you can find the following pre-bui
 * `decoder_ffmpeg-release.aar`
 * `decoder_iamf-release.aar`
 * `decoder_mpegh-release.aar`
+* `decoder_vp9-release.aar`
 
 ### Why aren't these libraries included in the plugin?
 
