@@ -14,7 +14,7 @@ class ChannelLogoWidget extends StatelessWidget {
       width: dimension,
       height: dimension,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: AppTheme.borderRadius,
         child: Container(
           color: AppTheme.focusColor,
           child:

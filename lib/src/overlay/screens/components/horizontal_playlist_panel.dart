@@ -267,117 +267,123 @@ class HorizontalPlaylistItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppTheme.fullFocusColor : Colors.white24,
-                      width: isSelected ? 3 : 1,
-                    ),
-                    boxShadow:
-                        isSelected
-                            ? [
-                              BoxShadow(
-                                color: AppTheme.fullFocusColor.withValues(alpha: 0.5),
-                                blurRadius: 10,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                            : null,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(9),
-                    child: Stack(
-                      children: [
-                        if (item.placeholderImg != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(9),
-                            child: Image.network(
-                              item.placeholderImg!,
-                              fit: BoxFit.cover,
-                              width: 240,
-                              height: 160,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value:
-                                        loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    _getIconForMediaType(),
-                                    size: 48,
-                                    color: isActive ? AppTheme.fullFocusColor : Colors.white38,
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        else
-                          Container(
-                            color: Colors.white10,
-                            child: Center(
-                              child: Icon(
-                                _getIconForMediaType(),
-                                size: 48,
-                                color: isActive ? AppTheme.fullFocusColor : Colors.white38,
-                              ),
-                            ),
-                          ),
-                        if (isActive)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(color: AppTheme.fullFocusColor, shape: BoxShape.circle),
-                              child: const Icon(Icons.play_arrow, color: Colors.white, size: 16),
-                            ),
-                          ),
-                        Positioned(bottom: 0, left: 0, right: 0, child: _ProgressBar(item: item)),
-                      ],
-                    ),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Ink(
+                decoration: _buildDecoration(),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Stack(
+                    children: [
+                      _PlaylistItemThumbnail(item: item, isActive: isActive),
+                      if (isActive) const _PlaylistItemActiveIndicator(),
+                      Positioned(bottom: 0, left: 0, right: 0, child: _ProgressBar(item: item)),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          MarqueeWidget(
-            text: item.label ?? item.title ?? sprintf(OverlayLocalizations.get('itemNumber'), [index]),
-            focus: isSelected,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.white70,
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
+          _PlaylistItemTitle(item: item, index: index, isSelected: isSelected),
         ],
       ),
     );
   }
 
+  BoxDecoration _buildDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: isSelected ? AppTheme.fullFocusColor : Colors.white24, width: isSelected ? 3 : 1),
+      boxShadow:
+          isSelected
+              ? [BoxShadow(color: AppTheme.fullFocusColor.withValues(alpha: 0.5), blurRadius: 10, spreadRadius: 2)]
+              : null,
+    );
+  }
+}
+
+class _PlaylistItemThumbnail extends StatelessWidget {
+  final PlaylistMediaItem item;
+
+  final bool isActive;
+
+  const _PlaylistItemThumbnail({required this.item, required this.isActive});
+
+  @override
+  Widget build(BuildContext context) {
+    final placeholder = Container(
+      color: Colors.white10,
+
+      child: Center(
+        child: Icon(_getIconForMediaType(), size: 48, color: isActive ? AppTheme.fullFocusColor : Colors.white38),
+      ),
+    );
+
+    if (item.placeholderImg == null) return placeholder;
+
+    return Image.network(
+      item.placeholderImg!,
+      fit: BoxFit.cover,
+      width: 240,
+      height: 160,
+
+      loadingBuilder:
+          (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator()),
+
+      errorBuilder: (context, error, stackTrace) => placeholder,
+    );
+  }
+
   IconData _getIconForMediaType() {
-    switch (item.mediaItemType) {
-      case MediaItemType.tvStream:
-        return Icons.tv;
-      case MediaItemType.audio:
-        return Icons.audiotrack;
-      case MediaItemType.video:
-        return Icons.movie;
-    }
+    return switch (item.mediaItemType) {
+      MediaItemType.tvStream => Icons.tv,
+
+      MediaItemType.audio => Icons.audiotrack,
+
+      MediaItemType.video => Icons.movie,
+    };
+  }
+}
+
+class _PlaylistItemActiveIndicator extends StatelessWidget {
+  const _PlaylistItemActiveIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(color: AppTheme.fullFocusColor, shape: BoxShape.circle),
+        child: const Icon(Icons.play_arrow, color: Colors.white, size: 16),
+      ),
+    );
+  }
+}
+
+class _PlaylistItemTitle extends StatelessWidget {
+  final PlaylistMediaItem item;
+
+  final int index;
+
+  final bool isSelected;
+
+  const _PlaylistItemTitle({required this.item, required this.index, required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return MarqueeWidget(
+      text: item.label ?? item.title ?? sprintf(OverlayLocalizations.get('itemNumber'), [index]),
+      focus: isSelected,
+      style: TextStyle(
+        color: isSelected ? Colors.white : Colors.white70,
+        fontSize: 14,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
   }
 }
 

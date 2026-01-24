@@ -71,7 +71,7 @@ class _PlaylistItemWidgetState extends State<PlaylistItemWidget> {
         onTap: () {
           widget.controller.playSelectedIndex(index: widget.index);
         },
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: AppTheme.borderRadius,
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(color: backgroundColor),
