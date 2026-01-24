@@ -9,6 +9,7 @@ import '../media_ui_service/media3_ui_controller.dart';
 import 'components/audio_screen/audio_screen_widget.dart';
 import 'components/clock_panel.dart';
 import 'components/epg_screen/epg_screen.dart';
+import 'components/horizontal_playlist_panel.dart';
 import 'components/info_panel.dart';
 import 'components/placeholder_widget.dart';
 import 'components/setup_panel.dart';
@@ -227,6 +228,12 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 child: SubtitleWidget(controller: widget.controller),
               );
             }
+            if (state.playerPanel == PlayerPanel.horizontalPlaylist) {
+              return CallbackShortcuts(
+                bindings: _generalBindings(),
+                child: HorizontalPlaylistPanel(controller: widget.controller, generalBindings: _generalBindings()),
+              );
+            }
             if (_shouldShowAudioUI()) {
               return CallbackShortcuts(
                 bindings: _generalBindings(),
@@ -376,7 +383,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.arrowUp):
           () => widget.controller.playNext(),
       const SingleActivator(LogicalKeyboardKey.arrowDown):
-          () => widget.controller.playPrevious(),
+          () => _handleArrowDown(),
     };
   }
 
@@ -434,7 +441,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.arrowUp):
           () => widget.controller.playNext(),
       const SingleActivator(LogicalKeyboardKey.arrowDown):
-          () => widget.controller.playPrevious(),
+          () => _handleArrowDown(),
 
       const SingleActivator(LogicalKeyboardKey.arrowLeft):
           () => _arrowRewind(action: -10),
@@ -511,6 +518,18 @@ class _OverlayScreenState extends State<OverlayScreen> {
                 : playerPanel,
       ),
     );
+  }
+
+  void _handleArrowDown() {
+    final bloc = context.read<OverlayUiBloc>();
+    if (bloc.state.playerPanel == PlayerPanel.horizontalPlaylist) {
+      bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
+      widget.controller.playPrevious();
+    } else {
+      bloc.add(
+        const SetActivePanel(playerPanel: PlayerPanel.horizontalPlaylist),
+      );
+    }
   }
 
   Future<void> _playPause() async {

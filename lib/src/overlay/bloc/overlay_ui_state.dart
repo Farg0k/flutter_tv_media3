@@ -163,4 +163,7 @@ enum PlayerPanel {
 
   /// A panel with touch-friendly controls.
   touchOverlay,
+
+  /// A horizontal playlist panel (YouTube style).
+  horizontalPlaylist,
 }

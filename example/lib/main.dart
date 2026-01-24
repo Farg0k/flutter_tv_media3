@@ -56,6 +56,7 @@ class PreviewItem {
       title: title,
       url: url,
       startPosition: startTime,
+      placeholderImg: poster
     );
   }
 }

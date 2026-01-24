@@ -270,23 +270,24 @@ class Media3UiController {
 
       case 'onWatchTimeMarked':
         final index = call.arguments['playlist_index'] as int?;
-        final int duration = call.arguments['duration_ms'] as int? ?? 0;
-        final int position = call.arguments['position_ms'] as int? ?? 0;
+        final int durationMs = call.arguments['duration_ms'] as int? ?? 0;
+        final int positionMs = call.arguments['position_ms'] as int? ?? 0;
         List<PlaylistMediaItem> currentPlaylist = List.from(
           _playerState.playlist,
         );
         if (index != null && index < currentPlaylist.length) {
           final currentItem = currentPlaylist[index];
           if (currentItem.updateWatchTime == true) {
-            final item = currentItem.copyWith(
-              startPosition: (position / 1000).round(),
-              duration: (duration / 1000).round(),
+            final item = currentPlaylist[index].copyWith(
+              startPosition: (positionMs / 1000).round(),
+              duration: (durationMs / 1000).round(),
             );
             currentPlaylist[index] = item;
             newState = newState.copyWith(playlist: currentPlaylist);
           }
         }
-        break;
+        _updateState(newState);
+        return;
       case 'onMetadataChanged':
         final rawData = call.arguments as Map<Object?, Object?>?;
         _currentMetadata = MediaMetadata.fromMap(rawData);

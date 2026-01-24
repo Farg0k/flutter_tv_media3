@@ -176,7 +176,7 @@ class PlaylistMediaItem {
       'userAgent': userAgent,
       'subtitles': subtitles?.map((sub) => sub.toMap()).toList(),
       'audioTracks': audioTracks?.map((audio) => audio.toMap()).toList(),
-      'updateWatchTime': saveWatchTime != null,
+      'updateWatchTime': updateWatchTime,
       'mediaItemType': mediaItemType.index,
       'programs': programs?.map(((program) => program.toMap())).toList(),
     };
