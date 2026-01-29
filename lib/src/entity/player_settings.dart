@@ -12,7 +12,7 @@ import 'dart:ui';
 /// to restore the user's choice on subsequent launches. If the settings
 /// are not provided, the player uses default values.
 class PlayerSettings {
-  PlayerSettings({
+  const PlayerSettings({
     this.videoQuality = VideoQuality.max,
     this.preferredAudioLanguages,
     this.preferredTextLanguages,
@@ -128,6 +128,7 @@ class PlayerSettings {
     int? stuckPlayingDetectionTimeoutMs,
     int? stuckPlayingNotEndingTimeoutMs,
     int? stuckSuppressedDetectionTimeoutMs,
+    Locale? deviceLocale,
   }) {
     return PlayerSettings(
       videoQuality: videoQuality ?? this.videoQuality,
@@ -148,6 +149,7 @@ class PlayerSettings {
       stuckSuppressedDetectionTimeoutMs:
           stuckSuppressedDetectionTimeoutMs ??
           this.stuckSuppressedDetectionTimeoutMs,
+      deviceLocale: deviceLocale ??this.deviceLocale
     );
   }
 

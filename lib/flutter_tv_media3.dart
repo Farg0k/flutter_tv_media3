@@ -53,6 +53,11 @@ export 'src/entity/streaming_metadata.dart';
 export 'src/entity/epg_channel.dart';
 export 'src/const/basic_colors.dart';
 export 'src/const/extended_colors.dart';
+export 'src/app_theme/app_theme.dart';
+export 'src/utils/string_utils.dart';
+export 'src/utils/debouncer_throttler.dart';
+export 'src/localization/overlay_localizations.dart';
+export 'src/const/iso_language_list.dart';
 import 'flutter_tv_media3.dart';
 export '/src/preview/media3_preview.dart';
 
