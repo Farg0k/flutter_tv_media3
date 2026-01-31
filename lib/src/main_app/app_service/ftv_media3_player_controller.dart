@@ -99,7 +99,7 @@ class FtvMedia3PlayerController {
   /// For example, if set to 5, [onLoadMore] will be called when the player
   /// starts preparing the 5th item from the end of the current playlist.
   /// Defaults to 5.
-  int paginationThreshold = 5;
+  int _paginationThreshold = 5;
   bool _isLoadingMore = false;
 
   /// The current overall state of the player.
@@ -180,6 +180,7 @@ class FtvMedia3PlayerController {
     String? findSubtitlesLabel,
     String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
+    int? paginationThreshold
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
     if (subtitleStyle != null) _subtitleStyle = subtitleStyle;
@@ -199,6 +200,7 @@ class FtvMedia3PlayerController {
     if (labelSearchExternalSubtitle != null) {
       _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
     }
+    if (paginationThreshold !=null) _paginationThreshold = paginationThreshold;
   }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.
@@ -606,7 +608,7 @@ class FtvMedia3PlayerController {
         if (playIndex != null &&
             onLoadMore != null &&
             !_isLoadingMore &&
-            newState.playlist.length - playIndex <= paginationThreshold) {
+            newState.playlist.length - playIndex <= _paginationThreshold) {
           _isLoadingMore = true;
           onLoadMore!().whenComplete(() {
             _isLoadingMore = false;
