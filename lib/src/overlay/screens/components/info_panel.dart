@@ -1,11 +1,9 @@
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tv_media3/flutter_tv_media3.dart';
 
-import '../../../app_theme/app_theme.dart';
-import '../../../entity/epg_channel.dart';
 import '../../bloc/overlay_ui_bloc.dart';
 import '../../media_ui_service/media3_ui_controller.dart';
 import 'time_line_panel.dart';
@@ -22,157 +20,171 @@ class InfoPanel extends StatelessWidget {
       autofocus: true,
       child: Material(
         color: Colors.transparent,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
-                buildWhen: (oldState, newState) => oldState.playIndex != newState.playIndex,
-                builder: (context, state) {
-                  final playItem = controller.playerState.playlist[state.playIndex];
-                  final hasEpg = playItem.programs != null;
-                  final programs = playItem.programs ?? [];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(top: 8, bottom: 6, left: 16, right: 16),
-                      constraints: BoxConstraints(minHeight: playItem.coverImg != null ? 170 : 120, maxHeight: 360),
-                      decoration: BoxDecoration(
-                        color: AppTheme.backgroundColor,
-                        borderRadius: AppTheme.borderRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 3,
-                        children: [
-                          Flexible(
-                            child: Row(
-                              children: [
-                                if (playItem.coverImg != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0, right: 16.0, bottom: 16.0),
-                                    child: Container(
-                                      clipBehavior: Clip.antiAlias,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.backgroundColor,
-                                        borderRadius: AppTheme.borderRadius,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppTheme.divider,
-                                            blurRadius: 12,
-                                            offset: const Offset(0, 5),
-                                          ),
-                                        ],
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
+            buildWhen:
+                (oldState, newState) =>
+                    oldState.playIndex != newState.playIndex || oldState.playerPanel != newState.playerPanel,
+            builder: (context, state) {
+              final playerState = controller.playerState;
+              final playlist = playerState.playlist;
+
+              if (playlist.isEmpty || state.playIndex >= playlist.length) {
+                return const SizedBox.shrink();
+              }
+
+              final playItem = playlist[state.playIndex];
+              final poster = playItem.coverImg ?? playItem.placeholderImg;
+              final title = playItem.title ?? playItem.label ?? "";
+
+              final hasEpg = playItem.programs != null && playItem.programs!.isNotEmpty;
+              final programs = playItem.programs ?? [];
+
+              return Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.95),
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IntrinsicHeight(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (playItem.coverImg != null)
+                              Container(
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.backgroundColor,
+                                  borderRadius: AppTheme.borderRadius,
+                                  boxShadow: [
+                                    BoxShadow(color: AppTheme.divider, blurRadius: 12, offset: const Offset(0, 5)),
+                                  ],
+                                ),
+                                constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
+                                child: Image.network(
+                                  playItem.coverImg!,
+                                  fit: BoxFit.cover,
+                                  height: 170,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        value:
+                                            loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded /
+                                                    loadingProgress.expectedTotalBytes!
+                                                : null,
                                       ),
-                                      constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
-                                      child: Image.network(
-                                        playItem.coverImg!,
-                                        fit: BoxFit.cover,
-                                        height: 170,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              value:
-                                                  loadingProgress.expectedTotalBytes != null
-                                                      ? loadingProgress.cumulativeBytesLoaded /
-                                                          loadingProgress.expectedTotalBytes!
-                                                      : null,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Center(child: Icon(Icons.image, color: Colors.white38));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(child: Icon(Icons.image, color: Colors.white38));
+                                  },
+                                ),
+                              ),
+                            if (poster != null) const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 8,
+                                children: [
+                                  Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    spacing: 3,
+                                    spacing: 8,
                                     children: [
-                                      if (playItem.title != null || playItem.label != null)
-                                        Text(
-                                          playItem.title ?? playItem.label!,
-                                          style: Theme.of(context).textTheme.titleLarge,
+                                      Expanded(
+                                        child: Text(
+                                          title,
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            shadows: [
+                                              const Shadow(color: Colors.black, blurRadius: 8, offset: Offset(0, 2)),
+                                            ],
+                                          ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                      if (hasEpg)
-                                        if (programs.isNotEmpty)
-                                          _EpgInfo(programs: programs)
-                                        else
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 8.0),
-                                            child: Text(
-                                              OverlayLocalizations.get('live'),
-                                              style: Theme.of(
-                                                context,
-                                              ).textTheme.headlineSmall?.merge(AppTheme.extraLightTextStyle),
-                                            ),
-                                          )
-                                      else ...[
-                                        if (playItem.subTitle != null)
-                                          Text(
-                                            playItem.subTitle!,
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.titleMedium?.merge(AppTheme.extraLightTextStyle),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: AppTheme.borderRadius,
+                                        ),
+                                        child: Text(
+                                          "${state.playIndex + 1} / ${playlist.length}",
+                                          style: TextStyle(
+                                            color: AppTheme.backgroundColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 1.0,
                                           ),
-                                        if (playItem.title != null &&
-                                            playItem.label != null &&
-                                            playItem.title != playItem.label)
-                                          Text(
-                                            playItem.label!,
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.titleSmall?.merge(AppTheme.extraLightTextStyle),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        if (playItem.description != null)
-                                          Text(
-                                            playItem.description!,
-                                            style: Theme.of(context).textTheme.bodyLarge,
-                                            maxLines: 5,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                      ],
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ),
-                              ],
+                                  if (playItem.subTitle != null)
+                                    Text(
+                                      playItem.subTitle!,
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  Expanded(
+                                    child:
+                                        hasEpg
+                                            ? _EpgInfo(programs: programs)
+                                            : playItem.description != null
+                                            ? Text(
+                                              playItem.description!,
+                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                color: Colors.white.withValues(alpha: 0.8),
+                                                height: 1.4,
+                                              ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
+                                            )
+                                            : const SizedBox.shrink(),
+                                  ),
+                                  VideoInfoWidget(controller: controller, state: state),
+                                ],
+                              ),
                             ),
-                          ),
-                          VideoInfoWidget(controller: controller, state: state),
-                          TimeLinePanel(controller: controller),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                    TimeLinePanel(controller: controller),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -208,13 +220,21 @@ class _EpgInfoState extends State<_EpgInfo> {
 
   void _updateProgram() {
     final now = DateTime.now();
-    final currentProgram = widget.programs.firstWhere(
-      (program) => now.isAfter(program.startTime) && now.isBefore(program.endTime),
-    );
-    if (currentProgram != _currentProgram) {
-      setState(() {
-        _currentProgram = currentProgram;
-      });
+    try {
+      final currentProgram = widget.programs.firstWhere(
+        (program) => now.isAfter(program.startTime) && now.isBefore(program.endTime),
+      );
+      if (currentProgram != _currentProgram) {
+        setState(() {
+          _currentProgram = currentProgram;
+        });
+      }
+    } catch (_) {
+      if (_currentProgram != null) {
+        setState(() {
+          _currentProgram = null;
+        });
+      }
     }
   }
 
@@ -223,47 +243,50 @@ class _EpgInfoState extends State<_EpgInfo> {
     if (_currentProgram == null) {
       return const SizedBox.shrink();
     }
+
     final now = DateTime.now();
-    final progress =
-        now.difference(_currentProgram!.startTime).inSeconds /
-        _currentProgram!.endTime.difference(_currentProgram!.startTime).inSeconds;
+    final totalSeconds = _currentProgram!.endTime.difference(_currentProgram!.startTime).inSeconds;
+    final progress = totalSeconds > 0 ? now.difference(_currentProgram!.startTime).inSeconds / totalSeconds : 0.0;
 
     final startTime = OverlayLocalizations.timeFormat(date: _currentProgram!.startTime);
     final endTime = OverlayLocalizations.timeFormat(date: _currentProgram!.endTime);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 8,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           _currentProgram!.title,
-          style: Theme.of(context).textTheme.headlineMedium?.merge(AppTheme.extraLightTextStyle),
-          maxLines: 2,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         if (_currentProgram!.description != null) ...[
+          const SizedBox(height: 4),
           Text(
             _currentProgram!.description!,
-            style: Theme.of(context).textTheme.bodyLarge?.merge(AppTheme.infoTextStyle),
-            maxLines: 3,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],
+        const SizedBox(height: 8),
         Row(
-          spacing: 8,
           children: [
-            Text(startTime, style: AppTheme.infoTextStyle),
+            Text(startTime, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            const SizedBox(width: 8),
             Expanded(
               child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
+                value: progress.clamp(0.0, 1.0),
+                backgroundColor: Colors.white24,
                 color: Colors.white,
+                minHeight: 4,
               ),
             ),
-            Text(endTime, style: AppTheme.infoTextStyle),
+            const SizedBox(width: 8),
+            Text(endTime, style: const TextStyle(color: Colors.white70, fontSize: 12)),
           ],
         ),
-        SizedBox(height: 4),
       ],
     );
   }

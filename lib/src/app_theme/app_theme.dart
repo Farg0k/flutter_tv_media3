@@ -51,7 +51,7 @@ class AppTheme {
 
   static const TextStyle infoTextStyle = TextStyle(
     color: Colors.white70,
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: FontWeight.w300,
     letterSpacing: 0.5,
   );
