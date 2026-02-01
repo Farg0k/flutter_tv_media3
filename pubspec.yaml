@@ -1,8 +1,10 @@
 name: flutter_tv_media3
-description: "Flutter TV Media3 plugin for playing video on Android TV using the native Media3 player, which runs in its own `Activity`. "
+description: "Android TV Media3 player plugin. Supports AFR, HDR, and custom UI in a separate Activity."
 
 version: 0.1.0
 homepage: https://github.com/Farg0k/flutter_tv_media3
+repository: https://github.com/Farg0k/flutter_tv_media3
+issue_tracker: https://github.com/Farg0k/flutter_tv_media3/issues
 
 environment:
   sdk: ^3.7.2

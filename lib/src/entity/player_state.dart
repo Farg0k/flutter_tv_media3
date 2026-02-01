@@ -1,11 +1,22 @@
 import '../../flutter_tv_media3.dart';
 
+/// Represents the current volume state of the player.
+///
+/// This includes the current volume level, maximum volume, and mute status.
 class VolumeState {
+  /// The current volume level.
   final int current;
+
+  /// The maximum possible volume level.
   final int max;
+
+  /// A flag indicating whether the audio is muted.
   final bool isMute;
+
+  /// The current volume level as a double, from 0.0 to 1.0.
   final double volume;
 
+  /// Creates a [VolumeState] with the given volume parameters.
   VolumeState({
     this.current = 0,
     this.max = 0,
@@ -13,6 +24,7 @@ class VolumeState {
     this.volume = 0.0,
   });
 
+  /// Creates a copy of this [VolumeState] with optional new values.
   VolumeState copyWith({int? current, int? max, bool? isMute, double? volume}) {
     return VolumeState(
       current: current ?? this.current,
@@ -27,10 +39,12 @@ class VolumeState {
     return 'VolumeState{current: $current, max: $max, isMute: $isMute, volume: $volume}';
   }
 
+  /// Converts this [VolumeState] instance to a JSON-compatible map.
   Map<String, dynamic> toMap() {
     return {'current': current, 'max': max, 'isMute': isMute, 'volume': volume};
   }
 
+  /// Creates a [VolumeState] instance from a map (e.g., from JSON).
   factory VolumeState.fromMap(Map<String, dynamic> map) {
     return VolumeState(
       current: map['current'] as int? ?? 0,
