@@ -251,26 +251,27 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
           PreviewItem(
             id: '$nextId',
             title: 'Pagination Item $nextId',
-            url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-            poster: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
+            url:
+                'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+            poster:
+                'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
           ),
           PreviewItem(
             id: '${nextId + 1}',
             title: 'Pagination Item ${nextId + 1}',
-            url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
             poster: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
           ),
         ];
 
-        // Update local state and notify the player
+        // Update local state
         setState(() {
           items.addAll(newItems);
         });
 
-        // Synchronize with the native player and overlay UI
-        await playerController.addMediaItems(items: newItems.map((e) => e.toPlaylistMediaItem()).toList());
-
-        debugPrint('PAGINATION: Added ${newItems.length} items.');
+        debugPrint('PAGINATION: Returning ${newItems.length} items.');
+        return newItems.map((e) => e.toPlaylistMediaItem()).toList();
       },
     );
 

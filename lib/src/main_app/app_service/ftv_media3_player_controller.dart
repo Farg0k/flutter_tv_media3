@@ -81,18 +81,18 @@ class FtvMedia3PlayerController {
   /// is close to the end of the playlist.
   ///
   /// This callback is set via the [setConfig] method. Use it to fetch more data
-  /// from your API and add it to the player using [addMediaItems].
+  /// from your API and return it to be added to the player.
   ///
   /// Example of setting it in [setConfig]:
   /// ```dart
   /// controller.setConfig(
   ///   onLoadMore: () async {
   ///     final newItems = await fetchNextPage();
-  ///     await controller.addMediaItems(items: newItems);
+  ///     return newItems;
   ///   },
   /// );
   /// ```
-  Future<void> Function()? _onLoadMore;
+  Future<List<PlaylistMediaItem>?> Function()? _onLoadMore;
 
   /// The number of items from the end of the playlist at which
   /// the [onLoadMore] callback (set via [setConfig]) should be triggered.
@@ -182,7 +182,7 @@ class FtvMedia3PlayerController {
     String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
     int? paginationThreshold,
-    Future<void> Function()? onLoadMore
+    Future<List<PlaylistMediaItem>?> Function()? onLoadMore,
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
     if (subtitleStyle != null) _subtitleStyle = subtitleStyle;
@@ -490,9 +490,12 @@ class FtvMedia3PlayerController {
       case 'onLoadMore':
         if (_onLoadMore != null && !_isLoadingMore) {
           _isLoadingMore = true;
-          _onLoadMore!().whenComplete(() {
+          final items = await _onLoadMore!().whenComplete(() {
             _isLoadingMore = false;
           });
+          if (items != null) {
+            addMediaItems(items: items);
+          }
         }
         break;
       case 'onError':
@@ -637,6 +640,10 @@ class FtvMedia3PlayerController {
           _isLoadingMore = true;
           _onLoadMore!().whenComplete(() {
             _isLoadingMore = false;
+          }).then((items) {
+            if (items != null) {
+              addMediaItems(items: items);
+            }
           });
         }
         break;

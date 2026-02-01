@@ -363,8 +363,8 @@ The `FtvMedia3PlayerController` now allows you to modify the playlist after the 
 
 To handle large playlists efficiently, the plugin includes a built-in pagination mechanism. You can define a callback that automatically fetches more content when the player approaches the end of the current playlist.
 
-*   **`onLoadMore`** (`Future<void> Function()?`):
-    An asynchronous callback function that is triggered when the player's `playIndex` is within the `paginationThreshold` of the playlist's end. Use this to fetch additional `PlaylistMediaItem` objects and add them using `addMediaItems`.
+*   **`onLoadMore`** (`Future<List<PlaylistMediaItem>?> Function()?`):
+    An asynchronous callback function that is triggered when the player's `playIndex` is within the `paginationThreshold` of the playlist's end. Use this to fetch additional `PlaylistMediaItem` objects and return them to be automatically added to the playlist.
 
 *   **`paginationThreshold`** (`int`):
     Defines how many items from the end of the playlist `onLoadMore` should be triggered. For example, if `paginationThreshold` is `5`, `onLoadMore` will be called when the player starts preparing the 5th item from the end of the current playlist.
@@ -394,8 +394,8 @@ void initState() {
         url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
       ));
 
-      await controller.addMediaItems(items: newItems);
-      print('PAGINATION: Added ${newItems.length} new items.');
+      print('PAGINATION: Returning ${newItems.length} new items.');
+      return newItems;
     },
     paginationThreshold: 3, // Load more when 3 items are left
   );
