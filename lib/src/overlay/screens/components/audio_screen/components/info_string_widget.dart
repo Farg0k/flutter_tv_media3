@@ -1,9 +1,7 @@
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../flutter_tv_media3.dart';
-import '../../../../../utils/string_utils.dart';
 import '../../../../media_ui_service/media3_ui_controller.dart';
 import '../../widgets/video_info_item.dart';
 

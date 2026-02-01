@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
-import 'package:flutter_tv_media3/src/app_theme/app_theme.dart';
-import '../../utils/debouncer_throttler.dart';
 import '../bloc/overlay_ui_bloc.dart';
 import '../media_ui_service/media3_ui_controller.dart';
 import 'components/audio_screen/audio_screen_widget.dart';
@@ -22,7 +20,6 @@ import 'components/setup_panel/video_widget/video_widget.dart';
 import 'components/simple_panel.dart';
 import 'components/touch_controls_overlay.dart';
 import 'components/widgets/player_error_widget.dart';
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'components/widgets/show_side_sheet.dart';
 import 'components/widgets/titled_panel_scaffold.dart';
 

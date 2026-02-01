@@ -7,7 +7,6 @@ import 'package:flutter_tv_media3/flutter_tv_media3.dart';
 
 import '../../entity/find_subtitles_state.dart';
 import '../../entity/refresh_rate_info.dart';
-import '../../localization/overlay_localizations.dart';
 
 /// Manages the state and interaction of the player UI overlay.
 ///

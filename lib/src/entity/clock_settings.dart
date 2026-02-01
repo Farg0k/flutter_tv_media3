@@ -1,4 +1,3 @@
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';

@@ -1,7 +1,5 @@
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../../flutter_tv_media3.dart';
-import '../../../app_theme/app_theme.dart';
 import '../../media_ui_service/media3_ui_controller.dart';
 import 'widgets/custom_info_text_widget.dart';
 import 'widgets/player_error_widget.dart';

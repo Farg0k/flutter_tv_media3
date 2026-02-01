@@ -1,11 +1,8 @@
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
 import 'package:flutter_tv_media3/src/overlay/media_ui_service/media3_ui_controller.dart';
-import 'package:flutter_tv_media3/src/utils/string_utils.dart';
 import 'package:sprintf/sprintf.dart';
 
-import '../../../../../app_theme/app_theme.dart';
 import '../../widgets/marquee_title_widget.dart';
 
 class PlaylistItemWidget extends StatefulWidget {

@@ -1,8 +1,6 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../flutter_tv_media3.dart';
-import '../../app_theme/app_theme.dart';
 
 /// A screen widget launched from the main application to display the loading
 /// process of the native player.

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../flutter_tv_media3.dart';
-import '../app_theme/app_theme.dart';
-import '../localization/overlay_localizations.dart';
 import 'bloc/overlay_ui_bloc.dart';
 import 'media_ui_service/media3_ui_controller.dart';
 

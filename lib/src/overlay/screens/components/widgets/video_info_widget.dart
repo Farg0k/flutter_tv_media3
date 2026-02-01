@@ -1,10 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
-import 'package:flutter_tv_media3/src/localization/overlay_localizations.dart';
 import 'package:sprintf/sprintf.dart';
 
-import '../../../../utils/string_utils.dart';
 import '../../../bloc/overlay_ui_bloc.dart';
 import '../../../media_ui_service/media3_ui_controller.dart';
 import 'video_info_item.dart';
