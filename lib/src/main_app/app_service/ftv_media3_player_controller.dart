@@ -80,24 +80,26 @@ class FtvMedia3PlayerController {
   /// Callback for pagination. Triggered when the current playIndex
   /// is close to the end of the playlist.
   ///
-  /// Use this to fetch more data from your API and add it to the player
-  /// using [addMediaItems].
+  /// This callback is set via the [setConfig] method. Use it to fetch more data
+  /// from your API and add it to the player using [addMediaItems].
   ///
-  /// Example:
+  /// Example of setting it in [setConfig]:
   /// ```dart
-  /// controller.onLoadMore = () async {
-  ///   final newItems = await fetchNextPage();
-  ///   await controller.addMediaItems(items: newItems);
-  /// };
+  /// controller.setConfig(
+  ///   onLoadMore: () async {
+  ///     final newItems = await fetchNextPage();
+  ///     await controller.addMediaItems(items: newItems);
+  ///   },
+  /// );
   /// ```
   Future<void> Function()? _onLoadMore;
 
   /// The number of items from the end of the playlist at which
-  /// [onLoadMore] should be triggered.
+  /// the [onLoadMore] callback (set via [setConfig]) should be triggered.
   ///
   /// For example, if set to 5, [onLoadMore] will be called when the player
   /// starts preparing the 5th item from the end of the current playlist.
-  /// Defaults to 5.
+  /// Defaults to 5. This value can be configured via [setConfig].
   int _paginationThreshold = 5;
   bool _isLoadingMore = false;
 

@@ -372,31 +372,36 @@ To handle large playlists efficiently, the plugin includes a built-in pagination
 **Example of Pagination Setup:**
 
 ```dart
+// In your widget's state
+final controller = FtvMedia3PlayerController();
+int _currentPage = 0; // Keep track of the current page
+
 @override
 void initState() {
   super.initState();
   // ... other controller configurations
 
-  controller.onLoadMore = () async {
-    print('PAGINATION: Triggered to load more items...');
-    // Simulate fetching data from an API
-    await Future.delayed(const Duration(seconds: 2));
-    
-    final currentPage = (controller.playerState.playlist.length / 5).ceil();
-    final newItems = List.generate(5, (i) => PlaylistMediaItem(
-      id: 'page_${currentPage + 1}_item_${i}',
-      title: 'Dynamic Item ${currentPage * 5 + i + 1}',
-      url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-    ));
+  controller.setConfig(
+    onLoadMore: () async {
+      print('PAGINATION: Triggered to load more items...');
+      // Simulate fetching data from an API
+      await Future.delayed(const Duration(seconds: 2));
+      
+      _currentPage++; // Increment page count for the new items
+      final newItems = List.generate(5, (i) => PlaylistMediaItem(
+        id: 'page_${_currentPage}_item_${i}',
+        title: 'Dynamic Item ${(_currentPage - 1) * 5 + i + 1}',
+        url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+      ));
 
-    await controller.addMediaItems(items: newItems);
-    print('PAGINATION: Added ${newItems.length} new items.');
-  };
-
-  // Set the threshold for when to trigger onLoadMore
-  controller.paginationThreshold = 3; // Load more when 3 items are left
+      await controller.addMediaItems(items: newItems);
+      print('PAGINATION: Added ${newItems.length} new items.');
+    },
+    paginationThreshold: 3, // Load more when 3 items are left
+  );
 }
 ```
+
 
 ### Dynamic Link Resolution (`getDirectLink`)
 
