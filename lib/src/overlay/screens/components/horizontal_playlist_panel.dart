@@ -244,34 +244,39 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
                       Expanded(
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                          itemCount: playlist.length,
-                          itemBuilder: (context, index) {
-                            final item = playlist[index];
-                            final isSelected = index == _selectedIndex;
-                            final isActive = index == playerState.playIndex;
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Scrollbar(
+                            controller: _scrollController,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                              itemCount: playlist.length,
+                              itemBuilder: (context, index) {
+                                final item = playlist[index];
+                                final isSelected = index == _selectedIndex;
+                                final isActive = index == playerState.playIndex;
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: HorizontalPlaylistItem(
-                                item: item,
-                                index: index,
-                                isSelected: isSelected,
-                                isActive: isActive,
-                                onTap: () {
-                                  widget.controller.playSelectedIndex(index: index);
-                                  context.read<OverlayUiBloc>().add(
-                                    const SetActivePanel(playerPanel: PlayerPanel.none),
-                                  );
-                                },
-                              ),
-                            );
-                          },
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  child: HorizontalPlaylistItem(
+                                    item: item,
+                                    index: index,
+                                    isSelected: isSelected,
+                                    isActive: isActive,
+                                    onTap: () {
+                                      widget.controller.playSelectedIndex(index: index);
+                                      context.read<OverlayUiBloc>().add(
+                                        const SetActivePanel(playerPanel: PlayerPanel.none),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ],
