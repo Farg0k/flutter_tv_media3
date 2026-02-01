@@ -490,11 +490,13 @@ class FtvMedia3PlayerController {
       case 'onLoadMore':
         if (_onLoadMore != null && !_isLoadingMore) {
           _isLoadingMore = true;
-          final items = await _onLoadMore!().whenComplete(() {
+          try {
+            final items = await _onLoadMore!();
+            if (items != null && items.isNotEmpty) {
+              await addMediaItems(items: items);
+            }
+          } finally {
             _isLoadingMore = false;
-          });
-          if (items != null) {
-            addMediaItems(items: items);
           }
         }
         break;
@@ -638,12 +640,12 @@ class FtvMedia3PlayerController {
             !_isLoadingMore &&
             newState.playlist.length - playIndex <= _paginationThreshold) {
           _isLoadingMore = true;
-          _onLoadMore!().whenComplete(() {
-            _isLoadingMore = false;
-          }).then((items) {
-            if (items != null) {
+          _onLoadMore!().then((items) {
+            if (items != null && items.isNotEmpty) {
               addMediaItems(items: items);
             }
+          }).whenComplete(() {
+            _isLoadingMore = false;
           });
         }
         break;
