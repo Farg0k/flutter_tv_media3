@@ -240,42 +240,42 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       playerSettings: PlayerSettings(videoQuality: VideoQuality.high, isAfrEnabled: true),
       // Trigger pagination when 2 items are left in the playlist
       paginationThreshold: 6,
+      onLoadMore: () async {
+        debugPrint('PAGINATION: Loading more items...');
+
+        // Simulate network delay
+        await Future.delayed(const Duration(seconds: 2));
+
+        final nextId = items.length + 1;
+        final newItems = [
+          PreviewItem(
+            id: '$nextId',
+            title: 'Pagination Item $nextId',
+            url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+            poster: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
+          ),
+          PreviewItem(
+            id: '${nextId + 1}',
+            title: 'Pagination Item ${nextId + 1}',
+            url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            poster: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
+          ),
+        ];
+
+        // Update local state and notify the player
+        setState(() {
+          items.addAll(newItems);
+        });
+
+        // Synchronize with the native player and overlay UI
+        await playerController.addMediaItems(items: newItems.map((e) => e.toPlaylistMediaItem()).toList());
+
+        debugPrint('PAGINATION: Added ${newItems.length} items.');
+      },
     );
 
     // PAGINATION EXAMPLE:
     // This callback will be triggered when the user is close to the end of the playlist
-    playerController.onLoadMore = () async {
-      debugPrint('PAGINATION: Loading more items...');
-
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      final nextId = items.length + 1;
-      final newItems = [
-        PreviewItem(
-          id: '$nextId',
-          title: 'Pagination Item $nextId',
-          url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-          poster: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
-        ),
-        PreviewItem(
-          id: '${nextId + 1}',
-          title: 'Pagination Item ${nextId + 1}',
-          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-          poster: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
-        ),
-      ];
-
-      // Update local state and notify the player
-      setState(() {
-        items.addAll(newItems);
-      });
-
-      // Synchronize with the native player and overlay UI
-      await playerController.addMediaItems(items: newItems.map((e) => e.toPlaylistMediaItem()).toList());
-
-      debugPrint('PAGINATION: Added ${newItems.length} items.');
-    };
   }
 
   void _removeItem(int index) async {

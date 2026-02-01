@@ -181,6 +181,8 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
             putBoolean("forcedAutoEnable", playerSettings["forcedAutoEnable"] as? Boolean ?: true)
             putString("deviceLocale", playerSettings["deviceLocale"] as? String)
             putBoolean("isAfrEnabled", playerSettings["isAfrEnabled"] as? Boolean ?: true)
+            putBoolean("paginationEnable", playerSettings["paginationEnable"] as? Boolean ?: false)
+            (playerSettings["paginationThreshold"] as? Number)?.toInt()?.let { putInt("paginationThreshold", it) }
           }
           putExtra("player_settings", playerSettingsBundle)
         }

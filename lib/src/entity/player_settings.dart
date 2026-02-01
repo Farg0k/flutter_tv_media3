@@ -24,6 +24,8 @@ class PlayerSettings {
     this.stuckPlayingDetectionTimeoutMs = 120000,
     this.stuckPlayingNotEndingTimeoutMs = 180000,
     this.stuckSuppressedDetectionTimeoutMs = 480000,
+    this.paginationThreshold = 5,
+    this.paginationEnable = false,
   });
 
   /// The desired video quality. The player will try to select a stream
@@ -73,6 +75,13 @@ class PlayerSettings {
   /// Defaults to 480,000 (8 minutes).
   final int stuckSuppressedDetectionTimeoutMs;
 
+  /// The number of items from the end of the playlist at which
+  /// pagination should be triggered.
+  final int paginationThreshold;
+
+  /// Whether pagination is enabled.
+  final bool paginationEnable;
+
   Map<String, dynamic> toMap() {
     return {
       'videoQuality': videoQuality.index,
@@ -88,6 +97,8 @@ class PlayerSettings {
       'stuckPlayingDetectionTimeoutMs': stuckPlayingDetectionTimeoutMs,
       'stuckPlayingNotEndingTimeoutMs': stuckPlayingNotEndingTimeoutMs,
       'stuckSuppressedDetectionTimeoutMs': stuckSuppressedDetectionTimeoutMs,
+      'paginationThreshold': paginationThreshold,
+      'paginationEnable': paginationEnable,
     };
   }
 
@@ -114,6 +125,8 @@ class PlayerSettings {
           map['stuckPlayingNotEndingTimeoutMs'] as int? ?? 180000,
       stuckSuppressedDetectionTimeoutMs:
           map['stuckSuppressedDetectionTimeoutMs'] as int? ?? 480000,
+      paginationThreshold: map['paginationThreshold'] as int? ?? 5,
+      paginationEnable: map['paginationEnable'] as bool? ?? false,
     );
   }
 
@@ -128,6 +141,8 @@ class PlayerSettings {
     int? stuckPlayingDetectionTimeoutMs,
     int? stuckPlayingNotEndingTimeoutMs,
     int? stuckSuppressedDetectionTimeoutMs,
+    int? paginationThreshold,
+    bool? paginationEnable,
     Locale? deviceLocale,
   }) {
     return PlayerSettings(
@@ -149,7 +164,9 @@ class PlayerSettings {
       stuckSuppressedDetectionTimeoutMs:
           stuckSuppressedDetectionTimeoutMs ??
           this.stuckSuppressedDetectionTimeoutMs,
-      deviceLocale: deviceLocale ??this.deviceLocale
+      paginationThreshold: paginationThreshold ?? this.paginationThreshold,
+      paginationEnable: paginationEnable ?? this.paginationEnable,
+      deviceLocale: deviceLocale ?? this.deviceLocale,
     );
   }
 
@@ -165,7 +182,9 @@ class PlayerSettings {
       stuckBufferingDetectionTimeoutMs: $stuckBufferingDetectionTimeoutMs,
       stuckPlayingDetectionTimeoutMs: $stuckPlayingDetectionTimeoutMs,
       stuckPlayingNotEndingTimeoutMs: $stuckPlayingNotEndingTimeoutMs,
-      stuckSuppressedDetectionTimeoutMs: $stuckSuppressedDetectionTimeoutMs
+      stuckSuppressedDetectionTimeoutMs: $stuckSuppressedDetectionTimeoutMs,
+      paginationThreshold: $paginationThreshold,
+      paginationEnable: $paginationEnable
     }''';
   }
 

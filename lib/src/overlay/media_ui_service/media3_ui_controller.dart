@@ -588,6 +588,11 @@ class Media3UiController {
     await _invokeMethodGuarded<void>(_activityChannel, 'stop');
   }
 
+  /// Sends a command to trigger the "load more" (pagination) logic on the main application.
+  Future<void> onLoadMoreCalled() async {
+    await _invokeMethodGuarded<void>(_activityChannel, 'onLoadMore');
+  }
+
   /// Sends a command to trigger the sleep timer logic on the native side.
   Future<void> sleepTimerExec() async {
     await _invokeMethodGuarded<void>(_activityChannel, 'sleepTimerExec');

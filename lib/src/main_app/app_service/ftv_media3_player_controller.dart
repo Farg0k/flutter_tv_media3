@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import '../../../flutter_tv_media3.dart';
 import '../../entity/find_subtitles_state.dart';
 import '../../entity/refresh_rate_info.dart';
-import '../../localization/overlay_localizations.dart';
 
 /// A callback to save the current subtitle style settings.
 typedef SaveSubtitleStyle =
@@ -91,7 +90,7 @@ class FtvMedia3PlayerController {
   ///   await controller.addMediaItems(items: newItems);
   /// };
   /// ```
-  Future<void> Function()? onLoadMore;
+  Future<void> Function()? _onLoadMore;
 
   /// The number of items from the end of the playlist at which
   /// [onLoadMore] should be triggered.
@@ -180,7 +179,8 @@ class FtvMedia3PlayerController {
     String? findSubtitlesLabel,
     String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
-    int? paginationThreshold
+    int? paginationThreshold,
+    Future<void> Function()? onLoadMore
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
     if (subtitleStyle != null) _subtitleStyle = subtitleStyle;
@@ -190,6 +190,13 @@ class FtvMedia3PlayerController {
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
+    if (onLoadMore != null) {
+      _onLoadMore = onLoadMore;
+      if (_playerSettings != null) {
+        _playerSettings = _playerSettings!.copyWith(paginationEnable: true);
+        _updateState(_playerState.copyWith(playerSettings: _playerSettings));
+      }
+    }
     if (searchExternalSubtitle != null) {
       _searchExternalSubtitle = searchExternalSubtitle;
     }
@@ -200,7 +207,15 @@ class FtvMedia3PlayerController {
     if (labelSearchExternalSubtitle != null) {
       _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
     }
-    if (paginationThreshold !=null) _paginationThreshold = paginationThreshold;
+    if (paginationThreshold != null) {
+      _paginationThreshold = paginationThreshold;
+      if (_playerSettings != null) {
+        _playerSettings = _playerSettings!.copyWith(
+          paginationThreshold: _paginationThreshold,
+        );
+        _updateState(_playerState.copyWith(playerSettings: _playerSettings));
+      }
+    }
   }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.
@@ -470,6 +485,14 @@ class FtvMedia3PlayerController {
           if (_sleepTimerExec != null) _sleepTimerExec!();
         }
         break;
+      case 'onLoadMore':
+        if (_onLoadMore != null && !_isLoadingMore) {
+          _isLoadingMore = true;
+          _onLoadMore!().whenComplete(() {
+            _isLoadingMore = false;
+          });
+        }
+        break;
       case 'onError':
         newState = newState.copyWith(
           lastError:
@@ -606,11 +629,11 @@ class FtvMedia3PlayerController {
 
         // Pagination logic
         if (playIndex != null &&
-            onLoadMore != null &&
+            _onLoadMore != null &&
             !_isLoadingMore &&
             newState.playlist.length - playIndex <= _paginationThreshold) {
           _isLoadingMore = true;
-          onLoadMore!().whenComplete(() {
+          _onLoadMore!().whenComplete(() {
             _isLoadingMore = false;
           });
         }
@@ -811,6 +834,18 @@ class FtvMedia3PlayerController {
     _updateState(
       _playerState.copyWith(playlist: playlist, playIndex: initialIndex),
     );
+
+    if (_playerSettings != null) {
+      _playerSettings = _playerSettings!.copyWith(
+        paginationEnable: _onLoadMore != null,
+        paginationThreshold: _paginationThreshold,
+      );
+    } else {
+      _playerSettings = PlayerSettings(
+        paginationEnable: _onLoadMore != null,
+        paginationThreshold: _paginationThreshold,
+      );
+    }
 
     final playlistMap = playlist.map((e) => e.toMap()).toList();
     final playlistStr = jsonEncode(playlistMap);

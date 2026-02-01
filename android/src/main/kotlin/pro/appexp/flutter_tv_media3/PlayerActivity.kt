@@ -356,6 +356,9 @@ class PlayerActivity : AppCompatActivity() {
                     "forcedAutoEnable" to bundle.getBoolean("forcedAutoEnable", true),
                     "isAfrEnabled" to bundle.getBoolean("isAfrEnabled", false),
                     "forceHighestBitrate" to bundle.getBoolean("forceHighestBitrate", true),
+                    "paginationEnable" to bundle.getBoolean("paginationEnable", false),
+                    bundle.getInt("paginationThreshold", -1).takeIf { it != -1 }
+                        ?.let { "paginationThreshold" to it },
                     bundle.getString("deviceLocale")?.let { "deviceLocale" to it }
                 ).toMap()
             }
@@ -952,6 +955,11 @@ class PlayerActivity : AppCompatActivity() {
                         e.message
                     )
                 }
+            }
+
+            "onLoadMore" -> {
+                methodChannel.invokeMethod("onLoadMore", null)
+                result.success(null)
             }
 
             "playNext" -> {

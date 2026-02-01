@@ -80,6 +80,13 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
     setState(() {
       action();
     });
+
+    final settings = widget.controller.playerState.playerSettings;
+    if (settings.paginationEnable &&
+        widget.controller.playerState.playlist.length - _selectedIndex <=
+            settings.paginationThreshold) {
+      widget.controller.onLoadMoreCalled();
+    }
   }
 
   Map<ShortcutActivator, VoidCallback> _getShortcuts(List<PlaylistMediaItem> playlist) {
