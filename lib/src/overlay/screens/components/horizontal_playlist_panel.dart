@@ -483,7 +483,7 @@ class _PlaylistItemThumbnail extends StatelessWidget {
       ),
     );
 
-    final imageUrl = item.placeholderImg ?? item.coverImg;
+    final imageUrl = item.episodeImg ?? item.placeholderImg ?? item.coverImg;
 
     if (imageUrl == null) return placeholder;
 

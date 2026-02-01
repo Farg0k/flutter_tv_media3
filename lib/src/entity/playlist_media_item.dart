@@ -83,6 +83,8 @@ class PlaylistMediaItem {
   /// The URL for a placeholder image shown during loading.
   final String? placeholderImg;
 
+  /// The URL for a episode image shown during loading.
+  final String? episodeImg;
   /// The initial playback position in seconds.
   /// Used to resume playback.
   final int? startPosition;
@@ -141,6 +143,7 @@ class PlaylistMediaItem {
     this.albumYear,
     this.coverImg,
     this.placeholderImg,
+    this.episodeImg,
     this.startPosition,
     this.duration,
     this.headers,
@@ -169,6 +172,7 @@ class PlaylistMediaItem {
       'albumYear': albumYear,
       'coverImg': coverImg,
       'placeholderImg': placeholderImg,
+      'episodeImg':episodeImg,
       'startPosition': startPosition,
       'duration': duration,
       'headers': headers,
@@ -195,6 +199,7 @@ class PlaylistMediaItem {
       trackName: json['trackName'] as String?,
       albumYear: json['albumYear'] as String?,
       coverImg: json['coverImg'] as String?,
+      episodeImg: json['episodeImg'] as String?,
       placeholderImg: json['placeholderImg'] as String?,
       resolutions: (json['resolutions'] as Map?)?.cast<String, String>(),
       headers: (json['headers'] as Map?)?.cast<String, String>(),
@@ -241,6 +246,7 @@ class PlaylistMediaItem {
     String? albumYear,
     String? coverImg,
     String? placeholderImg,
+    String? episodeImg,
     int? startPosition,
     int? duration,
     Map<String, String>? headers,
@@ -265,6 +271,7 @@ class PlaylistMediaItem {
       trackName: trackName ?? this.trackName,
       albumYear: albumYear ?? this.albumYear,
       coverImg: coverImg ?? this.coverImg,
+      episodeImg: episodeImg ?? this.episodeImg,
       placeholderImg: placeholderImg ?? this.placeholderImg,
       startPosition: startPosition ?? this.startPosition,
       duration: duration ?? this.duration,
