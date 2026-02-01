@@ -231,7 +231,10 @@ class _OverlayScreenState extends State<OverlayScreen> {
             if (state.playerPanel == PlayerPanel.horizontalPlaylist) {
               return CallbackShortcuts(
                 bindings: _generalBindings(),
-                child: HorizontalPlaylistPanel(controller: widget.controller, generalBindings: _generalBindings()),
+                child: HorizontalPlaylistPanel(
+                  controller: widget.controller,
+                  generalBindings: _generalBindings(),
+                ),
               );
             }
             if (_shouldShowAudioUI()) {

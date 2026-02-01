@@ -25,7 +25,8 @@ class InfoPanel extends StatelessWidget {
           child: BlocBuilder<OverlayUiBloc, OverlayUiState>(
             buildWhen:
                 (oldState, newState) =>
-                    oldState.playIndex != newState.playIndex || oldState.playerPanel != newState.playerPanel,
+                    oldState.playIndex != newState.playIndex ||
+                    oldState.playerPanel != newState.playerPanel,
             builder: (context, state) {
               final playerState = controller.playerState;
               final playlist = playerState.playlist;
@@ -38,7 +39,8 @@ class InfoPanel extends StatelessWidget {
               final poster = playItem.coverImg ?? playItem.placeholderImg;
               final title = playItem.title ?? playItem.label ?? "";
 
-              final hasEpg = playItem.programs != null && playItem.programs!.isNotEmpty;
+              final hasEpg =
+                  playItem.programs != null && playItem.programs!.isNotEmpty;
               final programs = playItem.programs ?? [];
 
               return Container(
@@ -55,7 +57,12 @@ class InfoPanel extends StatelessWidget {
                     stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 40),
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                  top: 40,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,29 +84,49 @@ class InfoPanel extends StatelessWidget {
                                   color: AppTheme.backgroundColor,
                                   borderRadius: AppTheme.borderRadius,
                                   boxShadow: [
-                                    BoxShadow(color: AppTheme.divider, blurRadius: 12, offset: const Offset(0, 5)),
+                                    BoxShadow(
+                                      color: AppTheme.divider,
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 5),
+                                    ),
                                   ],
                                 ),
-                                constraints: const BoxConstraints(maxHeight: 170, minWidth: 120),
+                                constraints: const BoxConstraints(
+                                  maxHeight: 170,
+                                  minWidth: 120,
+                                ),
                                 child: Image.network(
                                   playItem.coverImg!,
                                   fit: BoxFit.cover,
                                   height: 170,
-                                  loadingBuilder: (context, child, loadingProgress) {
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
                                     if (loadingProgress == null) return child;
                                     return Center(
                                       child: CircularProgressIndicator(
                                         color: Colors.white,
                                         value:
-                                            loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    loadingProgress.expectedTotalBytes!
+                                            loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
                                                 : null,
                                       ),
                                     );
                                   },
                                   errorBuilder: (context, error, stackTrace) {
-                                    return const Center(child: Icon(Icons.image, color: Colors.white38));
+                                    return const Center(
+                                      child: Icon(
+                                        Icons.image,
+                                        color: Colors.white38,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
@@ -110,17 +137,24 @@ class InfoPanel extends StatelessWidget {
                                 spacing: 8,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     spacing: 8,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           title,
-                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.headlineSmall?.copyWith(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
                                             shadows: [
-                                              const Shadow(color: Colors.black, blurRadius: 8, offset: Offset(0, 2)),
+                                              const Shadow(
+                                                color: Colors.black,
+                                                blurRadius: 8,
+                                                offset: Offset(0, 2),
+                                              ),
                                             ],
                                           ),
                                           maxLines: 2,
@@ -128,7 +162,10 @@ class InfoPanel extends StatelessWidget {
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: AppTheme.borderRadius,
@@ -148,7 +185,9 @@ class InfoPanel extends StatelessWidget {
                                   if (playItem.subTitle != null)
                                     Text(
                                       playItem.subTitle!,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -162,8 +201,12 @@ class InfoPanel extends StatelessWidget {
                                             : playItem.description != null
                                             ? Text(
                                               playItem.description!,
-                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                color: Colors.white.withValues(alpha: 0.8),
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.copyWith(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                ),
                                                 height: 1.4,
                                               ),
                                               maxLines: 3,
@@ -171,7 +214,10 @@ class InfoPanel extends StatelessWidget {
                                             )
                                             : const SizedBox.shrink(),
                                   ),
-                                  VideoInfoWidget(controller: controller, state: state),
+                                  VideoInfoWidget(
+                                    controller: controller,
+                                    state: state,
+                                  ),
                                 ],
                               ),
                             ),
@@ -222,7 +268,8 @@ class _EpgInfoState extends State<_EpgInfo> {
     final now = DateTime.now();
     try {
       final currentProgram = widget.programs.firstWhere(
-        (program) => now.isAfter(program.startTime) && now.isBefore(program.endTime),
+        (program) =>
+            now.isAfter(program.startTime) && now.isBefore(program.endTime),
       );
       if (currentProgram != _currentProgram) {
         setState(() {
@@ -245,11 +292,22 @@ class _EpgInfoState extends State<_EpgInfo> {
     }
 
     final now = DateTime.now();
-    final totalSeconds = _currentProgram!.endTime.difference(_currentProgram!.startTime).inSeconds;
-    final progress = totalSeconds > 0 ? now.difference(_currentProgram!.startTime).inSeconds / totalSeconds : 0.0;
+    final totalSeconds =
+        _currentProgram!.endTime
+            .difference(_currentProgram!.startTime)
+            .inSeconds;
+    final progress =
+        totalSeconds > 0
+            ? now.difference(_currentProgram!.startTime).inSeconds /
+                totalSeconds
+            : 0.0;
 
-    final startTime = OverlayLocalizations.timeFormat(date: _currentProgram!.startTime);
-    final endTime = OverlayLocalizations.timeFormat(date: _currentProgram!.endTime);
+    final startTime = OverlayLocalizations.timeFormat(
+      date: _currentProgram!.startTime,
+    );
+    final endTime = OverlayLocalizations.timeFormat(
+      date: _currentProgram!.endTime,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +315,10 @@ class _EpgInfoState extends State<_EpgInfo> {
       children: [
         Text(
           _currentProgram!.title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -265,7 +326,9 @@ class _EpgInfoState extends State<_EpgInfo> {
           const SizedBox(height: 4),
           Text(
             _currentProgram!.description!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -273,7 +336,10 @@ class _EpgInfoState extends State<_EpgInfo> {
         const SizedBox(height: 8),
         Row(
           children: [
-            Text(startTime, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(
+              startTime,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: LinearProgressIndicator(
@@ -284,7 +350,10 @@ class _EpgInfoState extends State<_EpgInfo> {
               ),
             ),
             const SizedBox(width: 8),
-            Text(endTime, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(
+              endTime,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
           ],
         ),
       ],

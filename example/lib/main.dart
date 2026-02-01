@@ -18,7 +18,10 @@ class MyApp extends StatelessWidget {
       title: 'Media3 Preview Demo',
       theme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: const PreviewDemoScreen(),
@@ -48,7 +51,13 @@ class PreviewItem {
   });
 
   PlaylistMediaItem toPlaylistMediaItem() {
-    return PlaylistMediaItem(id: id, title: title, url: url, startPosition: startTime, placeholderImg: poster);
+    return PlaylistMediaItem(
+      id: id,
+      title: title,
+      url: url,
+      startPosition: startTime,
+      placeholderImg: poster,
+    );
   }
 }
 
@@ -66,13 +75,16 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     PreviewItem(
       id: '1',
       title: 'Big Buck Bunny (Full)',
-      url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-      poster: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
+      url:
+          'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+      poster:
+          'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
     ),
     PreviewItem(
       id: '2',
       title: 'Clipped Segment (10s - 20s)',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      url:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       poster: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
       startTime: 10,
       endTime: 20,
@@ -81,27 +93,33 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       id: '3',
       title: 'Dynamic Link (Simulated API)',
       url: 'myapp://resolve/video',
-      poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
+      poster:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
       needsResolving: true,
     ),
     PreviewItem(
       id: '4',
       title: 'Broken Link (Error Test)',
       url: 'https://invalid-url.com/video.mp4',
-      poster: 'https://www.elegantthemes.com/blog/wp-content/uploads/2021/11/broken-links-featured.png',
+      poster:
+          'https://www.elegantthemes.com/blog/wp-content/uploads/2021/11/broken-links-featured.png',
       isError: true,
     ),
     PreviewItem(
       id: '5',
       title: 'Tears of Steel (Muted Loop)',
-      url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      poster: 'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
+      url:
+          'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+      poster:
+          'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
     ),
     PreviewItem(
       id: '6',
       title: 'vp9',
-      url: 'https://test-videos.co.uk/vids/bigbuckbunny/webm/vp9/1080/Big_Buck_Bunny_1080_10s_1MB.webm',
-      poster: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
+      url:
+          'https://test-videos.co.uk/vids/bigbuckbunny/webm/vp9/1080/Big_Buck_Bunny_1080_10s_1MB.webm',
+      poster:
+          'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
     ),
   ];
   /*  final List<PlaylistMediaItem> mediaItems = [
@@ -237,7 +255,10 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     super.initState();
     // Initialize controller with some default settings
     playerController.setConfig(
-      playerSettings: PlayerSettings(videoQuality: VideoQuality.high, isAfrEnabled: true),
+      playerSettings: PlayerSettings(
+        videoQuality: VideoQuality.high,
+        isAfrEnabled: true,
+      ),
       // Trigger pagination when 2 items are left in the playlist
       paginationThreshold: 6,
       onLoadMore: () async {
@@ -329,7 +350,8 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                 isRepeat: _isRepeat,
                 startTimeSeconds: selectedItem.startTime,
                 endTimeSeconds: selectedItem.endTime,
-                getDirectLink: selectedItem.needsResolving ? _resolveLink : null,
+                getDirectLink:
+                    selectedItem.needsResolving ? _resolveLink : null,
                 placeholder: Image.network(
                   selectedItem.poster ?? '',
                   fit: BoxFit.cover,
@@ -339,13 +361,23 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load: ${selectedItem.title}',
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const Text('Check URL or network connection', style: TextStyle(color: Colors.white70)),
+                      const Text(
+                        'Check URL or network connection',
+                        style: TextStyle(color: Colors.white70),
+                      ),
                     ],
                   ),
                 ),
@@ -374,7 +406,10 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
           // UI Elements
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 32.0,
+                vertical: 24.0,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -382,28 +417,52 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                   children: [
                     Text(
                       'MEDIA3 PREVIEW',
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: 2),
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(4)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: const Text(
                         'NATIVE TEXTURE RENDERING',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 10), // Replaced Spacer with fixed gap
+                    const SizedBox(
+                      height: 10,
+                    ), // Replaced Spacer with fixed gap
                     // Item Title and Description
-                    Text(selectedItem.title, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                    Text(
+                      selectedItem.title,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       width: 600,
                       child: Text(
                         'This preview is rendered directly onto a Flutter Texture using native Media3 ExoPlayer. '
                         'It supports clipping, volume control, and background loading without blocking the UI thread.',
-                        style: TextStyle(fontSize: 18, color: Colors.white.withValues(alpha: 0.7)),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white.withValues(alpha: 0.7),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -412,7 +471,8 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                     Row(
                       children: [
                         _ControlButton(
-                          icon: _volume > 0 ? Icons.volume_up : Icons.volume_off,
+                          icon:
+                              _volume > 0 ? Icons.volume_up : Icons.volume_off,
                           label: 'VOLUME: ${(_volume * 100).toInt()}%',
                           onPressed: () {
                             setState(() {
@@ -484,7 +544,12 @@ class _PreviewCard extends StatelessWidget {
   final VoidCallback onFocus;
   final VoidCallback onTap;
 
-  const _PreviewCard({required this.item, required this.isSelected, required this.onFocus, required this.onTap});
+  const _PreviewCard({
+    required this.item,
+    required this.isSelected,
+    required this.onFocus,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -518,10 +583,19 @@ class _PreviewCard extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: hasFocus ? Colors.white : Colors.white24, width: hasFocus ? 4 : 1),
+                  border: Border.all(
+                    color: hasFocus ? Colors.white : Colors.white24,
+                    width: hasFocus ? 4 : 1,
+                  ),
                   boxShadow:
                       hasFocus
-                          ? [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5)]
+                          ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ]
                           : [],
                 ),
                 child: ClipRRect(
@@ -542,30 +616,43 @@ class _PreviewCard extends StatelessWidget {
                         getDirectLink:
                             item.needsResolving
                                 ? () async {
-                                  await Future.delayed(const Duration(seconds: 1));
+                                  await Future.delayed(
+                                    const Duration(seconds: 1),
+                                  );
                                   return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
                                 }
                                 : null,
                         placeholder: Image.network(
                           item.poster ?? '',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.grey[900]),
+                          errorBuilder:
+                              (_, __, ___) =>
+                                  Container(color: Colors.grey[900]),
                         ),
                         //borderRadius: BorderRadius.circular(16),
                       ),
                       // Focus highlight overlay
-                      if (!hasFocus) Positioned.fill(child: Container(color: Colors.black26)),
+                      if (!hasFocus)
+                        Positioned.fill(
+                          child: Container(color: Colors.black26),
+                        ),
                       Positioned(
                         bottom: 0,
                         left: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
+                              colors: [
+                                Colors.black.withValues(alpha: 0.8),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                           child: Text(
@@ -573,7 +660,10 @@ class _PreviewCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontWeight: hasFocus ? FontWeight.bold : FontWeight.normal,
+                              fontWeight:
+                                  hasFocus
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                               fontSize: hasFocus ? 16 : 14,
                             ),
                           ),
@@ -597,16 +687,25 @@ class _ControlButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isPrimary;
 
-  const _ControlButton({required this.icon, required this.label, required this.onPressed, this.isPrimary = false});
+  const _ControlButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+      label: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
+      ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? Colors.blue : Colors.white.withValues(alpha: 0.1),
+        backgroundColor:
+            isPrimary ? Colors.blue : Colors.white.withValues(alpha: 0.1),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

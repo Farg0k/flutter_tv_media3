@@ -640,13 +640,15 @@ class FtvMedia3PlayerController {
             !_isLoadingMore &&
             newState.playlist.length - playIndex <= _paginationThreshold) {
           _isLoadingMore = true;
-          _onLoadMore!().then((items) {
-            if (items != null && items.isNotEmpty) {
-              addMediaItems(items: items);
-            }
-          }).whenComplete(() {
-            _isLoadingMore = false;
-          });
+          _onLoadMore!()
+              .then((items) {
+                if (items != null && items.isNotEmpty) {
+                  addMediaItems(items: items);
+                }
+              })
+              .whenComplete(() {
+                _isLoadingMore = false;
+              });
         }
         break;
       case "loadMediaInfoState":

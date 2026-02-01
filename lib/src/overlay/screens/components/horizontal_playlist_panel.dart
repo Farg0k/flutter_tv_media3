@@ -11,10 +11,15 @@ class HorizontalPlaylistPanel extends StatefulWidget {
   final Media3UiController controller;
   final Map<ShortcutActivator, VoidCallback> generalBindings;
 
-  const HorizontalPlaylistPanel({super.key, required this.controller, required this.generalBindings});
+  const HorizontalPlaylistPanel({
+    super.key,
+    required this.controller,
+    required this.generalBindings,
+  });
 
   @override
-  State<HorizontalPlaylistPanel> createState() => _HorizontalPlaylistPanelState();
+  State<HorizontalPlaylistPanel> createState() =>
+      _HorizontalPlaylistPanelState();
 }
 
 class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
@@ -70,10 +75,15 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
     final viewportWidth = _scrollController.position.viewportDimension;
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    double targetOffset = (index * (_itemWidth + 24)) - (viewportWidth / 2) + (_itemWidth / 2);
+    double targetOffset =
+        (index * (_itemWidth + 24)) - (viewportWidth / 2) + (_itemWidth / 2);
     targetOffset = targetOffset.clamp(0.0, maxScroll);
 
-    _scrollController.animateTo(targetOffset, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _handleKeyEvent(Function action) {
@@ -89,14 +99,19 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
     }
   }
 
-  Map<ShortcutActivator, VoidCallback> _getShortcuts(List<PlaylistMediaItem> playlist) {
-    final bindings = Map<ShortcutActivator, VoidCallback>.from(widget.generalBindings);
+  Map<ShortcutActivator, VoidCallback> _getShortcuts(
+    List<PlaylistMediaItem> playlist,
+  ) {
+    final bindings = Map<ShortcutActivator, VoidCallback>.from(
+      widget.generalBindings,
+    );
 
     bindings.addAll({
       const SingleActivator(LogicalKeyboardKey.arrowLeft):
           () => _handleKeyEvent(() {
             if (playlist.isNotEmpty) {
-              _selectedIndex = (_selectedIndex - 1 + playlist.length) % playlist.length;
+              _selectedIndex =
+                  (_selectedIndex - 1 + playlist.length) % playlist.length;
               _scrollToIndex(_selectedIndex);
             }
           }),
@@ -142,7 +157,9 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
       },
       // Arrow up closes the panel
       const SingleActivator(LogicalKeyboardKey.arrowUp): () {
-        context.read<OverlayUiBloc>().add(const SetActivePanel(playerPanel: PlayerPanel.none));
+        context.read<OverlayUiBloc>().add(
+          const SetActivePanel(playerPanel: PlayerPanel.none),
+        );
       },
     });
     return bindings;
@@ -174,7 +191,8 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
             stream: widget.controller.playerStateStream,
             initialData: widget.controller.playerState,
             builder: (context, snapshot) {
-              final playerState = snapshot.data ?? widget.controller.playerState;
+              final playerState =
+                  snapshot.data ?? widget.controller.playerState;
               final playlist = playerState.playlist;
 
               return CallbackShortcuts(
@@ -186,27 +204,40 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 32.0, top: 20.0, right: 32.0, bottom: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 32.0,
+                          top: 20.0,
+                          right: 32.0,
+                          bottom: 8.0,
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Expanded(
                               child: Builder(
                                 builder: (context) {
-                                  final currentPlayIndex = playerState.playIndex;
+                                  final currentPlayIndex =
+                                      playerState.playIndex;
                                   final playItem =
-                                      currentPlayIndex >= 0 && currentPlayIndex < playlist.length
+                                      currentPlayIndex >= 0 &&
+                                              currentPlayIndex < playlist.length
                                           ? playlist[currentPlayIndex]
                                           : null;
 
                                   if (playItem == null) {
                                     return Text(
                                       OverlayLocalizations.get('playlist'),
-                                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.headlineSmall?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                         shadows: [
-                                          const Shadow(color: Colors.black, blurRadius: 8, offset: Offset(0, 2)),
+                                          const Shadow(
+                                            color: Colors.black,
+                                            blurRadius: 8,
+                                            offset: Offset(0, 2),
+                                          ),
                                         ],
                                       ),
                                       maxLines: 1,
@@ -216,10 +247,18 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
 
                                   return Text(
                                     playItem.title ?? playItem.label!,
-                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineSmall?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
-                                      shadows: [const Shadow(color: Colors.black, blurRadius: 8, offset: Offset(0, 2))],
+                                      shadows: [
+                                        const Shadow(
+                                          color: Colors.black,
+                                          blurRadius: 8,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -229,8 +268,14 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                             ),
                             const SizedBox(width: 20),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
                               child: Text(
                                 "${playerState.playIndex + 1} / ${playlist.length}",
                                 style: TextStyle(
@@ -252,7 +297,10 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                             child: ListView.builder(
                               controller: _scrollController,
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                                vertical: 12.0,
+                              ),
                               itemCount: playlist.length,
                               itemBuilder: (context, index) {
                                 final item = playlist[index];
@@ -260,16 +308,22 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                                 final isActive = index == playerState.playIndex;
 
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0,
+                                  ),
                                   child: HorizontalPlaylistItem(
                                     item: item,
                                     index: index,
                                     isSelected: isSelected,
                                     isActive: isActive,
                                     onTap: () {
-                                      widget.controller.playSelectedIndex(index: index);
+                                      widget.controller.playSelectedIndex(
+                                        index: index,
+                                      );
                                       context.read<OverlayUiBloc>().add(
-                                        const SetActivePanel(playerPanel: PlayerPanel.none),
+                                        const SetActivePanel(
+                                          playerPanel: PlayerPanel.none,
+                                        ),
                                       );
                                     },
                                   ),
@@ -289,7 +343,6 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
       ),
     );
   }
-
 }
 
 class HorizontalPlaylistItem extends StatelessWidget {
@@ -328,14 +381,17 @@ class HorizontalPlaylistItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppTheme.fullFocusColor : Colors.white12,
+                      color:
+                          isSelected ? AppTheme.fullFocusColor : Colors.white12,
                       width: isSelected ? 3 : 1.5,
                     ),
                     boxShadow:
                         isSelected
                             ? [
                               BoxShadow(
-                                color: AppTheme.fullFocusColor.withValues(alpha: 0.4),
+                                color: AppTheme.fullFocusColor.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 15,
                                 spreadRadius: 2,
                               ),
@@ -348,22 +404,37 @@ class HorizontalPlaylistItem extends StatelessWidget {
                       children: [
                         _PlaylistItemThumbnail(item: item, isActive: isActive),
                         if (isActive) const _PlaylistItemActiveIndicator(),
-                        Positioned(bottom: 0, left: 0, right: 0, child: _ProgressBar(item: item)),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: _ProgressBar(item: item),
+                        ),
                         if (item.duration != null && item.duration! > 0)
                           Positioned(
                             bottom: 8,
                             right: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.7),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                item.startPosition != null && item.startPosition! > 0
+                                item.startPosition != null &&
+                                        item.startPosition! > 0
                                     ? "${StringUtils.formatDuration(seconds: item.startPosition!)} / ${StringUtils.formatDuration(seconds: item.duration!)}"
-                                    : StringUtils.formatDuration(seconds: item.duration!),
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                    : StringUtils.formatDuration(
+                                      seconds: item.duration!,
+                                    ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -374,7 +445,11 @@ class HorizontalPlaylistItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _PlaylistItemTitle(item: item, index: index, isSelected: isSelected),
+            _PlaylistItemTitle(
+              item: item,
+              index: index,
+              isSelected: isSelected,
+            ),
           ],
         ),
       ),
@@ -400,7 +475,11 @@ class _PlaylistItemThumbnail extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Icon(_getIconForMediaType(), size: 40, color: isActive ? AppTheme.fullFocusColor : Colors.white24),
+        child: Icon(
+          _getIconForMediaType(),
+          size: 40,
+          color: isActive ? AppTheme.fullFocusColor : Colors.white24,
+        ),
       ),
     );
 
@@ -414,7 +493,10 @@ class _PlaylistItemThumbnail extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       loadingBuilder:
-          (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator()),
+          (context, child, progress) =>
+              progress == null
+                  ? child
+                  : const Center(child: CircularProgressIndicator()),
       errorBuilder: (context, error, stackTrace) => placeholder,
     );
   }
@@ -441,9 +523,15 @@ class _PlaylistItemActiveIndicator extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppTheme.fullFocusColor.withValues(alpha: 0.9),
             shape: BoxShape.circle,
-            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, spreadRadius: 1)],
+            boxShadow: const [
+              BoxShadow(color: Colors.black26, blurRadius: 8, spreadRadius: 1),
+            ],
           ),
-          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
         ),
       ),
     );
@@ -457,12 +545,19 @@ class _PlaylistItemTitle extends StatelessWidget {
 
   final bool isSelected;
 
-  const _PlaylistItemTitle({required this.item, required this.index, required this.isSelected});
+  const _PlaylistItemTitle({
+    required this.item,
+    required this.index,
+    required this.isSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MarqueeWidget(
-      text: item.label ?? item.title ?? sprintf(OverlayLocalizations.get('itemNumber'), [index + 1]),
+      text:
+          item.label ??
+          item.title ??
+          sprintf(OverlayLocalizations.get('itemNumber'), [index + 1]),
       focus: isSelected,
       style: TextStyle(
         color: isSelected ? Colors.white : Colors.white60,
@@ -496,7 +591,9 @@ class _ProgressBar extends StatelessWidget {
       minHeight: 6,
       backgroundColor: Colors.white54,
       valueColor: AlwaysStoppedAnimation<Color>(
-        isWatched ? AppTheme.timeWarningColor : AppTheme.timeWarningColor.withValues(alpha: 0.8),
+        isWatched
+            ? AppTheme.timeWarningColor
+            : AppTheme.timeWarningColor.withValues(alpha: 0.8),
       ),
     );
   }

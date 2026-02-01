@@ -69,7 +69,11 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
           }
 
           if (itemToDisplay.coverImg != null) {
-            precacheImage(NetworkImage(itemToDisplay.coverImg!), context, onError: (exception, stackTrace) {});
+            precacheImage(
+              NetworkImage(itemToDisplay.coverImg!),
+              context,
+              onError: (exception, stackTrace) {},
+            );
           }
 
           final bool showLoadingIndicator =
@@ -80,7 +84,8 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
           return Stack(
             alignment: Alignment.center,
             children: [
-              if (itemToDisplay.placeholderImg != null) _BackgroundImage(imageUrl: itemToDisplay.placeholderImg!),
+              if (itemToDisplay.placeholderImg != null)
+                _BackgroundImage(imageUrl: itemToDisplay.placeholderImg!),
               Container(color: AppTheme.backgroundColor),
 
               // Always show the content (of the last valid item)
@@ -109,15 +114,21 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                           textAlign: TextAlign.center,
                           style: Theme.of(
                             context,
-                          ).textTheme.titleMedium?.copyWith(color: Colors.white70, fontWeight: FontWeight.w300),
+                          ).textTheme.titleMedium?.copyWith(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w300,
+                          ),
                         ),
-                        LinearProgressIndicator(value: playerState.loadingProgress),
+                        LinearProgressIndicator(
+                          value: playerState.loadingProgress,
+                        ),
                       ],
                     ),
                   ),
                 ),
 
-              if (snapshot.data?.loadingStatus != null && playerState.lastError == null)
+              if (snapshot.data?.loadingStatus != null &&
+                  playerState.lastError == null)
                 Positioned(
                   bottom: 25,
                   left: 10,
@@ -127,9 +138,10 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontStyle: FontStyle.italic),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white70,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
             ],
@@ -164,9 +176,10 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w200),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w200,
+                    ),
                   ),
                 const SizedBox(height: 8),
                 if (item?.subTitle != null && item?.title != item?.subTitle)
@@ -175,7 +188,9 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   ),
                 if (item?.label != null && item?.title != item?.label)
                   Text(
@@ -183,7 +198,9 @@ class _Content extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   ),
                 const CustomInfoTextWidget(),
               ],
@@ -208,7 +225,9 @@ class _BackgroundImage extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (context, error, stackTrace) {
-        return const Center(child: Icon(Icons.broken_image, color: Colors.white, size: 64));
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.white, size: 64),
+        );
       },
     );
   }
