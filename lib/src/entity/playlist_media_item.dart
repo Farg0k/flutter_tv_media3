@@ -284,7 +284,7 @@ class MediaItemSubtitle {
   /// The mime type of the subtitle file.
   final String? mimeType;
 
-  MediaItemSubtitle({required this.url, required this.language, required this.label, this.mimeType});
+  const MediaItemSubtitle({required this.url, required this.language, required this.label, this.mimeType});
 
   Map<String, dynamic> toMap() {
     return {'url': url, 'language': language, 'label': label, 'mimeType': mimeType};
@@ -403,7 +403,7 @@ class Media3PreviewConfig {
   /// called during initialization.
   final Future<String?> Function()? getPreviewDirectLink;
 
-  Media3PreviewConfig({
+ const Media3PreviewConfig({
     this.url,
     this.getDirectLink,
     this.placeholderImg,

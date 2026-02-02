@@ -42,11 +42,7 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       title: 'Big Buck Bunny (Full)',
       url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
       placeholderImg: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
-      media3PreviewConfig: Media3PreviewConfig(
-        url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-        placeholderImg:
-            'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
-      ),
+      media3PreviewConfig: const Media3PreviewConfig(),
     ),
     PlaylistMediaItem(
       id: '2',
@@ -54,9 +50,7 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       placeholderImg: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
 
-      media3PreviewConfig: Media3PreviewConfig(
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        placeholderImg: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
+      media3PreviewConfig: const Media3PreviewConfig(
         startTimeSeconds: 10,
         endTimeSeconds: 20,
       ),
@@ -64,11 +58,14 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     PlaylistMediaItem(
       id: '3',
       title: 'Dynamic Link (Simulated API)',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      placeholderImg: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
+      url: 'myapp://resolve/video',
+      placeholderImg:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
       media3PreviewConfig: Media3PreviewConfig(
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        placeholderImg: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
+        getPreviewDirectLink: () async {
+          await Future.delayed(const Duration(seconds: 2));
+          return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+        },
       ),
     ),
     PlaylistMediaItem(
