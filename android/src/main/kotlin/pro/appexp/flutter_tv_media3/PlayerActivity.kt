@@ -601,7 +601,9 @@ class PlayerActivity : AppCompatActivity() {
                             val durationInSeconds = (result["duration"] as? Number)?.toLong() ?: 0L
                             currentHeaders = result["headers"] as? Map<String, String>
                             currentUserAgent = result["userAgent"] as? String
-                            currentResolutionsMap = result["resolutions"] as? Map<String, String>
+                            // Invert the map from Map<Label, URL> to Map<URL, Label> to ensure URL uniqueness
+                            // and prevent duplicate entries in the track selection UI.
+                            currentResolutionsMap = (result["resolutions"] as? Map<String, String>)?.entries?.associate { (label, url) -> url to label }
                             currentSubtitleTracks = result["subtitles"] as? List<Map<String, Any>>
                             currentAudioTracks = result["audioTracks"] as? List<Map<String, Any>>
 
@@ -1639,8 +1641,22 @@ class PlayerActivity : AppCompatActivity() {
         }
         if (currentResolutionsMap != null) {
             currentResolutionsMap?.let { map ->
+                val activeVideoLabel = map[currentVideoUrl]
                 var externalIndex = 1000
-                for ((label, url) in map) {
+
+                val selectedVideoTrack = tracksList.find {
+                    it["trackType"] == C.TRACK_TYPE_VIDEO && it["isSelected"] == true
+                }
+                if (selectedVideoTrack != null && activeVideoLabel != null) {
+                    val index = tracksList.indexOf(selectedVideoTrack)
+                    val updatedTrack = selectedVideoTrack.toMutableMap().apply {
+                        this["label"] = activeVideoLabel
+                        this["isSelected"] = true
+                    }
+                    tracksList[index] = updatedTrack
+                }
+
+                for ((url, label) in map) {
                     val isCurrentlySelected = url == currentVideoUrl
                     if (!isCurrentlySelected) {
                         val externalTrack = mapOf(
@@ -1654,18 +1670,6 @@ class PlayerActivity : AppCompatActivity() {
                             "isExternal" to true
                         )
                         tracksList.add(externalTrack)
-                    } else {
-                        val selectedVideoTrack = tracksList.find {
-                            it["trackType"] == C.TRACK_TYPE_VIDEO && it["isSelected"] == true
-                        }
-                        if (selectedVideoTrack != null) {
-                            val index = tracksList.indexOf(selectedVideoTrack)
-                            val updatedTrack = selectedVideoTrack.toMutableMap().apply {
-                                this["label"] = label
-                                this["isSelected"] = true
-                            }
-                            tracksList[index] = updatedTrack
-                        }
                     }
                 }
             }
@@ -1797,7 +1801,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             return
         }
-        val availableUrls = currentResolutionsMap!!.values.toList()
+        val availableUrls = currentResolutionsMap!!.keys.toList()
         val selectedUrl = when {
             url == null -> availableUrls.firstOrNull()
             availableUrls.contains(url) -> url
@@ -2231,20 +2235,20 @@ class PlayerActivity : AppCompatActivity() {
             0 -> {
                 val sortedResolutions =
                     resolutionsMap.entries.sortedByDescending { parseQuality(it.key, it.value) }
-                return sortedResolutions.firstOrNull()?.value ?: defaultUrl
+                return sortedResolutions.firstOrNull()?.key ?: defaultUrl
             }
 
             4 -> {
                 val sortedResolutions =
                     resolutionsMap.entries.sortedBy { parseQuality(it.key, it.value) }
-                return sortedResolutions.firstOrNull()?.value ?: defaultUrl
+                return sortedResolutions.firstOrNull()?.key ?: defaultUrl
             }
 
             else -> {
                 if (currentVideoHeight > 0) {
                     val sortedResolutions = resolutionsMap.entries
                         .map { entry ->
-                            parseQuality(entry.key, entry.value) to entry.value
+                            parseQuality(entry.key, entry.value) to entry.key
                         }
                         .sortedBy { it.first }
                     val bestMatch = sortedResolutions.firstOrNull { it.first >= currentVideoHeight }

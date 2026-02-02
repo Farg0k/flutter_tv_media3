@@ -715,7 +715,7 @@ A class to describe a single item in a playlist. Objects of this class are immut
 *   `duration` (int?): The total duration of the media in seconds.
 *   `headers` (Map<String, String>?): HTTP headers to be used when requesting the `url`.
 *   `userAgent` (String?): A custom User-Agent for HTTP requests.
-*   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"720p": "url..."`).
+*   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"720p": "url..."`). **Note:** The player automatically deduplicates entries by URL. If multiple labels are provided for the same URL, only the first label encountered will be displayed in the UI.
 *   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks.
 *   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks.
 
