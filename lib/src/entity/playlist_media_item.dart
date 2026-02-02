@@ -13,12 +13,7 @@ import 'epg_channel.dart';
 typedef GetDirectLinkCallback =
     Future<PlaylistMediaItem> Function({
       required PlaylistMediaItem item,
-      Function({
-        required String state,
-        double? progress,
-        required int requestId,
-      })?
-      onProgress,
+      Function({required String state, double? progress, required int requestId})? onProgress,
       required int requestId,
     });
 
@@ -29,12 +24,7 @@ typedef GetDirectLinkCallback =
 /// - [position]: The last playback position in seconds.
 /// - [playIndex]: The index of the item in the playlist.
 typedef SaveWatchTimeSeconds =
-    Future<void> Function({
-      required String id,
-      required int duration,
-      required int position,
-      required int playIndex,
-    });
+    Future<void> Function({required String id, required int duration, required int position, required int playIndex});
 
 /// Represents a single playable item in a playlist.
 ///
@@ -130,6 +120,9 @@ class PlaylistMediaItem {
   ///disable or enable update WatchTime in UI
   final bool updateWatchTime;
 
+  /// configuration for Media3PreviewPlayer
+  final Media3PreviewConfig? media3PreviewConfig;
+
   PlaylistMediaItem({
     required this.id,
     required this.url,
@@ -156,6 +149,7 @@ class PlaylistMediaItem {
     this.mediaItemType = MediaItemType.video,
     this.programs,
     this.updateWatchTime = true,
+    this.media3PreviewConfig,
   });
 
   Map<String, dynamic> toMap() {
@@ -172,7 +166,7 @@ class PlaylistMediaItem {
       'albumYear': albumYear,
       'coverImg': coverImg,
       'placeholderImg': placeholderImg,
-      'episodeImg':episodeImg,
+      'episodeImg': episodeImg,
       'startPosition': startPosition,
       'duration': duration,
       'headers': headers,
@@ -207,29 +201,15 @@ class PlaylistMediaItem {
       duration: json['duration'] as int?,
       userAgent: json['userAgent'] as String?,
       subtitles:
-          (json['subtitles'] as List?)
-              ?.map(
-                (sub) => MediaItemSubtitle.fromMap(sub as Map<String, dynamic>),
-              )
-              .toList(),
+          (json['subtitles'] as List?)?.map((sub) => MediaItemSubtitle.fromMap(sub as Map<String, dynamic>)).toList(),
       audioTracks:
           (json['audioTracks'] as List?)
-              ?.map(
-                (audio) =>
-                    MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>),
-              )
+              ?.map((audio) => MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>))
               .toList(),
       updateWatchTime: json['updateWatchTime'] as bool,
-      mediaItemType: MediaItemType.fromIndex(
-        json['mediaItemType'] as int? ?? 0,
-      ),
+      mediaItemType: MediaItemType.fromIndex(json['mediaItemType'] as int? ?? 0),
       programs:
-          (json['programs'] as List?)
-              ?.map(
-                (program) =>
-                    EpgProgram.fromMap(program as Map<String, dynamic>),
-              )
-              .toList(),
+          (json['programs'] as List?)?.map((program) => EpgProgram.fromMap(program as Map<String, dynamic>)).toList(),
     );
   }
 
@@ -258,6 +238,7 @@ class PlaylistMediaItem {
     SaveWatchTimeSeconds? saveWatchTime,
     MediaItemType? mediaItemType,
     bool? updateWatchTime,
+    Media3PreviewConfig? media3PreviewConfig,
   }) {
     return PlaylistMediaItem(
       id: id ?? this.id,
@@ -284,6 +265,7 @@ class PlaylistMediaItem {
       saveWatchTime: saveWatchTime ?? this.saveWatchTime,
       mediaItemType: mediaItemType ?? this.mediaItemType,
       updateWatchTime: updateWatchTime ?? this.updateWatchTime,
+      media3PreviewConfig: media3PreviewConfig ?? this.media3PreviewConfig,
     );
   }
 }
@@ -302,20 +284,10 @@ class MediaItemSubtitle {
   /// The mime type of the subtitle file.
   final String? mimeType;
 
-  MediaItemSubtitle({
-    required this.url,
-    required this.language,
-    required this.label,
-    this.mimeType,
-  });
+  MediaItemSubtitle({required this.url, required this.language, required this.label, this.mimeType});
 
   Map<String, dynamic> toMap() {
-    return {
-      'url': url,
-      'language': language,
-      'label': label,
-      'mimeType': mimeType,
-    };
+    return {'url': url, 'language': language, 'label': label, 'mimeType': mimeType};
   }
 
   factory MediaItemSubtitle.fromMap(Map<String, dynamic> json) {
@@ -342,20 +314,10 @@ class MediaItemAudioTrack {
   /// The mime type of the audio file.
   final String? mimeType;
 
-  MediaItemAudioTrack({
-    required this.url,
-    required this.language,
-    required this.label,
-    this.mimeType,
-  });
+  MediaItemAudioTrack({required this.url, required this.language, required this.label, this.mimeType});
 
   Map<String, dynamic> toMap() {
-    return {
-      'url': url,
-      'language': language,
-      'label': label,
-      'mimeType': mimeType,
-    };
+    return {'url': url, 'language': language, 'label': label, 'mimeType': mimeType};
   }
 
   factory MediaItemAudioTrack.fromMap(Map<String, dynamic> json) {
@@ -379,6 +341,80 @@ enum MediaItemType {
   /// A live TV channel stream.
   tvStream;
 
-  static MediaItemType fromIndex(int? index) =>
-      index != null ? values[index] : values[0];
+  static MediaItemType fromIndex(int? index) => index != null ? values[index] : values[0];
+}
+
+class Media3PreviewConfig {
+  final String? url;
+
+  /// An optional asynchronous callback to obtain a direct, playable media link.
+  ///
+  /// This is useful for scenarios where the initial [url] is indirect,
+  /// temporary, or requires server-side generation. If provided, it will be
+  /// called during initialization.
+  final Future<String?> Function()? getDirectLink;
+
+  /// The URL for a placeholder image shown during loading.
+  final String? placeholderImg;
+
+  /// The desired width of the preview player widget.
+  final double? width;
+
+  /// The desired height of the preview player widget.
+  final double? height;
+
+  /// The volume of the preview playback.
+  ///
+  /// Values range from 0.0 (muted) to 1.0 (full volume). Defaults to 0.0.
+  final double? volume;
+
+  /// Whether the video should start playing automatically once loaded.
+  ///
+  /// Note that playback also depends on [isActive] and widget visibility.
+  /// Defaults to `true`.
+  final bool? autoPlay;
+
+  /// The initial delay before attempting to initialize the native player.
+  ///
+  /// This prevents unnecessary resource allocation for items that are quickly
+  /// scrolled past. Defaults to 600 milliseconds.
+  final Duration? initDelay;
+
+  /// Whether the video should loop indefinitely.
+  ///
+  /// If `true`, the video will restart from the beginning (or [startTimeSeconds])
+  /// once it reaches the end. Defaults to `true`.
+  final bool? isRepeat;
+
+  /// The starting playback position in seconds.
+  ///
+  /// Used to clip the media and start playback from a specific time.
+  final int? startTimeSeconds;
+
+  /// The ending playback position in seconds.
+  ///
+  /// Used to clip the media and stop/restart playback at a specific time.
+  final int? endTimeSeconds;
+
+  /// An optional asynchronous callback to obtain a direct, playable media link.
+  ///
+  /// This is useful for scenarios where the initial [url] is indirect,
+  /// temporary, or requires server-side generation. If provided, it will be
+  /// called during initialization.
+  final Future<String?> Function()? getPreviewDirectLink;
+
+  Media3PreviewConfig({
+    this.url,
+    this.getDirectLink,
+    this.placeholderImg,
+    this.width,
+    this.height,
+    this.volume,
+    this.autoPlay,
+    this.initDelay,
+    this.isRepeat,
+    this.startTimeSeconds,
+    this.endTimeSeconds,
+    this.getPreviewDirectLink
+  });
 }

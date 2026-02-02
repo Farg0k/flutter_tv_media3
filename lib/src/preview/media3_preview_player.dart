@@ -38,6 +38,9 @@ class Media3PreviewPlayer extends StatefulWidget {
   /// or an indirect link that requires resolution via [getDirectLink].
   final String? url;
 
+  /// The URL for a placeholder image shown during loading.
+  final String? placeholderImg;
+
   /// An optional asynchronous callback to obtain a direct, playable media link.
   ///
   /// This is useful for scenarios where the initial [url] is indirect,
@@ -115,6 +118,7 @@ class Media3PreviewPlayer extends StatefulWidget {
   const Media3PreviewPlayer({
     super.key,
     this.url,
+    this.placeholderImg,
     this.getDirectLink,
     required this.isActive,
     required this.width,
@@ -136,8 +140,7 @@ class Media3PreviewPlayer extends StatefulWidget {
 }
 
 /// The state for the [Media3PreviewPlayer] widget.
-class _Media3PreviewPlayerState extends State<Media3PreviewPlayer>
-    with WidgetsBindingObserver {
+class _Media3PreviewPlayerState extends State<Media3PreviewPlayer> with WidgetsBindingObserver {
   /// The controller for the native Media3 preview player.
   Media3PreviewController? _controller;
 
@@ -194,8 +197,7 @@ class _Media3PreviewPlayerState extends State<Media3PreviewPlayer>
       return;
     }
 
-    if (oldWidget.url != widget.url ||
-        oldWidget.getDirectLink != widget.getDirectLink) {
+    if (oldWidget.url != widget.url || oldWidget.getDirectLink != widget.getDirectLink) {
       _reinit();
       return;
     }
@@ -399,6 +401,7 @@ class _Media3PreviewPlayerState extends State<Media3PreviewPlayer>
                 hasRenderedFirstFrame: _hasRenderedFirstFrame, // Pass flag
               ),
               _PreviewOverlay(
+                placeholderImg: widget.placeholderImg,
                 isPlaying: _isPlaying,
                 hasError: _hasError,
                 hasController: _controller != null,
@@ -484,6 +487,9 @@ class _PreviewTexture extends StatelessWidget {
 /// 1: [placeholder] (when video is not playing or not yet rendered).
 /// 2: [errorWidget] (when an error has occurred).
 class _PreviewOverlay extends StatelessWidget {
+  /// The URL for a placeholder image shown during loading.
+  final String? placeholderImg;
+
   /// Indicates if the video is currently playing.
   final bool isPlaying;
 
@@ -505,6 +511,7 @@ class _PreviewOverlay extends StatelessWidget {
 
   /// Creates a [_PreviewOverlay] widget.
   const _PreviewOverlay({
+    required this.placeholderImg,
     required this.isPlaying,
     required this.hasError,
     required this.hasController,
@@ -531,18 +538,22 @@ class _PreviewOverlay extends StatelessWidget {
         children: [
           const SizedBox.shrink(), // Nothing when video is playing
           SizedBox.expand(
-            child: placeholder ?? const ColoredBox(color: Colors.black),
+            child:
+                placeholder ??
+                (placeholderImg != null
+                    ? Image.network(
+                      placeholderImg!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(color: Colors.grey[900]),
+                    )
+                    : const ColoredBox(color: Colors.black)),
           ),
           SizedBox.expand(
             child:
                 errorWidget ??
                 const ColoredBox(
                   color: Colors.black,
-                  child: Icon(
-                    Icons.error_outline,
-                    color: Colors.white54,
-                    size: 40,
-                  ),
+                  child: Icon(Icons.error_outline, color: Colors.white54, size: 40),
                 ),
           ),
         ],
