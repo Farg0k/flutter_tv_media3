@@ -130,6 +130,7 @@ class PlayerActivity : AppCompatActivity() {
 
 
     private var currentResolutionsMap: Map<String, String>? = null
+    private var currentVideoUrl: String? = null
     private var currentHeaders: Map<String, String>? = null
     private var currentUserAgent: String? = null
     private var currentSubtitleTracks: List<Map<String, Any>>? = null
@@ -506,6 +507,7 @@ class PlayerActivity : AppCompatActivity() {
             }
             httpDataSourceFactory.setDefaultRequestProperties(currentHeaders ?: emptyMap())
             hasSeekedToStartPosition = false
+            currentVideoUrl = videoUrl
 
             if (transferState != null) {
                 try {
@@ -552,6 +554,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun loadWithoutTransferState(videoUrl: String, startPosition: Long) {
         try {
+            currentVideoUrl = videoUrl
             val finalSource = createCombinedMediaSource(videoUrl)
             player.setMediaSource(finalSource, startPosition)
             player.prepare()
@@ -1635,11 +1638,11 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
         if (currentResolutionsMap != null) {
-            val currentUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
             currentResolutionsMap?.let { map ->
                 var externalIndex = 1000
                 for ((label, url) in map) {
-                    if (url != currentUri) {
+                    val isCurrentlySelected = url == currentVideoUrl
+                    if (!isCurrentlySelected) {
                         val externalTrack = mapOf(
                             "index" to externalIndex++,
                             "groupIndex" to -1,
@@ -1652,13 +1655,16 @@ class PlayerActivity : AppCompatActivity() {
                         )
                         tracksList.add(externalTrack)
                     } else {
-                        val selectedTrack = tracksList.find { it["isSelected"] == true }
-                        if (selectedTrack != null) {
-                            tracksList.remove(selectedTrack)
-                            val newTrack = selectedTrack.toMutableMap().apply {
+                        val selectedVideoTrack = tracksList.find {
+                            it["trackType"] == C.TRACK_TYPE_VIDEO && it["isSelected"] == true
+                        }
+                        if (selectedVideoTrack != null) {
+                            val index = tracksList.indexOf(selectedVideoTrack)
+                            val updatedTrack = selectedVideoTrack.toMutableMap().apply {
                                 this["label"] = label
+                                this["isSelected"] = true
                             }
-                            tracksList.add(newTrack)
+                            tracksList[index] = updatedTrack
                         }
                     }
                 }
