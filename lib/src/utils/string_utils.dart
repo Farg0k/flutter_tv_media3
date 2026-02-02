@@ -122,7 +122,7 @@ class StringUtils {
       if (width >= 1000) return 'FHD';
       if (width >= 700) return 'HD';
       if (width > 0) return 'SD';
-      if (width <= 0) return 'Unknown resolution';
+      if (width <= 0) return '';
     }();
 
     final resolution =
