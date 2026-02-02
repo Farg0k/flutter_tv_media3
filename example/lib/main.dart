@@ -18,7 +18,10 @@ class MyApp extends StatelessWidget {
       title: 'Media3 Preview Demo',
       theme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: const PreviewDemoScreen(),
@@ -37,171 +40,324 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
   final playerController = FtvMedia3PlayerController();
 
   final List<PlaylistMediaItem> items = [
-    PlaylistMediaItem(
-      id: '1',
-      title: 'Big Buck Bunny (Full)',
-      url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-      placeholderImg: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
-      media3PreviewConfig: const Media3PreviewConfig(),
-    ),
-    PlaylistMediaItem(
-      id: '2',
-      title: 'Clipped Segment (10s - 20s)',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      placeholderImg: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
+    // === VIDEO EXAMPLES ===
 
+    // Basic video - minimal configuration
+    PlaylistMediaItem(
+      id: 'video_basic_001',
+      url:
+          'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+      title: 'Big Buck Bunny (Basic)',
+      mediaItemType: MediaItemType.video,
+      placeholderImg:
+          'https://peach.blender.org/wp-content/uploads/title_anouncement.jpg',
+      media3PreviewConfig: const Media3PreviewConfig(
+        width: 320,
+        height: 180,
+        autoPlay: true,
+        volume: 0.0,
+      ),
+    ),
+
+    // Clipped video segment (10s to 20s)
+    PlaylistMediaItem(
+      id: 'video_clipped_002',
+      url:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      title: 'Elephants Dream (Clipped 10-20s)',
+      mediaItemType: MediaItemType.video,
+      placeholderImg: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
       media3PreviewConfig: const Media3PreviewConfig(
         startTimeSeconds: 10,
         endTimeSeconds: 20,
+        isRepeat: true,
+        volume: 0.0,
       ),
     ),
+
+    // Video with all metadata and watch time saving
     PlaylistMediaItem(
-      id: '3',
-      title: 'Dynamic Link (Simulated API)',
-      url: 'myapp://resolve/video',
+      id: 'video_full_003',
+      url:
+          'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+      label: 'HLS 1080p',
+      title: 'Tears of Steel',
+      subTitle: 'Sci-Fi Short Film',
+      description:
+          'A group of warriors and scientists gather at the Oude Kerk in Amsterdam to stage a crucial event from the past, in a desperate attempt to save the world from destructive robots.',
+      mediaItemType: MediaItemType.video,
+      duration: 734,
+      startPosition: 120,
       placeholderImg:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUHw5p78QkZu3_Is0vYxxJlRk0A_FwQMtmGA&s',
-      media3PreviewConfig: Media3PreviewConfig(
-        getPreviewDirectLink: () async {
-          await Future.delayed(const Duration(seconds: 2));
-          return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-        },
-      ),
-    ),
-    PlaylistMediaItem(
-      id: '4',
-      title: 'Broken Link (Error Test)',
-      url: 'https://invalid-url.com/video.mp4',
-      placeholderImg: 'https://www.elegantthemes.com/blog/wp-content/uploads/2021/11/broken-links-featured.png',
-    ),
-    PlaylistMediaItem(
-      id: '5',
-      title: 'Tears of Steel (Muted Loop)',
-      url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      placeholderImg: 'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
-    ),
-    PlaylistMediaItem(
-      id: '6',
-      title: 'vp9',
-      url: 'https://test-videos.co.uk/vids/bigbuckbunny/webm/vp9/1080/Big_Buck_Bunny_1080_10s_1MB.webm',
-      placeholderImg: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
-    ),
-    PlaylistMediaItem(
-      id: 'bbb_hls_res',
-      label: 'Sintel HLS (Sintel with Subtitles)',
-      title: 'Sintel',
-      subTitle: 'Sintel with Subtitles',
-      description: 'The film follows a girl named Sintel who is searching for a baby dragon she calls Scales.',
-      url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      startPosition: 60,
-      duration: 888,
-      headers: {'Referer': 'https://example.com/player'},
-      placeholderImg: 'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
-      coverImg: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/636px-Sintel_poster.jpg',
+          'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
+      coverImg:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Tears_of_Steel_frame.png/640px-Tears_of_Steel_frame.png',
+      updateWatchTime: true,
       saveWatchTime: ({
         required String id,
         required int duration,
         required int position,
         required int playIndex,
       }) async {
-        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
+        debugPrint(
+          'SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex',
+        );
       },
+      media3PreviewConfig: Media3PreviewConfig(
+        width: 640,
+        height: 360,
+        autoPlay: true,
+        volume: 0.0,
+        isRepeat: true,
+        startTimeSeconds: 30,
+        endTimeSeconds: 60,
+        placeholderImg:
+            'https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/msqeiEyIRpPAtrCeRGFNZQ9tkJL.jpg',
+      ),
+    ),
+
+    // Video with external subtitles and audio tracks
+    PlaylistMediaItem(
+      id: 'video_tracks_004',
+      url:
+          'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+      title: 'Sintel (with Subtitles & Audio)',
+      subTitle: 'External Tracks Example',
+      description: 'Girl searching for a baby dragon.',
+      mediaItemType: MediaItemType.video,
+      duration: 888,
+      startPosition: 60,
+      placeholderImg:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/636px-Sintel_poster.jpg',
+      coverImg:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/636px-Sintel_poster.jpg',
+      headers: {'Referer': 'https://example.com/player'},
       subtitles: [
         MediaItemSubtitle(
-          url: 'https://raw.githubusercontent.com/mtoczko/hls-test-streams/refs/heads/master/test-vtt/text/1.vtt',
+          url:
+              'https://raw.githubusercontent.com/mtoczko/hls-test-streams/refs/heads/master/test-vtt/text/1.vtt',
           language: 'en',
-          label: 'English (external)',
+          label: 'English',
+          mimeType: 'text/vtt',
+        ),
+        MediaItemSubtitle(
+          url:
+              'https://raw.githubusercontent.com/mtoczko/hls-test-streams/refs/heads/master/test-vtt/text/2.vtt',
+          language: 'de',
+          label: 'Deutsch',
+          mimeType: 'text/vtt',
         ),
       ],
       audioTracks: [
         MediaItemAudioTrack(
           url: 'https://download.samplelib.com/mp3/sample-15s.mp3',
           language: 'en',
-          label: 'US (external)',
+          label: 'English 5.1',
+          mimeType: 'audio/mpeg',
+        ),
+        MediaItemAudioTrack(
+          url: 'https://download.samplelib.com/mp3/sample-12s.mp3',
+          language: 'de',
+          label: 'German Stereo',
           mimeType: 'audio/mpeg',
         ),
       ],
-    ),
-    PlaylistMediaItem(
-      id: 'bbb_mp4_res',
-      label: 'getDirectLink (success)',
-      url: 'myapp://needs_resolving/video1',
-      startPosition: 0,
       saveWatchTime: ({
         required String id,
         required int duration,
         required int position,
         required int playIndex,
       }) async {
-        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
-      },
-      getDirectLink: ({
-        required PlaylistMediaItem item,
-        Function({required String state, double? progress, required int requestId})? onProgress,
-        required int requestId,
-      }) async {
-        onProgress?.call(requestId: requestId, state: 'downloading 1', progress: 0.1);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 2', progress: 0.2);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 3', progress: 0.3);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 4', progress: 0.4);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 5', progress: 0.5);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 6', progress: 0.6);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 7', progress: 0.7);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 8', progress: 0.8);
-        await Future.delayed(const Duration(seconds: 1));
-        onProgress?.call(requestId: requestId, state: 'downloading 9', progress: 0.9);
-        await Future.delayed(const Duration(seconds: 1));
-        final resolved = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-        return item.copyWith(url: resolved);
+        debugPrint(
+          'SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex',
+        );
       },
     ),
+
+    // Video with multiple quality options (resolutions)
     PlaylistMediaItem(
-      id: 'bbb_mp4_res_error',
-      label: 'getDirectLink (error)',
-      url: 'myapp://resolving_error/video2',
-      saveWatchTime: ({
-        required String id,
-        required int duration,
-        required int position,
-        required int playIndex,
-      }) async {
-        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
-      },
-      getDirectLink: ({
-        required PlaylistMediaItem item,
-        Function({required String state, double? progress, required int requestId})? onProgress,
-        required int requestId,
-      }) async {
-        await Future.delayed(const Duration(milliseconds: 300));
-        throw Exception("Failed to get direct link from API");
-      },
-    ),
-    PlaylistMediaItem(
-      id: 'bbb_mp4_res',
-      label: 'MP4 (BBB with Resolutions) MP4 (BBB with Resolutions)',
-      url: 'https://www.sample-videos.com/video321/mp4/360/big_buck_bunny_360p_30mb.mp4',
-      saveWatchTime: ({
-        required String id,
-        required int duration,
-        required int position,
-        required int playIndex,
-      }) async {
-        debugPrint('SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex');
-      },
+      id: 'video_res_005',
+      url:
+          'https://www.sample-videos.com/video321/mp4/360/big_buck_bunny_360p_30mb.mp4',
+      label: 'Multi-Quality',
+      title: 'Big Buck Bunny (Resolutions)',
+      mediaItemType: MediaItemType.video,
+      userAgent: 'MyApp/1.0 (Flutter)',
+      placeholderImg:
+          'https://peach.blender.org/wp-content/uploads/title_anouncement.jpg',
       resolutions: {
-        '1080p': 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        '720p': 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        '1080p':
+            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        '720p':
+            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
         '360p':
             'https://avtshare01.rz.tu-ilmenau.de/avt-vqdb-uhd-1/test_1/segments/bigbuck_bunny_8bit_200kbps_360p_60.0fps_h264.mp4',
       },
-      headers: {'User-Agent': 'MyApp/1.0'},
+      saveWatchTime: ({
+        required String id,
+        required int duration,
+        required int position,
+        required int playIndex,
+      }) async {
+        debugPrint(
+          'SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex',
+        );
+      },
+    ),
+
+    // Video with dynamic link resolution (success)
+    PlaylistMediaItem(
+      id: 'video_dynamic_006',
+      url: 'myapp://resolve/video/success',
+      title: 'Dynamic Link (Success)',
+      mediaItemType: MediaItemType.video,
+      placeholderImg: 'https://cdn-icons-png.flaticon.com/512/2926/2926319.png',
+      saveWatchTime: ({
+        required String id,
+        required int duration,
+        required int position,
+        required int playIndex,
+      }) async {
+        debugPrint(
+          'SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex',
+        );
+      },
+      getDirectLink: ({
+        required PlaylistMediaItem item,
+        Function({
+          required String state,
+          double? progress,
+          required int requestId,
+        })?
+        onProgress,
+        required int requestId,
+      }) async {
+        // Simulating resolution with progress updates
+        for (int i = 1; i <= 5; i++) {
+          onProgress?.call(
+            requestId: requestId,
+            state: 'Resolving... ($i/5)',
+            progress: i / 5,
+          );
+          await Future.delayed(const Duration(milliseconds: 400));
+        }
+        return item.copyWith(
+          url:
+              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        );
+      },
+      media3PreviewConfig: Media3PreviewConfig(
+        getPreviewDirectLink: () async {
+          await Future.delayed(const Duration(seconds: 1));
+          return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+        },
+      ),
+    ),
+
+    // Video with dynamic link resolution (error)
+    PlaylistMediaItem(
+      id: 'video_dynamic_error_007',
+      url: 'myapp://resolve/video/error',
+      title: 'Dynamic Link (Error)',
+      mediaItemType: MediaItemType.video,
+      placeholderImg: 'https://cdn-icons-png.flaticon.com/512/5853/5853981.png',
+      saveWatchTime: ({
+        required String id,
+        required int duration,
+        required int position,
+        required int playIndex,
+      }) async {
+        debugPrint(
+          'SAVE WATCH TIME: id=$id, duration=$duration, position=$position, playIndex=$playIndex',
+        );
+      },
+      getDirectLink: ({
+        required PlaylistMediaItem item,
+        Function({
+          required String state,
+          double? progress,
+          required int requestId,
+        })?
+        onProgress,
+        required int requestId,
+      }) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        throw Exception('API Error: Failed to resolve video URL');
+      },
+    ),
+
+    // Video with broken URL (error handling test)
+    PlaylistMediaItem(
+      id: 'video_broken_008',
+      url: 'https://invalid-url-that-will-fail.com/video.mp4',
+      title: 'Broken Link (Error Handling)',
+      mediaItemType: MediaItemType.video,
+      placeholderImg:
+          'https://www.elegantthemes.com/blog/wp-content/uploads/2021/11/broken-links-featured.png',
+    ),
+
+    // === AUDIO EXAMPLES ===
+
+    // Music track with full metadata
+    PlaylistMediaItem(
+      id: 'audio_001',
+      url: 'https://download.samplelib.com/mp3/sample-15s.mp3',
+      title: 'Sample Audio Track',
+      subTitle: 'MP3 15 seconds',
+      description: 'Sample audio file for testing audio playback',
+      artistName: 'Sample Artist',
+      trackName: 'Demo Track',
+      albumName: 'Test Album',
+      albumYear: '2024',
+      mediaItemType: MediaItemType.audio,
+      duration: 15,
+      coverImg:
+          'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop',
+      placeholderImg:
+          'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&auto=format&fit=crop',
+      updateWatchTime: false,
+    ),
+
+    // === TV STREAM EXAMPLES ===
+
+    // Live TV channel with HLS stream
+    PlaylistMediaItem(
+      id: 'tv_001',
+      url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+      label: 'Live',
+      title: 'Test Live Stream',
+      subTitle: 'HLS Live TV',
+      description: 'Test live TV stream - no watch time saved for live content',
+      mediaItemType: MediaItemType.tvStream,
+      placeholderImg: 'https://cdn-icons-png.flaticon.com/512/2964/2964514.png',
+      updateWatchTime: false,
+      programs: [
+        //EPG programs would be loaded here
+        EpgProgram(
+          title: 'News Hour',
+          description: 'Daily news coverage',
+          startTime: DateTime.now(),
+          endTime: DateTime.now().add(Duration(hours: 1)),
+        ),
+      ],
+    ),
+
+    // === SPECIAL FORMATS ===
+
+    // VP9/WebM video codec test
+    PlaylistMediaItem(
+      id: 'video_vp9_009',
+      url:
+          'https://test-videos.co.uk/vids/bigbuckbunny/webm/vp9/1080/Big_Buck_Bunny_1080_10s_1MB.webm',
+      title: 'VP9 Codec Test',
+      subTitle: 'WebM/VP9 format',
+      mediaItemType: MediaItemType.video,
+      placeholderImg:
+          'https://peach.blender.org/wp-content/uploads/title_anouncement.jpg',
+      media3PreviewConfig: const Media3PreviewConfig(
+        volume: 0.0,
+        autoPlay: true,
+      ),
     ),
   ];
   int _selectedIndex = 0;
@@ -213,7 +369,10 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     super.initState();
     // Initialize controller with some default settings
     playerController.setConfig(
-      playerSettings: PlayerSettings(videoQuality: VideoQuality.high, isAfrEnabled: true),
+      playerSettings: PlayerSettings(
+        videoQuality: VideoQuality.high,
+        isAfrEnabled: true,
+      ),
       // Trigger pagination when 2 items are left in the playlist
       paginationThreshold: 6,
       onLoadMore: () async {
@@ -227,13 +386,16 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
           PlaylistMediaItem(
             id: '$nextId',
             title: 'Pagination Item $nextId',
-            url: 'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
-            coverImg: 'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
+            url:
+                'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
+            coverImg:
+                'https://habrastorage.org/getpro/habr/olpictures/d27/d54/495/d27d54495a66c5047fa9929b937fc786.jpg',
           ),
           PlaylistMediaItem(
             id: '${nextId + 1}',
             title: 'Pagination Item ${nextId + 1}',
-            url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
             coverImg: 'https://i.ytimg.com/vi/kPdv44HtEoA/maxresdefault.jpg',
           ),
         ];
@@ -270,7 +432,11 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
   }
 
   void _openFullPlayer(int index) {
-    playerController.openPlayer(context: context, playlist: items, initialIndex: index);
+    playerController.openPlayer(
+      context: context,
+      playlist: items,
+      initialIndex: index,
+    );
   }
 
   @override
@@ -293,9 +459,12 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                 volume: _volume,
                 fit: BoxFit.cover,
                 isRepeat: _isRepeat,
-                startTimeSeconds: selectedItem.media3PreviewConfig?.startTimeSeconds,
-                endTimeSeconds: selectedItem.media3PreviewConfig?.endTimeSeconds,
-                getDirectLink: selectedItem.media3PreviewConfig?.getPreviewDirectLink,
+                startTimeSeconds:
+                    selectedItem.media3PreviewConfig?.startTimeSeconds,
+                endTimeSeconds:
+                    selectedItem.media3PreviewConfig?.endTimeSeconds,
+                getDirectLink:
+                    selectedItem.media3PreviewConfig?.getPreviewDirectLink,
                 placeholder: Image.network(
                   selectedItem.placeholderImg ?? '',
                   fit: BoxFit.cover,
@@ -305,13 +474,23 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load: ${selectedItem.title}',
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const Text('Check URL or network connection', style: TextStyle(color: Colors.white70)),
+                      const Text(
+                        'Check URL or network connection',
+                        style: TextStyle(color: Colors.white70),
+                      ),
                     ],
                   ),
                 ),
@@ -340,7 +519,10 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
           // UI Elements
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 32.0,
+                vertical: 24.0,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -348,23 +530,41 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                   children: [
                     Text(
                       'MEDIA3 PREVIEW',
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: 2),
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(4)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: const Text(
                         'NATIVE TEXTURE RENDERING',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 10), // Replaced Spacer with fixed gap
+                    const SizedBox(
+                      height: 10,
+                    ), // Replaced Spacer with fixed gap
                     // Item Title and Description
                     Text(
                       selectedItem.title ?? selectedItem.label ?? 'n/a',
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
@@ -372,7 +572,10 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                       child: Text(
                         'This preview is rendered directly onto a Flutter Texture using native Media3 ExoPlayer. '
                         'It supports clipping, volume control, and background loading without blocking the UI thread.',
-                        style: TextStyle(fontSize: 18, color: Colors.white.withValues(alpha: 0.7)),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white.withValues(alpha: 0.7),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -381,7 +584,8 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                     Row(
                       children: [
                         _ControlButton(
-                          icon: _volume > 0 ? Icons.volume_up : Icons.volume_off,
+                          icon:
+                              _volume > 0 ? Icons.volume_up : Icons.volume_off,
                           label: 'VOLUME: ${(_volume * 100).toInt()}%',
                           onPressed: () {
                             setState(() {
@@ -453,7 +657,12 @@ class _PreviewCard extends StatelessWidget {
   final VoidCallback onFocus;
   final VoidCallback onTap;
 
-  const _PreviewCard({required this.item, required this.isSelected, required this.onFocus, required this.onTap});
+  const _PreviewCard({
+    required this.item,
+    required this.isSelected,
+    required this.onFocus,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -487,10 +696,19 @@ class _PreviewCard extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: hasFocus ? Colors.white : Colors.white24, width: hasFocus ? 4 : 1),
+                  border: Border.all(
+                    color: hasFocus ? Colors.white : Colors.white24,
+                    width: hasFocus ? 4 : 1,
+                  ),
                   boxShadow:
                       hasFocus
-                          ? [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5)]
+                          ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ]
                           : [],
                 ),
                 child: ClipRRect(
@@ -506,29 +724,43 @@ class _PreviewCard extends StatelessWidget {
                         volume: 0,
                         fit: BoxFit.cover,
                         initDelay: const Duration(milliseconds: 400),
-                        startTimeSeconds: item.media3PreviewConfig?.startTimeSeconds,
-                        endTimeSeconds: item.media3PreviewConfig?.endTimeSeconds,
-                        getDirectLink: item.media3PreviewConfig?.getPreviewDirectLink,
+                        startTimeSeconds:
+                            item.media3PreviewConfig?.startTimeSeconds,
+                        endTimeSeconds:
+                            item.media3PreviewConfig?.endTimeSeconds,
+                        getDirectLink:
+                            item.media3PreviewConfig?.getPreviewDirectLink,
                         placeholder: Image.network(
                           item.placeholderImg ?? '',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.grey[900]),
+                          errorBuilder:
+                              (_, __, ___) =>
+                                  Container(color: Colors.grey[900]),
                         ),
                         //borderRadius: BorderRadius.circular(16),
                       ),
                       // Focus highlight overlay
-                      if (!hasFocus) Positioned.fill(child: Container(color: Colors.black26)),
+                      if (!hasFocus)
+                        Positioned.fill(
+                          child: Container(color: Colors.black26),
+                        ),
                       Positioned(
                         bottom: 0,
                         left: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
+                              colors: [
+                                Colors.black.withValues(alpha: 0.8),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                           child: Text(
@@ -536,7 +768,10 @@ class _PreviewCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontWeight: hasFocus ? FontWeight.bold : FontWeight.normal,
+                              fontWeight:
+                                  hasFocus
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                               fontSize: hasFocus ? 16 : 14,
                             ),
                           ),
@@ -560,16 +795,25 @@ class _ControlButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isPrimary;
 
-  const _ControlButton({required this.icon, required this.label, required this.onPressed, this.isPrimary = false});
+  const _ControlButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+      label: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
+      ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? Colors.blue : Colors.white.withValues(alpha: 0.1),
+        backgroundColor:
+            isPrimary ? Colors.blue : Colors.white.withValues(alpha: 0.1),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

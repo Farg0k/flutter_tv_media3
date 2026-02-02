@@ -213,33 +213,116 @@ Future<List<MediaItemSubtitle>?> _mySubtitleSearchFunction({required String id})
 A playlist is a list of `PlaylistMediaItem` objects. Each object describes a single media item in detail.
 
 ```dart
-final mediaItems = [
-  // Simple item with a direct URL
+final List<PlaylistMediaItem> items = [
+  // Basic video
   PlaylistMediaItem(
-    id: 'sintel_trailer',
-    url: 'https://.../playlist.m3u8',
-    title: 'Sintel',
-    description: 'Third open movie by Blender Foundation',
-    subTitle: 'Blender Foundation',
-    coverImg: 'https://.../image.jpg',
-    startPosition: 60, // Start playback at 60 seconds
-    duration: 888,
-    headers: {'Referer': 'https://example.com/player'},
+    id: '1',
+    url: 'https://example.com/video1.mp4',
+    title: 'Video 1',
+    mediaItemType: MediaItemType.video,
   ),
-  // Item that requires dynamic link resolution
+
+  // Video with metadata and watch time saving
   PlaylistMediaItem(
-    id: 'dynamic_video_1',
-    url: 'myapp://resolving/video1', // Initial identifier
-    title: 'Dynamic Video',
-    getDirectLink: ({ required item, onProgress, required requestId }) async {
-      onProgress?.call(requestId: requestId, state: 'Querying API...', progress: 0.5);
-      await Future.delayed(const Duration(seconds: 2));
-      final resolvedUrl = 'https://.../direct_link.mp4';
-      return item.copyWith(url: resolvedUrl);
+    id: '2',
+    url: 'https://example.com/video2.m3u8',
+    title: 'Video 2',
+    description: 'A description of the video',
+    startPosition: 60,
+    saveWatchTime: ({required id, required duration, required position, required playIndex}) async {
+      // Save progress to your database
     },
+  ),
+
+  // Video with external tracks
+  PlaylistMediaItem(
+    id: '3',
+    url: 'https://example.com/video3.mp4',
+    title: 'Video 3',
+    subtitles: [
+      MediaItemSubtitle(url: 'https://example.com/sub.vtt', language: 'en', label: 'English'),
+    ],
+    audioTracks: [
+      MediaItemAudioTrack(url: 'https://example.com/audio.mp3', language: 'en', label: 'English'),
+    ],
+  ),
+
+  // Video with multiple qualities
+  PlaylistMediaItem(
+    id: '4',
+    url: 'https://example.com/video4_360p.mp4',
+    resolutions: {
+      '360p': 'https://example.com/video4_360p.mp4',
+      '720p': 'https://example.com/video4_720p.mp4',
+      '1080p': 'https://example.com/video4_1080p.mp4',
+    },
+  ),
+
+  // Video with dynamic URL resolution
+  PlaylistMediaItem(
+    id: '5',
+    url: 'myapp://resolve/video',
+    getDirectLink: ({required item, onProgress, required requestId}) async {
+      onProgress?.call(requestId: requestId, state: 'Loading...', progress: 0.5);
+      final directUrl = await resolveUrl(item.id);
+      return item.copyWith(url: directUrl);
+    },
+  ),
+
+  // Audio track
+  PlaylistMediaItem(
+    id: '6',
+    url: 'https://example.com/music.mp3',
+    title: 'Song Title',
+    artistName: 'Artist',
+    albumName: 'Album',
+    mediaItemType: MediaItemType.audio,
+    updateWatchTime: false,
+  ),
+
+  // Live TV stream
+  PlaylistMediaItem(
+    id: '7',
+    url: 'https://example.com/live.m3u8',
+    title: 'Live Channel',
+    mediaItemType: MediaItemType.tvStream,
+    updateWatchTime: false,
   ),
 ];
 ```
+
+#### PlaylistMediaItem Field Summary
+
+Here's a quick reference for all available fields in `PlaylistMediaItem`:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | String | Yes | Unique identifier for the media item |
+| `url` | String | Yes | URL of the media resource |
+| `mediaItemType` | MediaItemType | No | Type: video, audio, or tvStream (default: video) |
+| `title` | String? | No | Main title of the media |
+| `subTitle` | String? | No | Episode or secondary title |
+| `description` | String? | No | Full description |
+| `label` | String? | No | Quality label (e.g., "1080p") |
+| `coverImg` | String? | No | Cover art URL |
+| `placeholderImg` | String? | No | Placeholder image URL |
+| `episodeImg` | String? | No | Episode image URL |
+| `artistName` | String? | No | Artist name (for audio) |
+| `trackName` | String? | No | Track name (for audio) |
+| `albumName` | String? | No | Album name (for audio) |
+| `albumYear` | String? | No | Album release year (for audio) |
+| `startPosition` | int? | No | Initial playback position in seconds |
+| `duration` | int? | No | Total duration in seconds |
+| `headers` | Map? | No | HTTP headers for requests |
+| `userAgent` | String? | No | Custom User-Agent string |
+| `resolutions` | Map? | No | Quality options map {"label": "url"} |
+| `subtitles` | List? | No | External subtitle tracks |
+| `audioTracks` | List? | No | External audio tracks |
+| `updateWatchTime` | bool | No | Update watch time in UI (default: true) |
+| `saveWatchTime` | Function? | No | Callback to save progress |
+| `getDirectLink` | Function? | No | Callback to resolve direct URL |
+| `programs` | List? | No | EPG program list (for TV streams) |
+| `media3PreviewConfig` | Media3PreviewConfig? | No | Preview player configuration |
 
 ### 4. Launching the Player
 
@@ -330,6 +413,73 @@ Media3PreviewPlayer(
   height: 180,
 )
 ```
+
+### Media3PreviewConfig
+
+The `Media3PreviewConfig` class is used to configure preview playback within a `PlaylistMediaItem`. This allows you to define preview-specific settings that are separate from the main video playback.
+
+#### Configuration Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `url` | String? | null | Override URL for preview (uses main item URL if null) |
+| `width` | double? | null | Desired width of the preview widget |
+| `height` | double? | null | Desired height of the preview widget |
+| `volume` | double? | 0.0 | Audio volume (0.0 = muted, 1.0 = full) |
+| `autoPlay` | bool? | true | Auto-start playback when ready |
+| `isRepeat` | bool? | true | Loop playback indefinitely |
+| `startTimeSeconds` | int? | null | Start playback from specific time |
+| `endTimeSeconds` | int? | null | Stop/restart at specific time (clipping) |
+| `placeholderImg` | String? | null | URL for placeholder image during loading |
+| `initDelay` | Duration? | 600ms | Delay before initialization (prevents unnecessary loading) |
+| `getDirectLink` | Function? | null | Async callback to resolve direct URL |
+| `getPreviewDirectLink` | Function? | null | Alternative callback for preview URL resolution |
+
+#### Usage Example
+
+```dart
+PlaylistMediaItem(
+  id: '1',
+  url: 'https://example.com/movie.mp4',
+  title: 'Movie',
+  media3PreviewConfig: Media3PreviewConfig(
+    // Use same URL or specify different preview URL
+    url: 'https://example.com/preview.mp4',
+    
+    // Widget dimensions
+    width: 320,
+    height: 180,
+    
+    // Playback settings
+    volume: 0.0,  // Muted for preview
+    autoPlay: true,
+    isRepeat: true,
+    
+    // Clip to 10-30 second segment
+    startTimeSeconds: 10,
+    endTimeSeconds: 30,
+    
+    // Loading delay to handle fast scrolling
+    initDelay: Duration(milliseconds: 500),
+    
+    // Placeholder image
+    placeholderImg: 'https://example.com/thumbnail.jpg',
+    
+    // Dynamic URL resolution for preview
+    getPreviewDirectLink: () async {
+      return await resolvePreviewUrl('1');
+    },
+  ),
+)
+```
+
+#### Best Practices
+
+1. **Always mute previews** (`volume: 0.0`) to avoid audio conflicts
+2. **Use clipping** (`startTimeSeconds`, `endTimeSeconds`) to show interesting segments
+3. **Set appropriate initDelay** (300-800ms) to prevent loading items that are quickly scrolled past
+4. **Provide placeholder images** for better user experience during loading
+5. **Use isRepeat: true** for seamless looping previews
 
 ## Advanced Usage
 
@@ -689,20 +839,21 @@ A class to describe a single item in a playlist. Objects of this class are immut
 
 **Core Properties:**
 
-*   `id` (String): **Required.** A unique identifier for the media item.
-*   `url` (String): **Required.** The URL of the media resource.
+*   `id` (String): **Required.** A unique identifier for the media item. Used for saving playback progress and identifying the item.
+*   `url` (String): **Required.** The URL of the media resource. Can be a direct link or an indirect link that will be processed via `getDirectLink`.
+*   `mediaItemType` (`MediaItemType`): The type of the media item (`video`, `audio`, `tvStream`). Defaults to `MediaItemType.video`. This property has two functions: it is used to display a corresponding icon in the playlist UI, and **it can be used to force a specific player interface.** If set to `MediaItemType.audio`, the player will display the audio-only interface. Otherwise, the player will attempt to determine the interface automatically based on the media's tracks.
 
 **UI Metadata:**
 
 *   `title` (String?): The main title of the media (e.g., the name of a movie or series).
 *   `subTitle` (String?): A subtitle that can be used as an episode title.
 *   `description` (String?): A full description of the media item.
-*   `label` (String?): A text label displayed for this item in the playlist UI.
+*   `label` (String?): A text label displayed for this item in the playlist UI (e.g., quality label like "1080p" or "HD").
 *   `coverImg` (String?): The URL for the cover art image.
 *   `placeholderImg` (String?): The URL for a placeholder image shown while the media is loading.
-*   `mediaItemType` (`MediaItemType`): The type of the media item (`video`, `audio`, `tvStream`). This property has two functions: it is used to display a corresponding icon in the playlist UI, and **it can be used to force a specific player interface.** If set to `MediaItemType.audio`, the player will display the audio-only interface. Otherwise, the player will attempt to determine the interface automatically based on the media's tracks.
+*   `episodeImg` (String?): The URL for an episode image shown in the UI.
 
-**Audio Metadata:**
+**Audio Metadata (for music tracks):**
 
 *   `artistName` (String?): The name of the performer or artist.
 *   `trackName` (String?): The name of the track.
@@ -711,19 +862,30 @@ A class to describe a single item in a playlist. Objects of this class are immut
 
 **Playback Parameters:**
 
-*   `startPosition` (int?): The initial playback position in seconds.
+*   `startPosition` (int?): The initial playback position in seconds. Used to resume playback from a specific position.
 *   `duration` (int?): The total duration of the media in seconds.
-*   `headers` (Map<String, String>?): HTTP headers to be used when requesting the `url`.
-*   `userAgent` (String?): A custom User-Agent for HTTP requests.
-*   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"720p": "url..."`). **Note:** The player automatically deduplicates entries by URL. If multiple labels are provided for the same URL, only the first label encountered will be displayed in the UI.
-*   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks.
-*   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks.
+*   `headers` (Map<String, String>?): HTTP headers to be used when requesting the `url` (e.g., Authorization, Referer).
+*   `userAgent` (String?): A custom User-Agent string for HTTP requests.
+*   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"1080p": "url..."`). **Note:** The player automatically deduplicates entries by URL. If multiple labels are provided for the same URL, only the first label encountered will be displayed in the UI.
+*   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks. Each track requires `url`, `language`, and `label`.
+*   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks. Each track requires `url`, `language`, and `label`.
 
-**Advanced Features:**
+**Watch Time and Progress:**
 
-*   `getDirectLink` (`GetDirectLinkCallback`?): An asynchronous callback to get a direct playback link.
-*   `saveWatchTime` (`SaveWatchTimeSeconds`?): An asynchronous callback to save the playback progress for this specific item. If `null`, progress is not saved.
-*   `programs` (List<`EpgProgram`>?): A list of programs for the EPG. If this field is not `null`, the EPG functionality is enabled for this media item.
+*   `updateWatchTime` (bool): Whether to update watch time in the UI. Defaults to `true`. Set to `false` for live streams or music.
+*   `saveWatchTime` (`SaveWatchTimeSeconds`?): An asynchronous callback to save the playback progress for this specific item. If `null`, progress is not saved. This allows per-item control over saving logic.
+
+**Dynamic Link Resolution:**
+
+*   `getDirectLink` (`GetDirectLinkCallback`?): An asynchronous callback to obtain a direct, playable media link. Useful when the initial `url` is indirect, temporary, or requires server-side generation. The callback receives the item, an optional progress callback, and a request ID.
+
+**TV and EPG:**
+
+*   `programs` (List<`EpgProgram`>?): A list of EPG (Electronic Program Guide) programs associated with this item. If this field is not `null`, the EPG functionality is enabled for this media item. The EPG is activated by pressing left/right D-pad buttons.
+
+**Preview Configuration:**
+
+*   `media3PreviewConfig` (`Media3PreviewConfig`?): Configuration for the `Media3PreviewPlayer` widget. Contains settings like `url`, `width`, `height`, `volume`, `autoPlay`, `startTimeSeconds`, `endTimeSeconds`, `isRepeat`, `placeholderImg`, `initDelay`, and `getPreviewDirectLink`.
 
 ### `PlayerSettings`
 
