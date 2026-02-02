@@ -1647,14 +1647,6 @@ class PlayerActivity : AppCompatActivity() {
                 val selectedVideoTrack = tracksList.find {
                     it["trackType"] == C.TRACK_TYPE_VIDEO && it["isSelected"] == true
                 }
-                if (selectedVideoTrack != null && activeVideoLabel != null) {
-                    val index = tracksList.indexOf(selectedVideoTrack)
-                    val updatedTrack = selectedVideoTrack.toMutableMap().apply {
-                        this["label"] = activeVideoLabel
-                        this["isSelected"] = true
-                    }
-                    tracksList[index] = updatedTrack
-                }
 
                 for ((url, label) in map) {
                     val isCurrentlySelected = url == currentVideoUrl
@@ -1670,6 +1662,26 @@ class PlayerActivity : AppCompatActivity() {
                             "isExternal" to true
                         )
                         tracksList.add(externalTrack)
+                    }else if (selectedVideoTrack == null && isCurrentlySelected != null){
+                        val externalTrack = mapOf(
+                            "index" to externalIndex++,
+                            "groupIndex" to -1,
+                            "id" to url,
+                            "trackType" to C.TRACK_TYPE_VIDEO,
+                            "label" to label,
+                            "url" to url,
+                            "isSelected" to true,
+                            "isExternal" to true
+                        )
+                        tracksList.add(externalTrack)
+                    }else if (selectedVideoTrack != null && activeVideoLabel != null && isCurrentlySelected != null) {
+                        val index = tracksList.indexOf(selectedVideoTrack)
+                        tracksList.removeAt(index)
+                        val updatedTrack = selectedVideoTrack.toMutableMap().apply {
+                            this["label"] = activeVideoLabel
+                            this["isSelected"] = true
+                        }
+                        tracksList.add(updatedTrack)
                     }
                 }
             }

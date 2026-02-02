@@ -9,12 +9,7 @@ import '../../widgets/marquee_title_widget.dart';
 import '../../widgets/video_info_item.dart';
 
 class VideoItemWidget extends StatelessWidget {
-  const VideoItemWidget({
-    super.key,
-    required this.controller,
-    required this.track,
-    required this.isFocused,
-  });
+  const VideoItemWidget({super.key, required this.controller, required this.track, required this.isFocused});
 
   final Media3UiController controller;
   final VideoTrack track;
@@ -43,7 +38,9 @@ class VideoItemWidget extends StatelessWidget {
             spacing: 16,
             children: [
               Icon(
-                isSelected
+                isSelected && track.width == null
+                    ? Icons.autorenew_rounded
+                    : isSelected
                     ? Icons.check
                     : _getIcon(width: track.width, label: track.label),
                 color: isFocused || isSelected ? Colors.white : Colors.white70,
@@ -54,12 +51,8 @@ class VideoItemWidget extends StatelessWidget {
                   focus: isFocused,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight:
-                        isFocused || isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                    color:
-                        isFocused || isSelected ? Colors.white : Colors.white70,
+                    fontWeight: isFocused || isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isFocused || isSelected ? Colors.white : Colors.white70,
                   ),
                 ),
               ),
@@ -69,39 +62,20 @@ class VideoItemWidget extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   if (track.width != null && track.height != null)
-                    VideoInfoItem(
-                      icon: _getIcon(width: track.width),
-                      title: '${track.width}x${track.height}',
-                    ),
+                    VideoInfoItem(icon: _getIcon(width: track.width), title: '${track.width}x${track.height}'),
                   if (track.containerMimeType != null)
                     VideoInfoItem(
                       icon: Icons.video_collection,
-                      title: StringUtils.simplifyMimeType(
-                        track.containerMimeType,
-                      ),
+                      title: StringUtils.simplifyMimeType(track.containerMimeType),
                     ),
                   if (track.frameRate != null && track.frameRate! > 1.0)
-                    VideoInfoItem(
-                      icon: Icons.video_label,
-                      title: '${track.frameRate!.toStringAsFixed(1)} fps',
-                    ),
+                    VideoInfoItem(icon: Icons.video_label, title: '${track.frameRate!.toStringAsFixed(1)} fps'),
                   if (track.bitrate != null)
-                    VideoInfoItem(
-                      icon: Icons.speed,
-                      title: StringUtils.formatBitrate(track.bitrate!),
-                    ),
+                    VideoInfoItem(icon: Icons.speed, title: StringUtils.formatBitrate(track.bitrate!)),
                   if (track.sampleMimeType != null)
-                    VideoInfoItem(
-                      icon: Icons.video_file,
-                      title: StringUtils.simplifyMimeType(
-                        track.sampleMimeType!,
-                      ),
-                    ),
+                    VideoInfoItem(icon: Icons.video_file, title: StringUtils.simplifyMimeType(track.sampleMimeType!)),
                   if (track.codecs != null)
-                    VideoInfoItem(
-                      icon: Icons.personal_video,
-                      title: StringUtils.simplifyCodec(track.codecs!),
-                    ),
+                    VideoInfoItem(icon: Icons.personal_video, title: StringUtils.simplifyCodec(track.codecs!)),
                 ],
               ),
             ],
