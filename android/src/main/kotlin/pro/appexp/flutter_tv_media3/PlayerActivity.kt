@@ -2246,13 +2246,13 @@ class PlayerActivity : AppCompatActivity() {
         when (currentVideoQualityIndex) {
             0 -> {
                 val sortedResolutions =
-                    resolutionsMap.entries.sortedByDescending { parseQuality(it.key, it.value) }
+                    resolutionsMap.entries.sortedByDescending { parseQuality(it.value, it.key) }
                 return sortedResolutions.firstOrNull()?.key ?: defaultUrl
             }
 
             4 -> {
                 val sortedResolutions =
-                    resolutionsMap.entries.sortedBy { parseQuality(it.key, it.value) }
+                    resolutionsMap.entries.sortedBy { parseQuality(it.value, it.key) }
                 return sortedResolutions.firstOrNull()?.key ?: defaultUrl
             }
 
@@ -2260,7 +2260,7 @@ class PlayerActivity : AppCompatActivity() {
                 if (currentVideoHeight > 0) {
                     val sortedResolutions = resolutionsMap.entries
                         .map { entry ->
-                            parseQuality(entry.key, entry.value) to entry.key
+                            parseQuality(entry.value, entry.key) to entry.key
                         }
                         .sortedBy { it.first }
                     val bestMatch = sortedResolutions.firstOrNull { it.first >= currentVideoHeight }
