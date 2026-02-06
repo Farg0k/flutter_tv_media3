@@ -87,24 +87,29 @@ class VideoItemWidget extends StatelessWidget {
 
   static IconData _getIcon({int? width, String? label}) {
     if (width != null) {
-      if (width > 2000) {
-        return Icons.four_k_outlined;
-      } else if (width > 1000) {
-        return Icons.hd_outlined;
-      } else {
-        return Icons.sd_outlined;
-      }
+      if (width >= 2160) return Icons.four_k_outlined;
+      if (width >= 720) return Icons.hd_outlined;
+      return Icons.sd_outlined;
     }
+
     if (label != null) {
-      final lowerLabel = label.toLowerCase();
-      if (lowerLabel.contains('4k')) {
-        return Icons.four_k_outlined;
-      } else if (RegExp(r'1080|720|hd').hasMatch(lowerLabel)) {
-        return Icons.hd_outlined;
-      } else if (RegExp(r'480|360|sd').hasMatch(lowerLabel)) {
-        return Icons.sd_outlined;
+      final match = RegExp(r'\d+').firstMatch(label);
+      if (match != null) {
+        final val = int.tryParse(match.group(0)!);
+
+        if (val != null) {
+          if (val >= 2160 || val == 4) return Icons.four_k_outlined;
+          if (val >= 720) return Icons.hd_outlined;
+          if (val >= 360) return Icons.sd_outlined;
+        }
       }
+
+      final lowerLabel = label.toLowerCase();
+      if (lowerLabel.contains('4k')) return Icons.four_k_outlined;
+      if (lowerLabel.contains('hd')) return Icons.hd_outlined;
+      if (lowerLabel.contains('sd')) return Icons.sd_outlined;
     }
+
     return Icons.slideshow;
   }
 }
