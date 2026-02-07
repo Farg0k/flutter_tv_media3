@@ -1495,44 +1495,6 @@ class PlayerActivity : AppCompatActivity() {
         return false
     }
 
-/*    private fun debugTracksShort(currentTracks: Tracks) {
-
-        Log.d("PlayerActivity", "=== TRACKS SUMMARY ===")
-
-        val videoTracks = currentTracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }
-        val audioTracks = currentTracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
-        val textTracks = currentTracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }
-
-        Log.d("PlayerActivity", "Video tracks: ${videoTracks.size}")
-        videoTracks.forEach { group ->
-            for (i in 0 until group.length) {
-                val format = group.getTrackFormat(i)
-                val selected = if (group.isTrackSelected(i)) "[SELECTED]" else ""
-                Log.d("PlayerActivity", "  Video: ${format.width}x${format.height} ${format.sampleMimeType} $selected")
-            }
-        }
-
-        Log.d("PlayerActivity", "Audio tracks: ${audioTracks.size}")
-        audioTracks.forEach { group ->
-            for (i in 0 until group.length) {
-                val format = group.getTrackFormat(i)
-                val selected = if (group.isTrackSelected(i)) "[SELECTED]" else ""
-                Log.d("PlayerActivity", "  Audio: ${format.id} ${format.language} ${format.label} ${format.sampleMimeType} $selected")
-            }
-        }
-
-        Log.d("PlayerActivity", "Subtitle tracks: ${textTracks.size}")
-        textTracks.forEach { group ->
-            for (i in 0 until group.length) {
-                val format = group.getTrackFormat(i)
-                val selected = if (group.isTrackSelected(i)) "[SELECTED]" else ""
-                Log.d("PlayerActivity", "  Subtitle: ${format.language} ${format.label} ${format.sampleMimeType} $selected")
-            }
-        }
-
-        Log.d("PlayerActivity", "===================")
-    }*/
-
     private fun getCurrentTracks(): List<Map<String, Any?>> {
         val tracksList = mutableListOf<Map<String, Any?>>()
         if (!this::player.isInitialized) return tracksList
