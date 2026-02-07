@@ -140,7 +140,8 @@ class Media3PreviewPlayer extends StatefulWidget {
 }
 
 /// The state for the [Media3PreviewPlayer] widget.
-class _Media3PreviewPlayerState extends State<Media3PreviewPlayer> with WidgetsBindingObserver {
+class _Media3PreviewPlayerState extends State<Media3PreviewPlayer>
+    with WidgetsBindingObserver {
   /// The controller for the native Media3 preview player.
   Media3PreviewController? _controller;
 
@@ -197,7 +198,8 @@ class _Media3PreviewPlayerState extends State<Media3PreviewPlayer> with WidgetsB
       return;
     }
 
-    if (oldWidget.url != widget.url || oldWidget.getDirectLink != widget.getDirectLink) {
+    if (oldWidget.url != widget.url ||
+        oldWidget.getDirectLink != widget.getDirectLink) {
       _reinit();
       return;
     }
@@ -544,7 +546,8 @@ class _PreviewOverlay extends StatelessWidget {
                     ? Image.network(
                       placeholderImg!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(color: Colors.grey[900]),
+                      errorBuilder:
+                          (_, __, ___) => Container(color: Colors.grey[900]),
                     )
                     : const ColoredBox(color: Colors.black)),
           ),
@@ -553,7 +556,11 @@ class _PreviewOverlay extends StatelessWidget {
                 errorWidget ??
                 const ColoredBox(
                   color: Colors.black,
-                  child: Icon(Icons.error_outline, color: Colors.white54, size: 40),
+                  child: Icon(
+                    Icons.error_outline,
+                    color: Colors.white54,
+                    size: 40,
+                  ),
                 ),
           ),
         ],

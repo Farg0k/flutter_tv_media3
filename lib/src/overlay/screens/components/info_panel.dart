@@ -85,7 +85,9 @@ class InfoPanel extends StatelessWidget {
                                   borderRadius: AppTheme.borderRadius,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.5,
+                                      ),
                                       blurRadius: 10,
                                       spreadRadius: 2,
                                     ),
