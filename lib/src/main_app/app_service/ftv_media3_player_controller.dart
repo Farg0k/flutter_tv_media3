@@ -276,7 +276,7 @@ class FtvMedia3PlayerController {
           }
 
           PlaylistMediaItem item = playerState.playlist[index];
-
+print('GET MEDIA ${item.getDirectLink != null}');
           if (!MediaRequestManager.isCurrentRequest(requestId)) {
             _sendLoadProgressToUI(
               state: 'Cancelled',
@@ -498,6 +498,7 @@ class FtvMedia3PlayerController {
           _isLoadingMore = true;
           try {
             final items = await _onLoadMore!();
+            print('GET DIRECT LINK ${items?.last.getDirectLink != null}');
             if (items != null && items.isNotEmpty) {
               await addMediaItems(items: items);
             }
@@ -513,6 +514,7 @@ class FtvMedia3PlayerController {
               'An unknown playback error occurred.',
           errorCode: call.arguments['code'] as String?,
         );
+        _updateState(newState);
         break;
       case 'updateSubtitleStyle':
         final styleSettingsMap = call.arguments as Map<dynamic, dynamic>?;
@@ -522,6 +524,7 @@ class FtvMedia3PlayerController {
             _saveSubtitleStyle!(subtitleStyle: styleSettings);
           }
         }
+        _updateState(newState);
         break;
       case 'saveClockSettings':
         final clockSettingsStr = call.arguments['clock_settings'] as String?;
@@ -536,6 +539,7 @@ class FtvMedia3PlayerController {
                   : ClockSettings();
           _saveClockSettings!(clockSettings: clockSettings);
         }
+        _updateState(newState);
         break;
       case 'savePlayerSettings':
         final playerSettingsMap = call.arguments as Map<dynamic, dynamic>?;
@@ -546,6 +550,7 @@ class FtvMedia3PlayerController {
                   : PlayerSettings();
           _savePlayerSettings!(playerSettings: playerSettings);
         }
+        _updateState(newState);
         break;
       case 'onPositionChanged':
         final data = Map<String, dynamic>.from(call.arguments);
@@ -607,6 +612,7 @@ class FtvMedia3PlayerController {
           playerSettings: playerSettings,
           volumeState: volumeState,
         );
+        _updateState(newState);
         break;
 
       case 'onPlaylistUpdated':
@@ -622,10 +628,12 @@ class FtvMedia3PlayerController {
             playIndex: playIndex ?? newState.playIndex,
           );
         }
+        _updateState(newState);
         break;
 
       case 'onActivityDestroyed':
         newState = PlayerState(activityDestroyed: true);
+        _updateState(newState);
         break;
       case 'onBack':
         break;
@@ -639,6 +647,7 @@ class FtvMedia3PlayerController {
           playerSettings: newState.playerSettings,
         );
         _updatePlaybackState(PlaybackState());
+        _updateState(newState);
 
         // Pagination logic
         if (playIndex != null &&
@@ -666,6 +675,7 @@ class FtvMedia3PlayerController {
             loadingProgress: progress,
           );
         }
+        _updateState(newState);
         break;
       case 'setCurrentTracks':
         final List<dynamic> rawTracks = call.arguments;
@@ -693,6 +703,7 @@ class FtvMedia3PlayerController {
             errorCode: 'SET_CURRENT_TRACKS_ERROR',
           );
         }
+        _updateState(newState);
         break;
       case "setCurrentResizeMode":
         final String? zoomValue = call.arguments['zoom'] as String?;
@@ -704,6 +715,7 @@ class FtvMedia3PlayerController {
         } else {
           newState = newState.copyWith(zoom: PlayerZoom.fromString(zoomValue));
         }
+        _updateState(newState);
         break;
       case "setCurrentSpeed":
         final speedValue = call.arguments['speed'] as double?;
@@ -715,6 +727,7 @@ class FtvMedia3PlayerController {
         } else {
           newState = newState.copyWith(speed: speedValue);
         }
+        _updateState(newState);
         break;
       case "setRepeatMode":
         final repeat = call.arguments['mode'] as String?;
@@ -726,6 +739,7 @@ class FtvMedia3PlayerController {
           return;
         }
         newState = newState.copyWith(repeatMode: RepeatMode.fromString(repeat));
+        _updateState(newState);
         break;
       case 'onMetadataChanged':
         final rawData = call.arguments as Map<Object?, Object?>?;
@@ -760,6 +774,7 @@ class FtvMedia3PlayerController {
           repeatMode: RepeatMode.fromString(repeatMode),
           isShuffleModeEnabled: shuffleEnabled,
         );
+        _updateState(newState);
         break;
       case 'onVolumeChanged':
         final current = call.arguments['current'] as int?;
@@ -779,13 +794,14 @@ class FtvMedia3PlayerController {
             ),
           );
         }
+        _updateState(newState);
         break;
       default:
         final err =
             "UNKNOWN_NATIVE_METHOD: ${call.method} with args: ${call.arguments}";
         _updateState(_playerState.copyWith(lastError: err));
+        _updateState(newState);
     }
-    _updateState(newState);
   }
 
   /// Sends the progress of loading media information to the UI.
