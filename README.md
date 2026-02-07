@@ -165,6 +165,7 @@ These parameters are detailed in the [Full Configuration and Callbacks](#full-co
 *   `savePlayerSettings`: A callback that is triggered when the user changes player settings.
 *   `saveClockSettings`: A callback that is triggered when the user changes clock settings.
 *   `sleepTimerExec`: A callback that is executed when the sleep timer is triggered from the player UI.
+*   `directLinkTimeout`: (Optional) A `Duration` that specifies the timeout for resolving dynamic links via `getDirectLink`. Defaults to 15 seconds.
 
 **External Subtitle Search:**
 

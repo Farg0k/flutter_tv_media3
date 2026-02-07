@@ -74,6 +74,10 @@ class FtvMedia3PlayerController {
   SubtitleStyle? _subtitleStyle;
   ClockSettings? _clockSettings;
   PlayerSettings? _playerSettings;
+
+  /// The timeout duration for resolving a direct link via the `getDirectLink` callback.
+  /// Defaults to 15 seconds if not explicitly set via [setConfig].
+  Duration _directLinkTimeout = const Duration(seconds: 15);
   bool _isSearchingSubtitles = false;
   bool _isSavingWatchTime = false;
 
@@ -182,6 +186,7 @@ class FtvMedia3PlayerController {
     String? findSubtitlesStateInfoLabel,
     LabelSearchExternalSubtitle? labelSearchExternalSubtitle,
     int? paginationThreshold,
+    Duration? directLinkTimeout,
     Future<List<PlaylistMediaItem>?> Function()? onLoadMore,
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
@@ -192,6 +197,7 @@ class FtvMedia3PlayerController {
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
+    if (directLinkTimeout != null) _directLinkTimeout = directLinkTimeout;
     if (onLoadMore != null) {
       _onLoadMore = onLoadMore;
       if (_playerSettings != null) {
@@ -294,7 +300,7 @@ class FtvMedia3PlayerController {
                     onProgress: _sendLoadProgressToUI,
                     requestId: requestId,
                   )
-                  .timeout(const Duration(seconds: 15));
+                  .timeout(_directLinkTimeout);
 
               if (!MediaRequestManager.isCurrentRequest(requestId)) {
                 _sendLoadProgressToUI(
