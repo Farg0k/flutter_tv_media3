@@ -99,6 +99,9 @@ class PlaylistMediaItem {
   /// A custom User-Agent for HTTP requests.
   final String? userAgent;
 
+  /// The MIME type of the media file (e.g., "video/mp4", "application/x-mpegURL").
+  final String? mimeType;
+
   /// A map of available video resolutions.
   /// The key is the name (e.g., "720p"), and the value is the URL to the stream.
   final Map<String, String>? resolutions;
@@ -152,6 +155,7 @@ class PlaylistMediaItem {
     this.duration,
     this.headers,
     this.userAgent,
+    this.mimeType,
     this.resolutions,
     this.subtitles,
     this.audioTracks,
@@ -183,6 +187,7 @@ class PlaylistMediaItem {
       'headers': headers,
       'resolutions': resolutions,
       'userAgent': userAgent,
+      'mimeType': mimeType,
       'subtitles': subtitles?.map((sub) => sub.toMap()).toList(),
       'audioTracks': audioTracks?.map((audio) => audio.toMap()).toList(),
       'updateWatchTime': updateWatchTime,
@@ -211,6 +216,7 @@ class PlaylistMediaItem {
       startPosition: json['startPosition'] as int?,
       duration: json['duration'] as int?,
       userAgent: json['userAgent'] as String?,
+      mimeType: json['mimeType'] as String?,
       subtitles:
           (json['subtitles'] as List?)
               ?.map(
@@ -256,6 +262,7 @@ class PlaylistMediaItem {
     int? duration,
     Map<String, String>? headers,
     String? userAgent,
+    String? mimeType,
     Map<String, String>? resolutions,
     List<MediaItemSubtitle>? subtitles,
     List<MediaItemAudioTrack>? audioTracks,
@@ -283,6 +290,7 @@ class PlaylistMediaItem {
       duration: duration ?? this.duration,
       headers: headers ?? this.headers,
       userAgent: userAgent ?? this.userAgent,
+      mimeType: mimeType ?? this.mimeType,
       resolutions: resolutions ?? this.resolutions,
       subtitles: subtitles ?? this.subtitles,
       audioTracks: audioTracks ?? this.audioTracks,

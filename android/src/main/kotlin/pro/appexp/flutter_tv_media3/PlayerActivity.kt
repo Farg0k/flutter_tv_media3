@@ -133,6 +133,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private var currentResolutionsMap: Map<String, String>? = null
     private var currentVideoUrl: String? = null
+    private var currentVideoMimeType: String? = null
     private var currentHeaders: Map<String, String>? = null
     private var currentUserAgent: String? = null
     private var currentSubtitleTracks: List<Map<String, Any>>? = null
@@ -622,6 +623,7 @@ class PlayerActivity : AppCompatActivity() {
                             val durationInSeconds = (result["duration"] as? Number)?.toLong() ?: 0L
                             currentHeaders = result["headers"] as? Map<String, String>
                             currentUserAgent = result["userAgent"] as? String
+                            currentVideoMimeType = result["mimeType"] as? String
                             // Invert the map from Map<Label, URL> to Map<URL, Label> to ensure URL uniqueness
                             // and prevent duplicate entries in the track selection UI.
                             currentResolutionsMap = (result["resolutions"] as? Map<String, String>)?.entries?.associate { (label, url) -> url to label }
@@ -2523,10 +2525,17 @@ class PlayerActivity : AppCompatActivity() {
                 .build()
         } ?: emptyList()
 
-        val mediaItemWithSubtitles = MediaItem.Builder()
+        val mediaItemBuilder = MediaItem.Builder()
             .setUri(videoUri)
             .setSubtitleConfigurations(subtitleConfigs)
-            .build()
+        
+        currentVideoMimeType?.let { mimeType ->
+            if (mimeType.isNotBlank()) {
+                mediaItemBuilder.setMimeType(mimeType)
+            }
+        }
+        
+        val mediaItemWithSubtitles = mediaItemBuilder.build()
 
         val videoWithSubtitlesSource = mediaSourceFactory.createMediaSource(mediaItemWithSubtitles)
 
