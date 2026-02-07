@@ -112,6 +112,10 @@ class PlaylistMediaItem {
   /// A list of external audio tracks.
   final List<MediaItemAudioTrack>? audioTracks;
 
+  /// A map of custom labels for internal audio tracks.
+  /// The key is the track index or id, the value is the display label.
+  final Map<String, String>? audioTrackLabels;
+
   /// A callback to get a direct playback link.
   /// If `null`, the [url] is considered direct.
   final GetDirectLinkCallback? getDirectLink;
@@ -159,6 +163,7 @@ class PlaylistMediaItem {
     this.resolutions,
     this.subtitles,
     this.audioTracks,
+    this.audioTrackLabels,
     this.saveWatchTime,
     this.getDirectLink,
     this.mediaItemType = MediaItemType.video,
@@ -190,6 +195,7 @@ class PlaylistMediaItem {
       'mimeType': mimeType,
       'subtitles': subtitles?.map((sub) => sub.toMap()).toList(),
       'audioTracks': audioTracks?.map((audio) => audio.toMap()).toList(),
+      'audioTrackLabels': audioTrackLabels,
       'updateWatchTime': updateWatchTime,
       'mediaItemType': mediaItemType.index,
       'programs': programs?.map(((program) => program.toMap())).toList(),
@@ -230,6 +236,8 @@ class PlaylistMediaItem {
                     MediaItemAudioTrack.fromMap(audio as Map<String, dynamic>),
               )
               .toList(),
+      audioTrackLabels:
+          (json['audioTrackLabels'] as Map?)?.cast<String, String>(),
       updateWatchTime: json['updateWatchTime'] as bool,
       mediaItemType: MediaItemType.fromIndex(
         json['mediaItemType'] as int? ?? 0,
@@ -266,6 +274,7 @@ class PlaylistMediaItem {
     Map<String, String>? resolutions,
     List<MediaItemSubtitle>? subtitles,
     List<MediaItemAudioTrack>? audioTracks,
+    Map<String, String>? audioTrackLabels,
     GetDirectLinkCallback? getDirectLink,
     SaveWatchTimeSeconds? saveWatchTime,
     MediaItemType? mediaItemType,
@@ -294,6 +303,7 @@ class PlaylistMediaItem {
       resolutions: resolutions ?? this.resolutions,
       subtitles: subtitles ?? this.subtitles,
       audioTracks: audioTracks ?? this.audioTracks,
+      audioTrackLabels: audioTrackLabels ?? this.audioTrackLabels,
       getDirectLink: getDirectLink ?? this.getDirectLink,
       saveWatchTime: saveWatchTime ?? this.saveWatchTime,
       mediaItemType: mediaItemType ?? this.mediaItemType,

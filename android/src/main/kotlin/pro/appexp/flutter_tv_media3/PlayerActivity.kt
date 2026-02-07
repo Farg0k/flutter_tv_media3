@@ -138,6 +138,7 @@ class PlayerActivity : AppCompatActivity() {
     private var currentUserAgent: String? = null
     private var currentSubtitleTracks: List<Map<String, Any>>? = null
     private var currentAudioTracks: List<Map<String, Any>>? = null
+    private var currentAudioTrackLabels: Map<String, String>? = null
 
     private var playlistIndex: Int = -1
     private var playlistLength: Int = 0
@@ -629,6 +630,7 @@ class PlayerActivity : AppCompatActivity() {
                             currentResolutionsMap = (result["resolutions"] as? Map<String, String>)?.entries?.associate { (label, url) -> url to label }
                             currentSubtitleTracks = result["subtitles"] as? List<Map<String, Any>>
                             currentAudioTracks = result["audioTracks"] as? List<Map<String, Any>>
+                            currentAudioTrackLabels = result["audioTrackLabels"] as? Map<String, String>
 
                             if (durationInSeconds > 0 && positionInSeconds > 0) {
                                 val remainingTime = durationInSeconds - positionInSeconds
@@ -1507,6 +1509,7 @@ class PlayerActivity : AppCompatActivity() {
         val activeVideoFormat = player.videoFormat
         //debugTracksShort(currentTracks)
         var externalAudioTrackIndex = 0
+        var audioTrackCounter = 0
         for (group in currentTracks.groups) {
             val trackType = group.type
             if (trackType != C.TRACK_TYPE_VIDEO &&
@@ -1594,6 +1597,8 @@ class PlayerActivity : AppCompatActivity() {
                             )
                         )
                         val formatId = format.id
+                        
+                        // OLD LOGIC: Check for external audio tracks using heuristics
                         val isPossiblyExternal = (
                                 (format.label == null && format.language == null) &&
                                         (formatId != null && formatId.matches(Regex("\\d+:"))))
@@ -1608,7 +1613,19 @@ class PlayerActivity : AppCompatActivity() {
                                 (externalTrack["language"] as? String)?.let { trackInfo["language"] = it }
                                 trackInfo["isExternal"] = true
                             }
+                        } else {
+                            // NEW LOGIC: Use custom labels for internal tracks
+                            currentAudioTrackLabels?.let { labelsMap ->
+                                val currentAudioIndex = audioTrackCounter
+                                val labelByIndex = labelsMap[currentAudioIndex.toString()]
+                                val labelById = formatId?.let { labelsMap[it] }
+                                
+                                labelByIndex?.let { trackInfo["label"] = it }
+                                    ?: labelById?.let { trackInfo["label"] = it }
+                            }
                         }
+                        
+                        audioTrackCounter++
                     }
 
                     C.TRACK_TYPE_TEXT -> {
