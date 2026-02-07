@@ -1043,11 +1043,15 @@ class PlayerActivity : AppCompatActivity() {
                 val newLength = call.argument<Int>("playlist_length") ?: playlistLength
                 val playlistStr = call.argument<String>("playlist")
                 playlistLength = newLength
-                
-                invokeOnBothChannels("onPlaylistUpdated", mapOf(
-                    "playlist" to playlistStr,
-                    "playlist_index" to playlistIndex
-                ))
+
+                invokeOnOtherChannel(
+                    "onPlaylistUpdated",
+                    mapOf(
+                        "playlist" to playlistStr,
+                        "playlist_index" to playlistIndex
+                     ),
+                    from
+                )
                 result.success(null)
             }
 
@@ -1085,10 +1089,14 @@ class PlayerActivity : AppCompatActivity() {
                     }
                     playlistLength = newLength
                     
-                    invokeOnBothChannels("onItemRemoved", mapOf(
-                        "playlist" to playlistStr,
-                        "playlist_index" to playlistIndex
-                    ))
+                    invokeOnOtherChannel(
+                        "onItemRemoved",
+                        mapOf(
+                            "playlist" to playlistStr,
+                            "playlist_index" to playlistIndex
+                        ),
+                        from
+                    )
                 }
                 result.success(null)
             }

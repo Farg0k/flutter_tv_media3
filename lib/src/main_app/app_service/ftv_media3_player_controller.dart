@@ -276,7 +276,6 @@ class FtvMedia3PlayerController {
           }
 
           PlaylistMediaItem item = playerState.playlist[index];
-print('GET MEDIA ${item.getDirectLink != null}');
           if (!MediaRequestManager.isCurrentRequest(requestId)) {
             _sendLoadProgressToUI(
               state: 'Cancelled',
@@ -498,7 +497,6 @@ print('GET MEDIA ${item.getDirectLink != null}');
           _isLoadingMore = true;
           try {
             final items = await _onLoadMore!();
-            print('GET DIRECT LINK ${items?.last.getDirectLink != null}');
             if (items != null && items.isNotEmpty) {
               await addMediaItems(items: items);
             }
@@ -615,7 +613,6 @@ print('GET MEDIA ${item.getDirectLink != null}');
         _updateState(newState);
         break;
 
-      case 'onPlaylistUpdated':
       case 'onItemRemoved':
         final playlistStr = call.arguments['playlist'] as String?;
         final playIndex = call.arguments['playlist_index'] as int?;
