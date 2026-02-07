@@ -120,10 +120,12 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var dataSourceFactory: DefaultDataSource.Factory
-    private lateinit var mediaSourceFactory: DefaultMediaSourceFactory
     private lateinit var extractorsFactory: ExtractorsFactory
-    private lateinit var httpDataSourceFactory: DefaultHttpDataSource.Factory
+    
+    companion object {
+        private const val CONNECT_TIMEOUT_MS = 20000
+        private const val READ_TIMEOUT_MS = 20000
+    }
 
     private var startPosition: Long = 0
     private var hasSeekedToStartPosition = false
@@ -203,13 +205,6 @@ class PlayerActivity : AppCompatActivity() {
             resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         }
 
-        httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setAllowCrossProtocolRedirects(true)
-            .setUserAgent(defaultUserAgent)
-            .setConnectTimeoutMs(20000)
-            .setReadTimeoutMs(20000)
-        dataSourceFactory = DefaultDataSource.Factory(this, httpDataSourceFactory)
-
         extractorsFactory = DefaultExtractorsFactory()
             .setConstantBitrateSeekingEnabled(true)
 
@@ -243,8 +238,6 @@ class PlayerActivity : AppCompatActivity() {
         val renderersFactory = DefaultRenderersFactory(this)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
             .setEnableDecoderFallback(true)
-
-        mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)
         
         val stuckBufferingDetectionTimeoutMs = intent.getIntExtra("stuck_buffering_detection_timeout_ms", 240_000)
         val stuckPlayingDetectionTimeoutMs = intent.getIntExtra("stuck_playing_detection_timeout_ms", 120_000)
@@ -253,7 +246,6 @@ class PlayerActivity : AppCompatActivity() {
 
         player = ExoPlayer.Builder(this)
             .setTrackSelector(trackSelector)
-            .setMediaSourceFactory(mediaSourceFactory)
             .setLoadControl(loadControl)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
             .setHandleAudioBecomingNoisy(true)
@@ -496,16 +488,38 @@ class PlayerActivity : AppCompatActivity() {
      * @param videoUrl The URL of the media resource.
      * @param startPosition The initial playback position in milliseconds.
      */
+    private fun createDataSourceFactory(): Pair<DefaultHttpDataSource.Factory, DefaultDataSource.Factory> {
+        val headersMap = currentHeaders?.toMutableMap() ?: mutableMapOf()
+
+        // Search for User-Agent key case-insensitively
+        val uaKey = headersMap.keys.find { it.equals("user-agent", ignoreCase = true) }
+        val userAgentFromHeaders = if (uaKey != null) headersMap[uaKey] else null
+
+        val finalUserAgent = currentUserAgent ?: userAgentFromHeaders ?: defaultUserAgent
+
+        // Remove User-Agent from headersMap to avoid duplication in DefaultHttpDataSource
+        if (uaKey != null) headersMap.remove(uaKey)
+
+        Log.d(aTag, "Creating DataSourceFactory with User-Agent: $finalUserAgent")
+        Log.d(aTag, "Headers: $headersMap")
+
+        val httpFactory = DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setUserAgent(finalUserAgent)
+            .setConnectTimeoutMs(CONNECT_TIMEOUT_MS)
+            .setReadTimeoutMs(READ_TIMEOUT_MS)
+            .setDefaultRequestProperties(headersMap)
+
+        val dataFactory = DefaultDataSource.Factory(this, httpFactory)
+        return Pair(httpFactory, dataFactory)
+    }
+
     private fun loadAndPlayMedia(
         videoUrl: String,
         startPosition: Long = 0L,
         transferState: PlayerTransferState? = null
     ) {
         try {
-            if (currentUserAgent != null) {
-                httpDataSourceFactory.setUserAgent(currentUserAgent)
-            }
-            httpDataSourceFactory.setDefaultRequestProperties(currentHeaders ?: emptyMap())
             hasSeekedToStartPosition = false
             currentVideoUrl = videoUrl
 
@@ -526,10 +540,12 @@ class PlayerActivity : AppCompatActivity() {
                         updatedState.setToPlayer(player)
                         player.prepare()
                     } else {
-                        loadWithoutTransferState(videoUrl, startPosition)
+                        val (_, dataSourceFactory) = createDataSourceFactory()
+                        loadWithoutTransferState(videoUrl, startPosition, dataSourceFactory)
                     }
                 } catch (e: Exception) {
-                    loadWithoutTransferState(videoUrl, startPosition)
+                    val (_, dataSourceFactory) = createDataSourceFactory()
+                    loadWithoutTransferState(videoUrl, startPosition, dataSourceFactory)
                     invokeOnBothChannels(
                         "onError",
                         mapOf(
@@ -539,7 +555,8 @@ class PlayerActivity : AppCompatActivity() {
                     )
                 }
             } else {
-                loadWithoutTransferState(videoUrl, startPosition)
+                val (_, dataSourceFactory) = createDataSourceFactory()
+                loadWithoutTransferState(videoUrl, startPosition, dataSourceFactory)
             }
         } catch (e: Exception) {
             invokeOnBothChannels(
@@ -552,10 +569,14 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWithoutTransferState(videoUrl: String, startPosition: Long) {
+    private fun loadWithoutTransferState(
+        videoUrl: String, 
+        startPosition: Long,
+        dataSourceFactory: DefaultDataSource.Factory
+    ) {
         try {
             currentVideoUrl = videoUrl
-            val finalSource = createCombinedMediaSource(videoUrl)
+            val finalSource = createCombinedMediaSource(videoUrl, dataSourceFactory)
             player.setMediaSource(finalSource, startPosition)
             player.prepare()
             player.play()
@@ -2407,13 +2428,12 @@ class PlayerActivity : AppCompatActivity() {
         val videoUrl = currentMediaItem.localConfiguration?.uri?.toString() ?: return
         val transferState = PlayerTransferState.fromPlayer(player)
         try {
+            val (_, dataSourceFactory) = createDataSourceFactory()
+
             transferState.setToPlayer(player)
-            val finalSource = createCombinedMediaSource(videoUrl)
+            val finalSource = createCombinedMediaSource(videoUrl, dataSourceFactory)
             player.setMediaSource(finalSource, transferState.currentPosition)
             player.prepare()
-//            if (transferState.playWhenReady) { //todo check this
-//                player.play()
-//            }
         } catch (e: Exception) {
             invokeOnBothChannels(
                 "onError",
@@ -2472,8 +2492,12 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     @UnstableApi
-    private fun createCombinedMediaSource(videoUrl: String): MediaSource {
+    private fun createCombinedMediaSource(
+        videoUrl: String, 
+        dataSourceFactory: DefaultDataSource.Factory
+    ): MediaSource {
         val videoUri = Uri.parse(videoUrl)
+        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)
 
         val subtitleConfigs = currentSubtitleTracks?.mapNotNull { track ->
             val url = track["url"] as? String ?: return@mapNotNull null
