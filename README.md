@@ -244,8 +244,39 @@ final List<PlaylistMediaItem> items = [
       MediaItemSubtitle(url: 'https://example.com/sub.vtt', language: 'en', label: 'English'),
     ],
     audioTracks: [
-      MediaItemAudioTrack(url: 'https://example.com/audio.mp3', language: 'en', label: 'English'),
+      MediaItemAudioTrack(
+        url: 'https://example.com/audio.mp3',
+        language: 'en',
+        label: 'English',
+        mimeType: 'audio/mpeg',  // Optional: specify MIME type
+      ),
     ],
+  ),
+
+  // Video with custom labels for internal audio tracks
+  // Use this when the media file has multiple audio tracks but their
+  // parsed names are not descriptive (e.g., indices like "0", "1", "2")
+  PlaylistMediaItem(
+    id: '3b',
+    url: 'https://example.com/video3b.mkv',
+    title: 'Video with Custom Audio Labels',
+    // Map track index (0, 1, 2...) or format ID to a custom label
+    audioTrackLabels: {
+      '0': 'English (Original)',
+      '1': 'Español (Doblado)',
+      '2': 'Русский (Перевод)',
+    },
+  ),
+
+  // Video with explicit MIME type
+  // Use this when the player cannot auto-detect the format from the URL
+  // For example, when using CDN URLs without file extensions
+  PlaylistMediaItem(
+    id: '3c',
+    url: 'https://cdn.example.com/stream/abc123',
+    title: 'HLS Stream',
+    // Explicitly set the MIME type for HLS streams
+    mimeType: 'application/x-mpegURL',
   ),
 
   // Video with multiple qualities
@@ -316,9 +347,11 @@ Here's a quick reference for all available fields in `PlaylistMediaItem`:
 | `duration` | int? | No | Total duration in seconds |
 | `headers` | Map? | No | HTTP headers for requests |
 | `userAgent` | String? | No | Custom User-Agent string |
+| `mimeType` | String? | No | MIME type of the media file (e.g., "video/mp4", "application/x-mpegURL" for HLS) |
 | `resolutions` | Map? | No | Quality options map {"label": "url"} |
 | `subtitles` | List? | No | External subtitle tracks |
 | `audioTracks` | List? | No | External audio tracks |
+| `audioTrackLabels` | Map? | No | Custom labels for internal audio tracks (e.g., `{"0": "English", "1": "Spanish"}`) |
 | `updateWatchTime` | bool | No | Update watch time in UI (default: true) |
 | `saveWatchTime` | Function? | No | Callback to save progress |
 | `getDirectLink` | Function? | No | Callback to resolve direct URL |
@@ -867,9 +900,15 @@ A class to describe a single item in a playlist. Objects of this class are immut
 *   `duration` (int?): The total duration of the media in seconds.
 *   `headers` (Map<String, String>?): HTTP headers to be used when requesting the `url` (e.g., Authorization, Referer).
 *   `userAgent` (String?): A custom User-Agent string for HTTP requests.
+*   `mimeType` (String?): The MIME type of the media file. This helps the player determine how to handle the media. Common values include:
+    *   `"video/mp4"` for MP4 files
+    *   `"application/x-mpegURL"` for HLS streams
+    *   `"application/dash+xml"` for DASH streams
+    If not provided, the player will attempt to auto-detect the type from the URL extension.
 *   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"1080p": "url..."`). **Note:** The player automatically deduplicates entries by URL. If multiple labels are provided for the same URL, only the first label encountered will be displayed in the UI.
-*   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks. Each track requires `url`, `language`, and `label`.
-*   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks. Each track requires `url`, `language`, and `label`.
+*   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks. Each track requires `url`, `language`, and `label`. You can also specify an optional `mimeType` field (e.g., `text/vtt` for WebVTT, `application/x-subrip` for SRT). If not provided, the player will attempt to auto-detect the type from the URL extension.
+*   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks. Each track requires `url`, `language`, and `label`. You can also specify an optional `mimeType` field (e.g., `audio/mp4`, `audio/mpeg`). If not provided, the player will attempt to auto-detect the type from the URL extension.
+*   `audioTrackLabels` (Map<String, String>?): A map of custom labels for **internal** audio tracks. This is useful when the media file contains multiple audio tracks but their parsed names are not descriptive (e.g., they appear as indices like "0", "1", "2" instead of "English", "Spanish"). The key can be the track index ("0", "1", etc.) or the format ID, and the value is the display label. **Example:** `{"0": "English (Original)", "1": "Español", "2": "Русский"}`. This is an optional field; if not provided, the player will use the names parsed from the media file.
 
 **Watch Time and Progress:**
 
@@ -1045,7 +1084,7 @@ To activate the subtitle search functionality, you must pass the following param
     *   `stateInfoLabel`: The text to display under the button with additional info.
     *   `errorMessage`: The error message to display.
     *   `status`: The current status (`idle`, `loading`, `error`, `success`).
-*   **`MediaItemSubtitle`**: A class representing an external subtitle track, containing the URL, title, and language.
+*   **`MediaItemSubtitle`**: A class representing an external subtitle track, containing `url`, `label`, `language`, and an optional `mimeType` (e.g., `text/vtt`, `application/x-subrip`).
 
 
 ## Auto Frame Rate (AFR)
