@@ -311,6 +311,38 @@ class PlaylistMediaItem {
       media3PreviewConfig: media3PreviewConfig ?? this.media3PreviewConfig,
     );
   }
+
+  @override
+  String toString() {
+    return '''PlaylistMediaItem(
+      id: $id, 
+      url: $url, 
+      label: $label, 
+      title: $title, 
+      subTitle: $subTitle, 
+      description: $description, 
+      artistName: $artistName, 
+      albumName: $albumName, 
+      trackName: $trackName, 
+      albumYear: $albumYear, 
+      coverImg: $coverImg, 
+      placeholderImg: $placeholderImg, 
+      episodeImg: $episodeImg, 
+      startPosition: $startPosition, 
+      duration: $duration, 
+      headers: $headers, 
+      userAgent: $userAgent, 
+      mimeType: $mimeType, 
+      resolutions: $resolutions, 
+      subtitles: $subtitles, 
+      audioTracks: $audioTracks, 
+      audioTrackLabels: $audioTrackLabels, 
+      mediaItemType: $mediaItemType, 
+      programs: ${programs?.length}, 
+      updateWatchTime: $updateWatchTime, 
+      media3PreviewConfig: $media3PreviewConfig
+    )''';
+  }
 }
 
 /// Represents a single external subtitle track.
@@ -351,6 +383,16 @@ class MediaItemSubtitle {
       mimeType: json['mimeType'] as String?,
     );
   }
+
+  @override
+  String toString() {
+    return '''MediaItemSubtitle(
+      url: $url, 
+      language: $language, 
+      label: $label, 
+      mimeType: $mimeType
+    )''';
+  }
 }
 
 /// Represents a single external audio track.
@@ -390,6 +432,16 @@ class MediaItemAudioTrack {
       label: json['label'] as String,
       mimeType: json['mimeType'] as String?,
     );
+  }
+
+  @override
+  String toString() {
+    return '''MediaItemAudioTrack(
+    url: $url, 
+    language: $language, 
+    label: $label, 
+    mimeType: $mimeType
+    )''';
   }
 }
 
@@ -481,4 +533,20 @@ class Media3PreviewConfig {
     this.endTimeSeconds,
     this.getPreviewDirectLink,
   });
+
+  @override
+  String toString() {
+    return '''Media3PreviewConfig(
+      url: $url, 
+      placeholderImg: $placeholderImg, 
+      width: $width, 
+      height: $height, 
+      volume: $volume, 
+      autoPlay: $autoPlay, 
+      initDelay: $initDelay, 
+      isRepeat: $isRepeat, 
+      startTimeSeconds: $startTimeSeconds, 
+      endTimeSeconds: $endTimeSeconds
+    )''';
+  }
 }
