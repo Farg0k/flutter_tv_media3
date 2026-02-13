@@ -502,8 +502,8 @@ class PlayerActivity : AppCompatActivity() {
         // Remove User-Agent from headersMap to avoid duplication in DefaultHttpDataSource
         if (uaKey != null) headersMap.remove(uaKey)
 
-        Log.d(aTag, "Creating DataSourceFactory with User-Agent: $finalUserAgent")
-        Log.d(aTag, "Headers: $headersMap")
+        //Log.d(aTag, "Creating DataSourceFactory with User-Agent: $finalUserAgent")
+        //Log.d(aTag, "Headers: $headersMap")
 
         val httpFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
