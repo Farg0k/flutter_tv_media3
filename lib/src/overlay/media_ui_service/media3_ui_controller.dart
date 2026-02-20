@@ -208,7 +208,7 @@ class Media3UiController {
           isSeekable: isSeekable,
           playIndex: playIndex,
           speed: speed,
-          repeatMode: RepeatMode.fromString(repeatMode),
+          repeatMode: PlayerRepeatMode.fromString(repeatMode),
           isShuffleModeEnabled: shuffleEnabled,
         );
         break;
@@ -343,7 +343,7 @@ class Media3UiController {
           );
         } else {
           newState = newState.copyWith(
-            repeatMode: RepeatMode.fromString(repeat),
+            repeatMode: PlayerRepeatMode.fromString(repeat),
           );
         }
         break;
@@ -515,7 +515,7 @@ class Media3UiController {
   }
 
   /// Sends a command to set the repeat mode.
-  Future<void> setRepeatMode({required RepeatMode repeatMode}) async {
+  Future<void> setRepeatMode({required PlayerRepeatMode repeatMode}) async {
     try {
       final result = await _invokeMethodGuarded<Map<Object?, Object?>>(
         _activityChannel,
@@ -534,7 +534,7 @@ class Media3UiController {
         return;
       }
       _updateState(
-        _playerState.copyWith(repeatMode: RepeatMode.fromString(repeat)),
+        _playerState.copyWith(repeatMode: PlayerRepeatMode.fromString(repeat)),
       );
     } on PlatformException catch (e) {
       _updateState(

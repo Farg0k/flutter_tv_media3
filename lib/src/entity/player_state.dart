@@ -82,7 +82,7 @@ class PlayerState {
     this.subtitleTracks = const [],
     this.zoom = PlayerZoom.fit,
     this.speed = 1.0,
-    this.repeatMode = RepeatMode.repeatModeOff,
+    this.repeatMode = PlayerRepeatMode.repeatModeOff,
     this.isShuffleModeEnabled = false,
     SubtitleStyle? subtitleStyle,
     ClockSettings? clockSettings,
@@ -141,7 +141,7 @@ class PlayerState {
   final double speed;
 
   /// The current repeat mode (off, one, all).
-  final RepeatMode repeatMode;
+  final PlayerRepeatMode repeatMode;
 
   /// A flag indicating whether shuffle mode is enabled.
   final bool isShuffleModeEnabled;
@@ -178,7 +178,7 @@ class PlayerState {
     final List<SubtitleTrack>? subtitleTracks,
     PlayerZoom? zoom,
     double? speed,
-    RepeatMode? repeatMode,
+    PlayerRepeatMode? repeatMode,
     bool? isShuffleModeEnabled,
     SubtitleStyle? subtitleStyle,
     ClockSettings? clockSettings,
@@ -314,7 +314,7 @@ class PlayerState {
           const [],
       zoom: PlayerZoom.values[map['zoom'] as int? ?? 0],
       speed: map['speed'] as double? ?? 1.0,
-      repeatMode: RepeatMode.values[map['repeatMode'] as int? ?? 0],
+      repeatMode: PlayerRepeatMode.values[map['repeatMode'] as int? ?? 0],
       isShuffleModeEnabled: map['isShuffleModeEnabled'] as bool? ?? false,
       subtitleStyle:
           map['subtitleStyle'] != null
@@ -410,7 +410,7 @@ enum PlayerZoom {
 }
 
 /// Defines the playlist repeat modes.
-enum RepeatMode {
+enum PlayerRepeatMode {
   /// Do not repeat.
   repeatModeOff('REPEAT_MODE_OFF'),
 
@@ -421,18 +421,18 @@ enum RepeatMode {
   repeatModeAll('REPEAT_MODE_ALL');
 
   final String nativeValue;
-  const RepeatMode(this.nativeValue);
+  const PlayerRepeatMode(this.nativeValue);
 
-  static RepeatMode? fromString(String? name) {
+  static PlayerRepeatMode? fromString(String? name) {
     if (name == null) return null;
-    for (RepeatMode enumVariant in RepeatMode.values) {
+    for (PlayerRepeatMode enumVariant in PlayerRepeatMode.values) {
       if (enumVariant.nativeValue == name) return enumVariant;
     }
     return null;
   }
 
-  static RepeatMode nextValue(int index) {
-    index = index + 1 == RepeatMode.values.length ? 0 : index + 1;
-    return RepeatMode.values[index];
+  static PlayerRepeatMode nextValue(int index) {
+    index = index + 1 == PlayerRepeatMode.values.length ? 0 : index + 1;
+    return PlayerRepeatMode.values[index];
   }
 }

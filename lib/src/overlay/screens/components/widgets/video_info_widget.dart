@@ -118,10 +118,10 @@ class VideoInfoWidget extends StatelessWidget {
           ),
         if (controller.playerState.isShuffleModeEnabled)
           const VideoInfoItem(icon: Icons.shuffle),
-        if (controller.playerState.repeatMode != RepeatMode.repeatModeOff)
+        if (controller.playerState.repeatMode != PlayerRepeatMode.repeatModeOff)
           VideoInfoItem(
             icon:
-                controller.playerState.repeatMode == RepeatMode.repeatModeOne
+                controller.playerState.repeatMode == PlayerRepeatMode.repeatModeOne
                     ? Icons.repeat_one
                     : Icons.repeat,
           ),

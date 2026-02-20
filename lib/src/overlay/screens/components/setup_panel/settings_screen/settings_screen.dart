@@ -283,9 +283,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     SettingsItem(
       iconStreamBuilder:
           (context, playerState) =>
-              playerState.repeatMode == RepeatMode.repeatModeOne
+              playerState.repeatMode == PlayerRepeatMode.repeatModeOne
                   ? const Icon(Icons.repeat_one)
-                  : playerState.repeatMode == RepeatMode.repeatModeAll
+                  : playerState.repeatMode == PlayerRepeatMode.repeatModeAll
                   ? const Icon(Icons.repeat)
                   : const Icon(Icons.repeat_on),
       title: OverlayLocalizations.get('repeat'),
@@ -296,7 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
       onPlayerTap: (context, playerState) {
         widget.controller.setRepeatMode(
-          repeatMode: RepeatMode.nextValue(playerState.repeatMode.index),
+          repeatMode: PlayerRepeatMode.nextValue(playerState.repeatMode.index),
         );
       },
     ),

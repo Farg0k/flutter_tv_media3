@@ -735,7 +735,7 @@ class FtvMedia3PlayerController {
           );
           return;
         }
-        newState = newState.copyWith(repeatMode: RepeatMode.fromString(repeat));
+        newState = newState.copyWith(repeatMode: PlayerRepeatMode.fromString(repeat));
         _updateState(newState);
         break;
       case 'onMetadataChanged':
@@ -768,7 +768,7 @@ class FtvMedia3PlayerController {
           isSeekable: isSeekable,
           playIndex: playIndex,
           speed: speed,
-          repeatMode: RepeatMode.fromString(repeatMode),
+          repeatMode: PlayerRepeatMode.fromString(repeatMode),
           isShuffleModeEnabled: shuffleEnabled,
         );
         _updateState(newState);
@@ -1028,7 +1028,7 @@ class FtvMedia3PlayerController {
   }
 
   /// Sets the repeat mode for the player (off, one, all).
-  Future<void> setRepeatMode({required RepeatMode repeatMode}) async {
+  Future<void> setRepeatMode({required PlayerRepeatMode repeatMode}) async {
     try {
       final result = await _invokeMethodGuarded<Map<Object?, Object?>>(
         _activityChannel,
@@ -1047,7 +1047,7 @@ class FtvMedia3PlayerController {
         return;
       }
       _updateState(
-        _playerState.copyWith(repeatMode: RepeatMode.fromString(repeat)),
+        _playerState.copyWith(repeatMode: PlayerRepeatMode.fromString(repeat)),
       );
     } on PlatformException catch (e) {
       _updateState(
