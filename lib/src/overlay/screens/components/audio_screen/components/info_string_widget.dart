@@ -61,7 +61,8 @@ class InfoStringWidget extends StatelessWidget {
         if (controller.playerState.repeatMode != PlayerRepeatMode.repeatModeOff)
           VideoInfoItem(
             icon:
-                controller.playerState.repeatMode == PlayerRepeatMode.repeatModeOne
+                controller.playerState.repeatMode ==
+                        PlayerRepeatMode.repeatModeOne
                     ? Icons.repeat_one
                     : Icons.repeat,
           ),

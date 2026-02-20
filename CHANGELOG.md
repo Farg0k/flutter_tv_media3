@@ -1,3 +1,7 @@
+## 0.1.1
+
+- fix: renamed RepeatMode to PlayerRepeatMode to avoid naming conflicts
+
 ## 0.1.0
 
 - update minSdk to 23

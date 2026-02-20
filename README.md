@@ -844,7 +844,7 @@ All subsequent methods and streams are **optional** and are primarily intended f
 *   `playNext()` / `playPrevious()`: Switches to the next/previous item in the playlist.
 *   `playSelectedIndex({required int index})`: Plays a specific item from the playlist by its index.
 *   `setSpeed({required double speed})`: Sets the playback speed.
-*   `setRepeatMode({required RepeatMode repeatMode})`: Sets the repeat mode (off, one, all).
+*   `setRepeatMode({required PlayerRepeatMode repeatMode})`: Sets the repeat mode (off, one, all).
 *   `setShuffleMode(bool enabled)`: Enables or disables shuffle mode.
 
 **Track and Subtitle Management:**

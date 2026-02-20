@@ -735,7 +735,9 @@ class FtvMedia3PlayerController {
           );
           return;
         }
-        newState = newState.copyWith(repeatMode: PlayerRepeatMode.fromString(repeat));
+        newState = newState.copyWith(
+          repeatMode: PlayerRepeatMode.fromString(repeat),
+        );
         _updateState(newState);
         break;
       case 'onMetadataChanged':
