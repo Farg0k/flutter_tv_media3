@@ -1,3 +1,7 @@
+## 0.1.2
+
+- feat: Updated Media3 to 1.9.2
+
 ## 0.1.1
 
 - fix: renamed RepeatMode to PlayerRepeatMode to avoid naming conflicts

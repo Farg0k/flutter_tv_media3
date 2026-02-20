@@ -1,7 +1,7 @@
 name: flutter_tv_media3
 description: "Android TV Media3 player plugin. Supports AFR, HDR, and custom UI in a separate Activity."
 
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/Farg0k/flutter_tv_media3
 repository: https://github.com/Farg0k/flutter_tv_media3
 issue_tracker: https://github.com/Farg0k/flutter_tv_media3/issues
