@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tv_media3/flutter_tv_media3.dart';
-import 'package:flutter_tv_media3/src/entity/player_state.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

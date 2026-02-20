@@ -1,4 +1,5 @@
 ## 0.1.0
+
 - update minSdk to 23
 - update media3 to 1.9.0
 - Update libraries(decoder_av1-release.aar,decoder_ffmpeg-release.aar,decoder_iamf-release.aar, 

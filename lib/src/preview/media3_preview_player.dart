@@ -547,7 +547,7 @@ class _PreviewOverlay extends StatelessWidget {
                       placeholderImg!,
                       fit: BoxFit.cover,
                       errorBuilder:
-                          (_, __, ___) => Container(color: Colors.grey[900]),
+                          (_, _, _) => Container(color: Colors.grey[900]),
                     )
                     : const ColoredBox(color: Colors.black)),
           ),
