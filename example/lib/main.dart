@@ -411,20 +411,6 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     );
   }
 
-  void _removeItem(int index) async {
-    if (items.length <= 1) return;
-
-    setState(() {
-      items.removeAt(index);
-      if (_selectedIndex >= items.length) {
-        _selectedIndex = items.length - 1;
-      }
-    });
-
-    // Notify the player to adjust its state
-    await playerController.removeMediaItem(index: index);
-  }
-
   @override
   void dispose() {
     playerController.close();
@@ -436,6 +422,87 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       context: context,
       playlist: items,
       initialIndex: index,
+    );
+  }
+
+  Future<void> _showThumbnail(PlaylistMediaItem item) async {
+    print(item.url);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text('Thumbnail: ${item.title}'),
+        content: FutureBuilder<Uint8List?>(
+          future: playerController.getVideoThumbnail(item.url, timeInSeconds: 15),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 100,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError || snapshot.data == null) {
+              return const Text('Failed to generate thumbnail');
+            }
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.memory(snapshot.data!),
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CLOSE'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showMetadata(PlaylistMediaItem item) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text('Metadata: ${item.title}'),
+        content: SizedBox(
+          width: 500,
+          child: FutureBuilder<Map<String, dynamic>?>(
+            future: playerController.getMediaMetadata(item.url),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snapshot.hasError || snapshot.data == null) {
+                return const Text('No metadata available');
+              }
+              final metadata = snapshot.data!;
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: metadata.entries
+                      .map((e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text('${e.key}: ${e.value}'),
+                          ))
+                      .toList(),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CLOSE'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -581,7 +648,9 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                     const SizedBox(height: 24),
 
                     // Controls section
-                    Row(
+                    Wrap(
+                      spacing: 16.0,
+                      runSpacing: 16.0,
                       children: [
                         _ControlButton(
                           icon:
@@ -593,7 +662,6 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                             });
                           },
                         ),
-                        const SizedBox(width: 16),
                         _ControlButton(
                           icon: _isRepeat ? Icons.repeat : Icons.repeat_one,
                           label: _isRepeat ? 'LOOP: ON' : 'LOOP: OFF',
@@ -603,18 +671,21 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                             });
                           },
                         ),
-                        const SizedBox(width: 16),
                         _ControlButton(
                           icon: Icons.play_arrow,
                           label: 'WATCH FULL',
                           isPrimary: true,
                           onPressed: () => _openFullPlayer(_selectedIndex),
                         ),
-                        const SizedBox(width: 16),
                         _ControlButton(
-                          icon: Icons.delete_outline,
-                          label: 'REMOVE',
-                          onPressed: () => _removeItem(_selectedIndex),
+                          icon: Icons.camera_alt_outlined,
+                          label: 'SCREENSHOT',
+                          onPressed: () => _showThumbnail(selectedItem),
+                        ),
+                        _ControlButton(
+                          icon: Icons.analytics_outlined,
+                          label: 'METADATA',
+                          onPressed: () => _showMetadata(selectedItem),
                         ),
                       ],
                     ),

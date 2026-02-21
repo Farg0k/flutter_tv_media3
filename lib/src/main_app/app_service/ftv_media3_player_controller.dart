@@ -918,6 +918,51 @@ class FtvMedia3PlayerController {
     }
   }
 
+  Future<Uint8List?> getVideoThumbnail(
+    String uri, {
+    double? timeInSeconds,
+  }) async {
+    final Map<String, dynamic> arguments = {'uri': uri};
+    if (timeInSeconds != null && timeInSeconds >= 0) {
+      arguments['timeInSeconds'] = timeInSeconds;
+    }
+    final Uint8List? result = await _invokeMethodGuarded(
+      _pluginChannel,
+      'getThumbnail',
+      arguments,
+    );
+    return result;
+  }
+
+  Future<Map<String, dynamic>?> getMediaMetadata(String uri) async {
+    final dynamic result = await _invokeMethodGuarded(
+      _pluginChannel,
+      'getMetadata',
+      {'uri': uri},
+    );
+    return _castMap(result);
+  }
+
+  static Map<String, dynamic>? _castMap(dynamic data) {
+    if (data == null) return null;
+    if (data is Map) {
+      return data.map((key, value) {
+        final String stringKey = key.toString();
+        if (value is Map) {
+          return MapEntry(stringKey, _castMap(value));
+        }
+        if (value is List) {
+          return MapEntry(
+            stringKey,
+            value.map((e) => e is Map ? _castMap(e) : e).toList(),
+          );
+        }
+        return MapEntry(stringKey, value);
+      });
+    }
+    return null;
+  }
+
   /// Updates the overall player state and notifies listeners if it has changed.
   void _updateState(PlayerState newState) {
     if (_playerState != newState) {

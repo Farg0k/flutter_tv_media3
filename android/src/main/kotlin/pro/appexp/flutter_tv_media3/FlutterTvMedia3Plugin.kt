@@ -18,6 +18,18 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import pro.appexp.flutter_tv_media3.PreviewMethodChannel
+import android.graphics.Bitmap
+import java.io.ByteArrayOutputStream
+import androidx.media3.common.Format
+import androidx.media3.common.MediaItem
+import androidx.media3.inspector.FrameExtractor
+import androidx.media3.inspector.MetadataRetriever
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 /**
  * The main plugin class that handles communication between the main Flutter app
  * and the native Android side.
@@ -40,7 +52,7 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private val appEngineId = "app_engine_cache_id"
   private val activityChannelUIName = "ui_player_plugin_activity"
   private lateinit var overlayStatusChannel: MethodChannel
-
+  private val pluginScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
   /**
    * Called when the plugin is attached to the FlutterEngine.
    *
@@ -100,6 +112,100 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       }
     }
     return cachedEngine
+  }
+
+  private fun getThumbnailInternal(uriString: String, timeInSeconds: Double?): ByteArray? {
+    var extractor: FrameExtractor? = null
+    try {
+      val mediaItem = MediaItem.fromUri(uriString)
+      extractor = FrameExtractor.Builder(context, mediaItem).build()
+
+      val bitmap = if (timeInSeconds != null && timeInSeconds >= 0) {
+        val timeUs = (timeInSeconds * 1_000_000).toLong()
+        extractor.getFrame(timeUs).get() as Bitmap
+      } else {
+        extractor.getThumbnail().get() as Bitmap
+      }
+
+      val stream = ByteArrayOutputStream()
+      bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
+      return stream.toByteArray()
+    } catch (e: Exception) {
+      Log.e(aTag, "Error getting thumbnail for $uriString: ${e.message}", e)
+      return null
+    } finally {
+      extractor?.close()
+    }
+  }
+
+  private fun getMediaMetadataInternal(uriString: String): Map<String, Any?>? {
+    try {
+      val mediaItem = MediaItem.fromUri(uriString)
+      androidx.media3.inspector.MetadataRetriever.Builder(context, mediaItem).build().use {
+        val trackInfo = it.retrieveTrackGroups().get()
+        val duration = it.retrieveDurationUs().get()
+        val tracksList = mutableListOf<Map<String, Any?>>()
+        val fileMetadataTags = mutableMapOf<String, String>()
+
+        for (i in 0 until trackInfo.length) {
+          val group = trackInfo.get(i)
+          val format = group.getFormat(0)
+          val mimeType = format.sampleMimeType ?: "unknown"
+
+          val trackMap = mutableMapOf<String, Any?>()
+          trackMap["trackIndex"] = i
+          trackMap["mimeType"] = mimeType
+          trackMap["codec"] = format.codecs
+          trackMap["language"] = format.language
+
+          if (format.bitrate != Format.NO_VALUE) trackMap["bitrate"] = format.bitrate
+
+          when {
+            mimeType.startsWith("video/") -> {
+              trackMap["trackType"] = "video"
+              if (format.width != Format.NO_VALUE) trackMap["width"] = format.width
+              if (format.height != Format.NO_VALUE) trackMap["height"] = format.height
+              if (format.frameRate != Format.NO_VALUE.toFloat()) trackMap["frameRate"] = format.frameRate
+              trackMap["rotationDegrees"] = format.rotationDegrees
+
+              format.colorInfo?.let { colorInfo ->
+                val colorMap = mutableMapOf<String, Int>()
+                if (colorInfo.colorSpace != Format.NO_VALUE) colorMap["colorSpace"] = colorInfo.colorSpace
+                if (colorInfo.colorTransfer != Format.NO_VALUE) colorMap["colorTransfer"] = colorInfo.colorTransfer
+                if (colorInfo.colorRange != Format.NO_VALUE) colorMap["colorRange"] = colorInfo.colorRange
+                trackMap["colorInfo"] = colorMap
+              }
+            }
+            mimeType.startsWith("audio/") -> {
+              trackMap["trackType"] = "audio"
+              if (format.channelCount != Format.NO_VALUE) trackMap["channels"] = format.channelCount
+              if (format.sampleRate != Format.NO_VALUE) trackMap["sampleRate"] = format.sampleRate
+            }
+            mimeType.startsWith("text/") || mimeType.startsWith("application/") -> {
+              trackMap["trackType"] = "text"
+            }
+          }
+
+          format.metadata?.let { metadata ->
+            for (j in 0 until metadata.length()) {
+              fileMetadataTags["tag_${i}_${j}"] = metadata.get(j).toString()
+            }
+          }
+
+          tracksList.add(trackMap)
+        }
+
+        return mapOf(
+          "durationUs" to duration,
+          "totalTracks" to trackInfo.length,
+          "tracks" to tracksList,
+          "tags" to fileMetadataTags
+        )
+      }
+    } catch (e: Exception) {
+      Log.e(aTag, "Error getting media metadata for $uriString: ${e.message}", e)
+      return null
+    }
   }
 
   /**
@@ -202,6 +308,133 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       }
 
       result.success(null)
+    } else if (call.method == "getThumbnail"){
+      val uri = call.argument<String>("uri")
+      val timeInSeconds = call.argument<Number>("timeInSeconds")?.toDouble()
+
+      if (uri == null) {
+        return
+      }
+
+      pluginScope.launch(Dispatchers.IO) {
+        var extractor: FrameExtractor? = null
+        try {
+          val mediaItem = MediaItem.fromUri(uri)
+          extractor = FrameExtractor.Builder(context, mediaItem).build()
+
+          val frame = if (timeInSeconds != null && timeInSeconds >= 0) {
+            val timeMs = (timeInSeconds * 1000).toLong()
+            extractor.getFrame(timeMs).get()
+          } else {
+            extractor.getThumbnail().get()
+          }
+
+          val bitmap = frame.bitmap
+          val stream = ByteArrayOutputStream()
+          bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
+          val byteArray = stream.toByteArray()
+
+          withContext(Dispatchers.Main) {
+            result.success(byteArray)
+          }
+        } catch (e: Exception) {
+          withContext(Dispatchers.Main) {
+            result.error("EXTRACTION_ERROR", e.message ?: "Frame extraction error", null)
+          }
+        } finally {
+          extractor?.close()
+        }
+      }
+    } else if (call.method == "getMetadata"){
+      val uri = call.argument<String>("uri")
+      if (uri == null) {
+        result.error("INVALID_ARGUMENT", "URI cannot be null", null)
+        return
+      }
+
+      pluginScope.launch(Dispatchers.IO) {
+        try {
+          val mediaItem = MediaItem.fromUri(uri)
+          androidx.media3.inspector.MetadataRetriever.Builder(context, mediaItem).build().use {
+            val trackGroups = it.retrieveTrackGroups().get()
+            val durationUs = it.retrieveDurationUs().get()
+            val tracksList = mutableListOf<Map<String, Any?>>()
+            val fileMetadataTags = mutableMapOf<String, String>()
+
+             for (i in 0 until trackGroups.length) {
+              val group = trackGroups.get(i)
+              val format = group.getFormat(0)
+              val mimeType = format.sampleMimeType ?: "unknown"
+
+              val trackInfo = mutableMapOf<String, Any?>()
+               trackInfo["trackIndex"] = i
+               trackInfo["id"] = format.id
+               trackInfo["mimeType"] = mimeType
+               trackInfo["codec"] = format.codecs
+               trackInfo["language"] = format.language
+               trackInfo["label"] = format.label
+               trackInfo["selectionFlags"] = format.selectionFlags
+               trackInfo["roleFlags"] = format.roleFlags
+               trackInfo["isEncrypted"] = format.cryptoType != androidx.media3.common.C.CRYPTO_TYPE_NONE
+              if (format.bitrate != Format.NO_VALUE) trackInfo["bitrate"] = format.bitrate
+
+              if (mimeType.startsWith("video/")) {
+                trackInfo["trackType"] = "video"
+                if (format.width != Format.NO_VALUE) trackInfo["width"] = format.width
+                if (format.height != Format.NO_VALUE) trackInfo["height"] = format.height
+                if (format.frameRate != Format.NO_VALUE.toFloat()) trackInfo["frameRate"] = format.frameRate
+                trackInfo["rotationDegrees"] = format.rotationDegrees
+                if (format.pixelWidthHeightRatio != Format.NO_VALUE.toFloat()) {
+                  trackInfo["pixelAspectRatio"] = format.pixelWidthHeightRatio
+                }
+                format.colorInfo?.let { colorInfo ->
+                  val colorMap = mutableMapOf<String, Int>()
+                  if (colorInfo.colorSpace != Format.NO_VALUE) colorMap["colorSpace"] = colorInfo.colorSpace
+                  if (colorInfo.colorTransfer != Format.NO_VALUE) colorMap["colorTransfer"] = colorInfo.colorTransfer
+                  if (colorInfo.colorRange != Format.NO_VALUE) colorMap["colorRange"] = colorInfo.colorRange
+                  if (format.colorInfo!!.hdrStaticInfo != null) {
+                    trackInfo["isHdr"] = true
+                  }
+                  trackInfo["colorInfo"] = colorMap
+                }
+              }
+
+              else if (mimeType.startsWith("audio/")) {
+                trackInfo["trackType"] = "audio"
+                if (format.channelCount != Format.NO_VALUE) trackInfo["channels"] = format.channelCount
+                if (format.sampleRate != Format.NO_VALUE) trackInfo["sampleRate"] = format.sampleRate
+              }
+
+              else if (mimeType.startsWith("text/") || mimeType.startsWith("application/")) {
+                trackInfo["trackType"] = "text"
+              }
+
+              format.metadata?.let { metadata ->
+                for (j in 0 until metadata.length()) {
+                  fileMetadataTags["tag_${i}_${j}"] = metadata.get(j).toString()
+                }
+              }
+
+              tracksList.add(trackInfo)
+            }
+
+            val finalResponse = mapOf(
+              "durationSeconds" to durationUs / 1000000,
+              "totalTracks" to trackGroups.length,
+              "tracks" to tracksList,
+              "tags" to fileMetadataTags
+            )
+
+            withContext(Dispatchers.Main) {
+              result.success(finalResponse)
+            }
+          }
+        } catch (e: Exception) {
+          withContext(Dispatchers.Main) {
+            result.error("METADATA_ERROR", e.message ?: "Metadata reading error", null)
+          }
+        }
+      }
     } else {
       result.notImplemented()
     }
@@ -236,5 +469,6 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     appChannel.setMethodCallHandler(null)
     previewMethodChannel?.dispose()
     previewMethodChannel = null
+    pluginScope.cancel()
   }
 }

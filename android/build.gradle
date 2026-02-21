@@ -77,6 +77,7 @@ dependencies {
     implementation "androidx.media3:media3-database:$media3_version"
     implementation "androidx.media3:media3-datasource:$media3_version"
     implementation "androidx.media3:media3-decoder:$media3_version"
+    implementation "androidx.media3:media3-inspector:$media3_version"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
