@@ -79,9 +79,9 @@ class FtvMedia3PlayerController {
   LabelSearchExternalSubtitle? _labelSearchExternalSubtitle;
   String? _findSubtitlesLabel;
   String? _findSubtitlesStateInfoLabel;
-  SubtitleStyle? _subtitleStyle;
-  ClockSettings? _clockSettings;
-  PlayerSettings? _playerSettings;
+  SubtitleStyle _subtitleStyle = SubtitleStyle();
+  ClockSettings _clockSettings = ClockSettings();
+  PlayerSettings _playerSettings = PlayerSettings();
 
   /// The timeout duration for resolving a direct link via the `getDirectLink` callback.
   /// Defaults to 15 seconds if not explicitly set via [setConfig].
@@ -200,47 +200,39 @@ class FtvMedia3PlayerController {
   }) {
     if (localeStrings != null) this.localeStrings = localeStrings;
     if (subtitleStyle != null) _subtitleStyle = subtitleStyle;
-    if (playerSettings != null) _playerSettings = playerSettings;
-    if (clockSettings != null) _clockSettings = clockSettings;
-    if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
-    if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
-    if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
-    if (onScreenshotTaken != null) {
-      _onScreenshotTaken = onScreenshotTaken;
-      if (_playerSettings != null) {
-        _playerSettings = _playerSettings!.copyWith(screenshotsEnable: true);
-        _updateState(_playerState.copyWith(playerSettings: _playerSettings));
-      }
-    }
-    if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
-    if (directLinkTimeout != null) _directLinkTimeout = directLinkTimeout;
-    if (onLoadMore != null) {
-      _onLoadMore = onLoadMore;
-      if (_playerSettings != null) {
-        _playerSettings = _playerSettings!.copyWith(paginationEnable: true);
-        _updateState(_playerState.copyWith(playerSettings: _playerSettings));
-      }
-    }
-    if (searchExternalSubtitle != null) {
-      _searchExternalSubtitle = searchExternalSubtitle;
-    }
-    if (findSubtitlesLabel != null) _findSubtitlesLabel = findSubtitlesLabel;
-    if (findSubtitlesStateInfoLabel != null) {
-      _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
-    }
-    if (labelSearchExternalSubtitle != null) {
-      _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
-    }
-    if (paginationThreshold != null) {
-      _paginationThreshold = paginationThreshold;
-      if (_playerSettings != null) {
-        _playerSettings = _playerSettings!.copyWith(
+        if (playerSettings != null) _playerSettings = playerSettings;
+        if (clockSettings != null) _clockSettings = clockSettings;
+        if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
+        if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
+        if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
+        if (onScreenshotTaken != null) _onScreenshotTaken = onScreenshotTaken;
+        if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
+        if (directLinkTimeout != null) _directLinkTimeout = directLinkTimeout;
+        if (onLoadMore != null) _onLoadMore = onLoadMore;
+    
+        if (searchExternalSubtitle != null) {
+          _searchExternalSubtitle = searchExternalSubtitle;
+        }
+        if (findSubtitlesLabel != null) _findSubtitlesLabel = findSubtitlesLabel;
+        if (findSubtitlesStateInfoLabel != null) {
+          _findSubtitlesStateInfoLabel = findSubtitlesStateInfoLabel;
+        }
+        if (labelSearchExternalSubtitle != null) {
+          _labelSearchExternalSubtitle = labelSearchExternalSubtitle;
+        }
+        if (paginationThreshold != null) {
+          _paginationThreshold = paginationThreshold;
+        }
+    
+        // Update _playerSettings with final flags
+        _playerSettings = _playerSettings.copyWith(
+          paginationEnable: _onLoadMore != null,
           paginationThreshold: _paginationThreshold,
+          screenshotsEnable: _onScreenshotTaken != null,
         );
+    
         _updateState(_playerState.copyWith(playerSettings: _playerSettings));
       }
-    }
-  }
 
   /// Cleans up resources, closing stream controllers and removing method call handlers.
   void close() {
@@ -895,24 +887,15 @@ class FtvMedia3PlayerController {
       _playerState.copyWith(playlist: playlist, playIndex: initialIndex),
     );
 
-    if (_playerSettings != null) {
-      _playerSettings = _playerSettings!.copyWith(
-        paginationEnable: _onLoadMore != null,
-        paginationThreshold: _paginationThreshold,
-        screenshotsEnable: _onScreenshotTaken != null,
-      );
-    } else {
-      _playerSettings = PlayerSettings(
-        paginationEnable: _onLoadMore != null,
-        paginationThreshold: _paginationThreshold,
-        screenshotsEnable: _onScreenshotTaken != null,
-      );
-    }
+    _playerSettings = _playerSettings.copyWith(
+      paginationEnable: _onLoadMore != null,
+      paginationThreshold: _paginationThreshold,
+      screenshotsEnable: _onScreenshotTaken != null,
+    );
 
     final playlistMap = playlist.map((e) => e.toMap()).toList();
     final playlistStr = jsonEncode(playlistMap);
-    final clockSettingsStr =
-        _clockSettings != null ? jsonEncode(_clockSettings?.toMap()) : null;
+    final clockSettingsStr = jsonEncode(_clockSettings.toMap());
 
     final subtitleSearch =
         FindSubtitlesState(
@@ -926,19 +909,19 @@ class FtvMedia3PlayerController {
         "playlist_index": initialIndex,
         "playlist_length": playlist.length,
         "playlist": playlistStr,
-        "subtitle_style": _subtitleStyle?.toMap(),
+        "subtitle_style": _subtitleStyle.toMap(),
         "clock_settings": clockSettingsStr,
-        "player_settings": _playerSettings?.toMap(),
+        "player_settings": _playerSettings.toMap(),
         "locale_strings": jsonEncode(_localeStrings),
         "subtitle_search": jsonEncode(subtitleSearch),
         "stuck_buffering_detection_timeout_ms":
-            _playerSettings?.stuckBufferingDetectionTimeoutMs,
+            _playerSettings.stuckBufferingDetectionTimeoutMs,
         "stuck_playing_detection_timeout_ms":
-            _playerSettings?.stuckPlayingDetectionTimeoutMs,
+            _playerSettings.stuckPlayingDetectionTimeoutMs,
         "stuck_playing_not_ending_timeout_ms":
-            _playerSettings?.stuckPlayingNotEndingTimeoutMs,
+            _playerSettings.stuckPlayingNotEndingTimeoutMs,
         "stuck_suppressed_detection_timeout_ms":
-            _playerSettings?.stuckSuppressedDetectionTimeoutMs,
+            _playerSettings.stuckSuppressedDetectionTimeoutMs,
       });
       _updateState(_playerState.copyWith(playlist: playlist));
     } catch (e) {
