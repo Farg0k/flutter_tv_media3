@@ -30,6 +30,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pro.appexp.flutter_tv_media3.MediaUtils
 /**
  * The main plugin class that handles communication between the main Flutter app
  * and the native Android side.
@@ -314,36 +315,16 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val timeInSeconds = call.argument<Number>("timeInSeconds")?.toDouble()
 
       if (uri == null) {
+        result.error("INVALID_ARGUMENT", "URI is null", null)
         return
       }
 
-      pluginScope.launch(Dispatchers.IO) {
-        var extractor: FrameExtractor? = null
-        try {
-          val mediaItem = MediaItem.fromUri(uri)
-          extractor = FrameExtractor.Builder(context, mediaItem).build()
-
-          val frame = if (timeInSeconds != null && timeInSeconds >= 0) {
-            val timeMs = (timeInSeconds * 1000).toLong()
-            extractor.getFrame(timeMs).get()
-          } else {
-            extractor.getThumbnail().get()
-          }
-
-          val bitmap = frame.bitmap
-          val stream = ByteArrayOutputStream()
-          bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
-          val byteArray = stream.toByteArray()
-
-          withContext(Dispatchers.Main) {
-            result.success(byteArray)
-          }
-        } catch (e: Exception) {
-          withContext(Dispatchers.Main) {
-            result.error("EXTRACTION_ERROR", e.message ?: "Frame extraction error", null)
-          }
-        } finally {
-          extractor?.close()
+      pluginScope.launch(Dispatchers.Main) {
+        val byteArray = MediaUtils.getThumbnail(context, uri, timeInSeconds)
+        if (byteArray != null) {
+          result.success(byteArray)
+        } else {
+          result.error("EXTRACTION_ERROR", "Failed to extract thumbnail", null)
         }
       }
     } else if (call.method == "getMetadata"){

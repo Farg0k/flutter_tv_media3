@@ -78,6 +78,7 @@ import androidx.media3.inspector.FrameExtractor
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import androidx.lifecycle.lifecycleScope
+import pro.appexp.flutter_tv_media3.MediaUtils
 /**
  * The main Activity responsible for video playback and displaying the UI.
  *
@@ -872,38 +873,17 @@ class PlayerActivity : AppCompatActivity() {
                     return
                 }
 
-                lifecycleScope.launch(Dispatchers.IO) {
-                    var extractor: FrameExtractor? = null
-                    try {
-                        val mediaItem = MediaItem.fromUri(uri)
-                        extractor = FrameExtractor.Builder(this@PlayerActivity, mediaItem).build()
-
-                        val frame = if (timeInSeconds != null && timeInSeconds >= 0) {
-                            val timeMs = (timeInSeconds * 1000).toLong()
-                            extractor.getFrame(timeMs).get()
-                        } else {
-                            extractor.getThumbnail().get()
-                        }
-
-                        val bitmap = frame.bitmap
-                        val stream = ByteArrayOutputStream()
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
-                        val byteArray = stream.toByteArray()
-
-                        withContext(Dispatchers.Main) {
-                            result.success(byteArray)
-                            invokeOnOtherChannel(
-                                "onScreenshotTaken",
-                                mapOf("bytes" to byteArray, "playlistIndex" to playlistIndex ),
-                                from = from
-                            )
-                        }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            result.error("EXTRACTION_ERROR", e.message ?: "Frame extraction error", null)
-                        }
-                    } finally {
-                        extractor?.close()
+                lifecycleScope.launch(Dispatchers.Main) {
+                    val byteArray = MediaUtils.getThumbnail(this@PlayerActivity, uri, timeInSeconds)
+                    if (byteArray != null) {
+                        result.success(byteArray)
+                        invokeOnOtherChannel(
+                            "onScreenshotTaken",
+                            mapOf("bytes" to byteArray, "playlistIndex" to playlistIndex),
+                            from = from
+                        )
+                    } else {
+                        result.error("EXTRACTION_ERROR", "Failed to extract thumbnail", null)
                     }
                 }
             }
