@@ -18,11 +18,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import pro.appexp.flutter_tv_media3.PreviewMethodChannel
-import android.graphics.Bitmap
-import java.io.ByteArrayOutputStream
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
-import androidx.media3.inspector.FrameExtractor
 import androidx.media3.inspector.MetadataRetriever
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
