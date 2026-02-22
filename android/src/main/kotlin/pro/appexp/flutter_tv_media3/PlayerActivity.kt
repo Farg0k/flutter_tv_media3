@@ -73,10 +73,7 @@ import android.view.WindowManager
 import android.net.Uri
 import com.google.common.collect.ImmutableList
 import android.os.PowerManager
-import android.graphics.Bitmap
-import androidx.media3.inspector.FrameExtractor
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
 import androidx.lifecycle.lifecycleScope
 import pro.appexp.flutter_tv_media3.MediaUtils
 /**
