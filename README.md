@@ -264,7 +264,7 @@ final List<PlaylistMediaItem> items = [
     audioTrackLabels: {
       '0': 'English (Original)',
       '1': 'Español (Doblado)',
-      '2': 'Русский (Перевод)',
+      '2': 'Deutsch (Übersetzung)',
     },
   ),
 
@@ -908,7 +908,7 @@ A class to describe a single item in a playlist. Objects of this class are immut
 *   `resolutions` (Map<String, String>?): A map of available video resolutions (e.g., `"1080p": "url..."`). **Note:** The player automatically deduplicates entries by URL. If multiple labels are provided for the same URL, only the first label encountered will be displayed in the UI.
 *   `subtitles` (List<`MediaItemSubtitle`>?): A list of external subtitle tracks. Each track requires `url`, `language`, and `label`. You can also specify an optional `mimeType` field (e.g., `text/vtt` for WebVTT, `application/x-subrip` for SRT). If not provided, the player will attempt to auto-detect the type from the URL extension.
 *   `audioTracks` (List<`MediaItemAudioTrack`>?): A list of external audio tracks. Each track requires `url`, `language`, and `label`. You can also specify an optional `mimeType` field (e.g., `audio/mp4`, `audio/mpeg`). If not provided, the player will attempt to auto-detect the type from the URL extension.
-*   `audioTrackLabels` (Map<String, String>?): A map of custom labels for **internal** audio tracks. This is useful when the media file contains multiple audio tracks but their parsed names are not descriptive (e.g., they appear as indices like "0", "1", "2" instead of "English", "Spanish"). The key can be the track index ("0", "1", etc.) or the format ID, and the value is the display label. **Example:** `{"0": "English (Original)", "1": "Español", "2": "Русский"}`. This is an optional field; if not provided, the player will use the names parsed from the media file.
+*   `audioTrackLabels` (Map<String, String>?): A map of custom labels for **internal** audio tracks. This is useful when the media file contains multiple audio tracks but their parsed names are not descriptive (e.g., they appear as indices like "0", "1", "2" instead of "English", "Spanish"). The key can be the track index ("0", "1", etc.) or the format ID, and the value is the display label. **Example:** `{"0": "English (Original)", "1": "Español", "2": "Deutsch"}`. This is an optional field; if not provided, the player will use the names parsed from the media file.
 
 **Watch Time and Progress:**
 
