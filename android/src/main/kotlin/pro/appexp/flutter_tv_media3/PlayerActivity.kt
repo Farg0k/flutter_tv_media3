@@ -359,6 +359,8 @@ class PlayerActivity : AppCompatActivity() {
                     "paginationEnable" to bundle.getBoolean("paginationEnable", false),
                     bundle.getInt("paginationThreshold", -1).takeIf { it != -1 }
                         ?.let { "paginationThreshold" to it },
+                    bundle.getBoolean("screenshotsEnable", false).takeIf { it }
+                        ?.let { "screenshotsEnable" to it },
                     bundle.getString("deviceLocale")?.let { "deviceLocale" to it }
                 ).toMap()
             }
