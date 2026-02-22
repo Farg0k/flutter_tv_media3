@@ -21,6 +21,13 @@ typedef SaveClockSettings =
 typedef SavePlayerSettings =
     Future<void> Function({required PlayerSettings playerSettings});
 
+/// A callback triggered when a screenshot is taken.
+typedef OnScreenshotTaken =
+    Future<void> Function({
+      required Uint8List bytes,
+      required PlaylistMediaItem item,
+    });
+
 /// Defines the signature for the function that searches for external subtitles.
 ///
 /// It receives the [id] of the current media item and should return a list
@@ -67,6 +74,7 @@ class FtvMedia3PlayerController {
   SaveSubtitleStyle? _saveSubtitleStyle;
   SaveClockSettings? _saveClockSettings;
   SavePlayerSettings? _savePlayerSettings;
+  OnScreenshotTaken? _onScreenshotTaken;
   SearchExternalSubtitle? _searchExternalSubtitle;
   LabelSearchExternalSubtitle? _labelSearchExternalSubtitle;
   String? _findSubtitlesLabel;
@@ -180,6 +188,7 @@ class FtvMedia3PlayerController {
     SaveSubtitleStyle? saveSubtitleStyle,
     SaveClockSettings? saveClockSettings,
     SavePlayerSettings? savePlayerSettings,
+    OnScreenshotTaken? onScreenshotTaken,
     VoidCallback? sleepTimerExec,
     SearchExternalSubtitle? searchExternalSubtitle,
     String? findSubtitlesLabel,
@@ -196,6 +205,7 @@ class FtvMedia3PlayerController {
     if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
+    if (onScreenshotTaken != null) _onScreenshotTaken = onScreenshotTaken;
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
     if (directLinkTimeout != null) _directLinkTimeout = directLinkTimeout;
     if (onLoadMore != null) {
@@ -458,6 +468,16 @@ class FtvMedia3PlayerController {
           }
         } finally {
           _isSavingWatchTime = false;
+        }
+        break;
+      case 'onScreenshotTaken':
+        final bytes = call.arguments['bytes'] as Uint8List?;
+        final playlistIndex = call.arguments['playlistIndex'] as int?;
+        if (bytes != null &&
+            playlistIndex != null &&
+            _onScreenshotTaken != null) {
+          PlaylistMediaItem item = _playerState.playlist[playlistIndex];
+          _onScreenshotTaken!(bytes: bytes, item: item);
         }
         break;
       case 'sleepTimerExec':

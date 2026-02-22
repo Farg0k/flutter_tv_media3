@@ -124,5 +124,7 @@ class DefaultLocaleStrings {
     "min60": "60 min.",
     "min90": "90 min.",
     "min120": "120 min.",
+    "screenshotSuccess": "Screenshot Captured",
+    "screenshotFailed": "Failed to take screenshot.",
   };
 }

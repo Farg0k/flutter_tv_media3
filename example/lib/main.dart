@@ -369,6 +369,13 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     super.initState();
     // Initialize controller with some default settings
     playerController.setConfig(
+      onScreenshotTaken: ({
+        required Uint8List bytes,
+        required PlaylistMediaItem item,
+      }) async {
+        debugPrint(bytes.toString());
+        debugPrint(item.title);
+      },
       playerSettings: PlayerSettings(
         videoQuality: VideoQuality.high,
         isAfrEnabled: true,
@@ -429,80 +436,88 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     print(item.url);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: Text('Thumbnail: ${item.title}'),
-        content: FutureBuilder<Uint8List?>(
-          future: playerController.getVideoThumbnail(item.url, timeInSeconds: 15),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 100,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            if (snapshot.hasError || snapshot.data == null) {
-              return const Text('Failed to generate thumbnail');
-            }
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.memory(snapshot.data!),
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CLOSE'),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.grey[900],
+            title: Text('Thumbnail: ${item.title}'),
+            content: FutureBuilder<Uint8List?>(
+              future: playerController.getVideoThumbnail(
+                item.url,
+                timeInSeconds: 15,
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox(
+                    height: 100,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snapshot.hasError || snapshot.data == null) {
+                  return const Text('Failed to generate thumbnail');
+                }
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.memory(snapshot.data!),
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CLOSE'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   Future<void> _showMetadata(PlaylistMediaItem item) async {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: Text('Metadata: ${item.title}'),
-        content: SizedBox(
-          width: 500,
-          child: FutureBuilder<Map<String, dynamic>?>(
-            future: playerController.getMediaMetadata(item.url),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 100,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              if (snapshot.hasError || snapshot.data == null) {
-                return const Text('No metadata available');
-              }
-              final metadata = snapshot.data!;
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: metadata.entries
-                      .map((e) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text('${e.key}: ${e.value}'),
-                          ))
-                      .toList(),
-                ),
-              );
-            },
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.grey[900],
+            title: Text('Metadata: ${item.title}'),
+            content: SizedBox(
+              width: 500,
+              child: FutureBuilder<Map<String, dynamic>?>(
+                future: playerController.getMediaMetadata(item.url),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snapshot.hasError || snapshot.data == null) {
+                    return const Text('No metadata available');
+                  }
+                  final metadata = snapshot.data!;
+                  return SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children:
+                          metadata.entries
+                              .map(
+                                (e) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Text('${e.key}: ${e.value}'),
+                                ),
+                              )
+                              .toList(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CLOSE'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CLOSE'),
-          ),
-        ],
-      ),
     );
   }
 

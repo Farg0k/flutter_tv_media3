@@ -10,6 +10,7 @@ import 'components/epg_screen/epg_screen.dart';
 import 'components/horizontal_playlist_panel.dart';
 import 'components/info_panel.dart';
 import 'components/placeholder_widget.dart';
+import 'components/screenshot_frame.dart';
 import 'components/setup_panel.dart';
 import 'components/setup_panel/audio_widget/audio_widget.dart';
 import 'components/setup_panel/playlist_widget/playlist_widget.dart';
@@ -47,6 +48,7 @@ class OverlayScreen extends StatefulWidget {
 
 class _OverlayScreenState extends State<OverlayScreen> {
   final debouncerThrottler = DebouncerThrottler();
+  DateTime? _lastInfoPressTime;
 
   @override
   void initState() {
@@ -93,197 +95,232 @@ class _OverlayScreenState extends State<OverlayScreen> {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<OverlayUiBloc>();
-    return GestureDetector(
-      onTap: () {
-        final currentPanel = bloc.state.playerPanel;
-        if (currentPanel == PlayerPanel.none) {
-          bloc.add(const SetActivePanel(playerPanel: PlayerPanel.touchOverlay));
-        } else {
-          // If any panel is open (including the touch overlay), a tap closes it.
-          bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-        }
-      },
-      onDoubleTap: _playPause,
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragUpdate: (details) {
-        // Horizontal drag should not work when the screen is locked.
-        if (!bloc.state.isScreenLocked) {
-          _handleHorizontalDrag(details: details);
-        }
-      },
-      child: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: BlocConsumer<OverlayUiBloc, OverlayUiState>(
-          listener: (BuildContext context, OverlayUiState state) {
-            if (state.playerPanel == PlayerPanel.sleep) {
-              _openPanel(playerPanel: PlayerPanel.none);
-              showSideSheet(
-                context: context,
-                bloc: bloc,
-                body: SleepTimerWidget(bloc: bloc, isAuto: true),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.epg) {
-              _openPanel(playerPanel: PlayerPanel.none);
-              showSideSheet(
-                context: context,
-                bloc: bloc,
-                body: EpgScreen(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: GestureDetector(
+        onTap: () {
+          final currentPanel = bloc.state.playerPanel;
+          if (currentPanel == PlayerPanel.none) {
+            bloc.add(
+              const SetActivePanel(playerPanel: PlayerPanel.touchOverlay),
+            );
+          } else {
+            // If any panel is open (including the touch overlay), a tap closes it.
+            bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
+          }
+        },
+        onDoubleTap: _playPause,
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragUpdate: (details) {
+          // Horizontal drag should not work when the screen is locked.
+          if (!bloc.state.isScreenLocked) {
+            _handleHorizontalDrag(details: details);
+          }
+        },
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: BlocConsumer<OverlayUiBloc, OverlayUiState>(
+            listener: (BuildContext context, OverlayUiState state) {
+              if (state.playerPanel == PlayerPanel.sleep) {
+                _openPanel(playerPanel: PlayerPanel.none);
+                showSideSheet(
+                  context: context,
                   bloc: bloc,
-                  controller: widget.controller,
-                  initialChannelId: widget.controller.playItem.id,
-                  onChannelLaunch: (EpgChannel value) {
-                    bloc.add(SetActivePanel(playerPanel: PlayerPanel.none));
-                    widget.controller.playSelectedIndex(index: value.index);
-                    Navigator.of(context).pop();
-                  },
-                  deviceLocale:
-                      widget
-                          .controller
-                          .playerState
-                          .playerSettings
-                          .deviceLocale ??
-                      const Locale('en', 'US'),
-                ),
-              );
-            }
-          },
-          buildWhen:
-              (oldState, newState) =>
-                  oldState.playerPanel != newState.playerPanel,
-          builder: (context, state) {
-            if (state.playerPanel == PlayerPanel.placeholder) {
-              return CallbackShortcuts(
-                bindings: _placeholderBindings(),
-                child: PlaceholderWidget(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.error &&
-                widget.controller.playerState.lastError != null) {
-              if (state.sideSheetOpen == true) {
-                Navigator.of(context).pop();
+                  body: SleepTimerWidget(bloc: bloc, isAuto: true),
+                );
               }
-              return CallbackShortcuts(
-                bindings: _placeholderBindings(),
-                child: PlayerErrorWidget(
-                  lastError: widget.controller.playerState.lastError!,
-                  errorCode: widget.controller.playerState.errorCode,
-                  onOpen: widget.controller.resetError,
-                  onClose: () => _openPanel(playerPanel: PlayerPanel.none),
-                  onNext: () => widget.controller.playNext(),
-                  onExit: () => widget.controller.stop(),
-                ),
-              );
-            }
+              if (state.playerPanel == PlayerPanel.epg) {
+                _openPanel(playerPanel: PlayerPanel.none);
+                showSideSheet(
+                  context: context,
+                  bloc: bloc,
+                  body: EpgScreen(
+                    bloc: bloc,
+                    controller: widget.controller,
+                    initialChannelId: widget.controller.playItem.id,
+                    onChannelLaunch: (EpgChannel value) {
+                      bloc.add(SetActivePanel(playerPanel: PlayerPanel.none));
+                      widget.controller.playSelectedIndex(index: value.index);
+                      Navigator.of(context).pop();
+                    },
+                    deviceLocale:
+                        widget
+                            .controller
+                            .playerState
+                            .playerSettings
+                            .deviceLocale ??
+                        const Locale('en', 'US'),
+                  ),
+                );
+              }
+            },
+            buildWhen:
+                (oldState, newState) =>
+                    oldState.playerPanel != newState.playerPanel,
+            builder: (context, state) {
+              if (state.playerPanel == PlayerPanel.placeholder) {
+                return CallbackShortcuts(
+                  bindings: _placeholderBindings(),
+                  child: PlaceholderWidget(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.error &&
+                  widget.controller.playerState.lastError != null) {
+                if (state.sideSheetOpen == true) {
+                  Navigator.of(context).pop();
+                }
+                return CallbackShortcuts(
+                  bindings: _placeholderBindings(),
+                  child: PlayerErrorWidget(
+                    lastError: widget.controller.playerState.lastError!,
+                    errorCode: widget.controller.playerState.errorCode,
+                    onOpen: widget.controller.resetError,
+                    onClose: () => _openPanel(playerPanel: PlayerPanel.none),
+                    onNext: () => widget.controller.playNext(),
+                    onExit: () => widget.controller.stop(),
+                  ),
+                );
+              }
 
-            if (state.playerPanel == PlayerPanel.setup) {
-              bloc.add(const SetTouchMode(isTouch: false));
-              return SetupPanel(
-                controller: widget.controller,
-                selSettingsTab: state.tabIndex,
-              );
-            }
-            if (state.playerPanel == PlayerPanel.touchOverlay) {
-              bloc.add(const SetTouchMode(isTouch: true));
-              return TouchControlsOverlay(controller: widget.controller);
-            }
-            if (state.playerPanel == PlayerPanel.settings) {
-              return Container(
-                color: AppTheme.backgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SettingsScreen(controller: widget.controller),
-                ),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.playlist) {
-              return TitledPanelScaffold(
-                title: OverlayLocalizations.get('playlist'),
-                icon: Icons.playlist_play,
-                child: PlaylistWidget(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.audio) {
-              return TitledPanelScaffold(
-                title: OverlayLocalizations.get('audio'),
-                icon: Icons.audiotrack,
-                child: AudioWidget(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.video) {
-              return TitledPanelScaffold(
-                title: OverlayLocalizations.get('video'),
-                icon: Icons.video_library,
-                child: VideoWidget(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.subtitle) {
-              return TitledPanelScaffold(
-                title: OverlayLocalizations.get('subtitle'),
-                icon: Icons.subtitles,
-                child: SubtitleWidget(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.horizontalPlaylist) {
-              return CallbackShortcuts(
-                bindings: _generalBindings(),
-                child: HorizontalPlaylistPanel(
+              if (state.playerPanel == PlayerPanel.setup) {
+                bloc.add(const SetTouchMode(isTouch: false));
+                return SetupPanel(
                   controller: widget.controller,
-                  generalBindings: _generalBindings(),
-                ),
-              );
-            }
-            if (_shouldShowAudioUI()) {
+                  selSettingsTab: state.tabIndex,
+                );
+              }
+              if (state.playerPanel == PlayerPanel.touchOverlay) {
+                bloc.add(const SetTouchMode(isTouch: true));
+                return TouchControlsOverlay(controller: widget.controller);
+              }
+              if (state.playerPanel == PlayerPanel.settings) {
+                return Container(
+                  color: AppTheme.backgroundColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SettingsScreen(controller: widget.controller),
+                  ),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.playlist) {
+                return TitledPanelScaffold(
+                  title: OverlayLocalizations.get('playlist'),
+                  icon: Icons.playlist_play,
+                  child: PlaylistWidget(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.audio) {
+                return TitledPanelScaffold(
+                  title: OverlayLocalizations.get('audio'),
+                  icon: Icons.audiotrack,
+                  child: AudioWidget(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.video) {
+                return TitledPanelScaffold(
+                  title: OverlayLocalizations.get('video'),
+                  icon: Icons.video_library,
+                  child: VideoWidget(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.subtitle) {
+                return TitledPanelScaffold(
+                  title: OverlayLocalizations.get('subtitle'),
+                  icon: Icons.subtitles,
+                  child: SubtitleWidget(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.horizontalPlaylist) {
+                return CallbackShortcuts(
+                  bindings: _generalBindings(),
+                  child: HorizontalPlaylistPanel(
+                    controller: widget.controller,
+                    generalBindings: _generalBindings(),
+                  ),
+                );
+              }
+              if (_shouldShowAudioUI()) {
+                return CallbackShortcuts(
+                  bindings: _generalBindings(),
+                  child: Focus(
+                    autofocus: true,
+                    child: Stack(
+                      children: [
+                        AudioPlayerTVScreen(controller: widget.controller),
+                        ClockPanel(controller: widget.controller),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.simple) {
+                return CallbackShortcuts(
+                  bindings: _simpleBindings(),
+                  child: SimplePanel(controller: widget.controller),
+                );
+              }
+              if (state.playerPanel == PlayerPanel.info) {
+                return CallbackShortcuts(
+                  bindings: _generalBindings(),
+                  child: InfoPanel(controller: widget.controller),
+                );
+              }
+
               return CallbackShortcuts(
                 bindings: _generalBindings(),
                 child: Focus(
                   autofocus: true,
-                  child: Stack(
-                    children: [
-                      AudioPlayerTVScreen(controller: widget.controller),
-                      ClockPanel(controller: widget.controller),
-                    ],
-                  ),
-                ),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.simple) {
-              return CallbackShortcuts(
-                bindings: _simpleBindings(),
-                child: SimplePanel(controller: widget.controller),
-              );
-            }
-            if (state.playerPanel == PlayerPanel.info) {
-              return CallbackShortcuts(
-                bindings: _generalBindings(),
-                child: InfoPanel(controller: widget.controller),
-              );
-            }
-
-            return CallbackShortcuts(
-              bindings: _generalBindings(),
-              child: Focus(
-                autofocus: true,
-                child: StreamBuilder<PlayerState>(
-                  stream: widget.controller.playerStateStream,
-                  initialData: widget.controller.playerState,
-                  builder: (context, snapshot) {
-                    final playerState = snapshot.data;
-                    if (playerState == null) return const SizedBox.shrink();
-                    return Stack(
-                      children: [
-                        ClockPanel(controller: widget.controller),
-                        Visibility(
-                          visible: playerState.volumeState.isMute == true,
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 32.0),
-                              child: const Icon(
-                                Icons.volume_off,
+                  child: StreamBuilder<PlayerState>(
+                    stream: widget.controller.playerStateStream,
+                    initialData: widget.controller.playerState,
+                    builder: (context, snapshot) {
+                      final playerState = snapshot.data;
+                      if (playerState == null) return const SizedBox.shrink();
+                      return Stack(
+                        children: [
+                          ClockPanel(controller: widget.controller),
+                          Visibility(
+                            visible: playerState.volumeState.isMute == true,
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 32.0),
+                                child: const Icon(
+                                  Icons.volume_off,
+                                  color: Colors.white,
+                                  size: 48,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(2, 2),
+                                    ),
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(-2, -2),
+                                    ),
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(-2, 2),
+                                    ),
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(2, -2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                playerState.stateValue == StateValue.paused &&
+                                playerState.videoTracks.isNotEmpty,
+                            child: Center(
+                              child: Icon(
+                                Icons.pause,
                                 color: Colors.white,
-                                size: 48,
+                                size: 140,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black,
@@ -305,44 +342,14 @@ class _OverlayScreenState extends State<OverlayScreen> {
                               ),
                             ),
                           ),
-                        ),
-                        Visibility(
-                          visible:
-                              playerState.stateValue == StateValue.paused &&
-                              playerState.videoTracks.isNotEmpty,
-                          child: Center(
-                            child: Icon(
-                              Icons.pause,
-                              color: Colors.white,
-                              size: 140,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(2, 2),
-                                ),
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(-2, -2),
-                                ),
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(-2, 2),
-                                ),
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(2, -2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -405,12 +412,14 @@ class _OverlayScreenState extends State<OverlayScreen> {
           () => _openPanel(playerPanel: PlayerPanel.setup),
       const SingleActivator(LogicalKeyboardKey.keyQ):
           () => _openPanel(playerPanel: PlayerPanel.setup),
+      // Handle info button for screenshot, it also opens info panel on single press
+      const SingleActivator(LogicalKeyboardKey.info): _handleInfoPress,
+      const SingleActivator(LogicalKeyboardKey.keyW): _handleInfoPress,
 
-      const SingleActivator(LogicalKeyboardKey.info):
-          () => _openPanel(playerPanel: PlayerPanel.info),
-      const SingleActivator(LogicalKeyboardKey.keyW):
-          () => _openPanel(playerPanel: PlayerPanel.info),
-
+      // const SingleActivator(LogicalKeyboardKey.info):
+      //     () => _openPanel(playerPanel: PlayerPanel.info),
+      // const SingleActivator(LogicalKeyboardKey.keyW):
+      //     () => _openPanel(playerPanel: PlayerPanel.info),
       const SingleActivator(LogicalKeyboardKey.enter): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.space): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.select): () => _playPause(),
@@ -557,5 +566,81 @@ class _OverlayScreenState extends State<OverlayScreen> {
       final clockPosition = ClockPosition.getRandomPosition();
       bloc.add(SetClockPosition(clockPosition: clockPosition));
     }
+  }
+
+  Future<void> _handleInfoPress() async {
+    final now = DateTime.now();
+    if (_lastInfoPressTime == null ||
+        now.difference(_lastInfoPressTime!) >
+            const Duration(milliseconds: 800)) {
+      _lastInfoPressTime = now;
+      _openPanel(playerPanel: PlayerPanel.info);
+    } else {
+      _lastInfoPressTime = null;
+      await _takeScreenshot();
+    }
+  }
+
+  Future<void> _takeScreenshot() async {
+    final overlay = Overlay.of(context);
+    final playerState = widget.controller.playerState;
+    final playIndex = playerState.playIndex;
+    final playlist = playerState.playlist;
+    final playItem = playlist[playIndex];
+
+    context.read<OverlayUiBloc>().add(
+      const SetActivePanel(playerPanel: PlayerPanel.none),
+    );
+    final int positionMs = widget.controller.playbackState.position;
+    final Uint8List? thumbnail = await widget.controller.getVideoThumbnail(
+      widget.controller.playItem.url,
+      timeInSeconds: positionMs.toDouble(),
+    );
+
+    if (thumbnail == null) {
+      if (mounted) {
+        _showSnack(OverlayLocalizations.get('screenshotFailed'), isError: true);
+      }
+      return;
+    }
+
+    final overlayEntry = OverlayEntry(
+      builder:
+          (context) => Stack(
+            children: [
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 100),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder:
+                    (context, value, child) => Container(
+                      color: Colors.white.withValues(
+                        alpha: 0.3 * (1.0 - value),
+                      ),
+                    ),
+              ),
+              IgnorePointer(
+                child: ScreenshotFrame(bytes: thumbnail, title: playItem.title),
+              ),
+            ],
+          ),
+    );
+
+    overlay.insert(overlayEntry);
+    await Future.delayed(const Duration(milliseconds: 2000));
+    overlayEntry.remove();
+
+    if (mounted) {
+      _showSnack(OverlayLocalizations.get('screenshotSuccess'));
+    }
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: isError ? AppTheme.errColor : AppTheme.focusColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }

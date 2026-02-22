@@ -73,6 +73,11 @@ import android.view.WindowManager
 import android.net.Uri
 import com.google.common.collect.ImmutableList
 import android.os.PowerManager
+import android.graphics.Bitmap
+import androidx.media3.inspector.FrameExtractor
+import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
+import androidx.lifecycle.lifecycleScope
 /**
  * The main Activity responsible for video playback and displaying the UI.
  *
@@ -847,6 +852,51 @@ class PlayerActivity : AppCompatActivity() {
                     handleQualitySelection(url, result, from)
                 } else {
                     reportErrorToOther(from, result, "INVALID_INDEX", "Quality index is null")
+                }
+            }
+
+            "getThumbnail" -> {
+                val uri = call.argument<String>("uri")
+                val timeInSeconds = call.argument<Number>("timeInSeconds")?.toDouble()
+
+                if (uri == null) {
+                    result.error("INVALID_ARGUMENT", "URI is null", null)
+                    return
+                }
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    var extractor: FrameExtractor? = null
+                    try {
+                        val mediaItem = MediaItem.fromUri(uri)
+                        extractor = FrameExtractor.Builder(this@PlayerActivity, mediaItem).build()
+
+                        val frame = if (timeInSeconds != null && timeInSeconds >= 0) {
+                            val timeMs = (timeInSeconds * 1000).toLong()
+                            extractor.getFrame(timeMs).get()
+                        } else {
+                            extractor.getThumbnail().get()
+                        }
+
+                        val bitmap = frame.bitmap
+                        val stream = ByteArrayOutputStream()
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
+                        val byteArray = stream.toByteArray()
+
+                        withContext(Dispatchers.Main) {
+                            result.success(byteArray)
+                            invokeOnOtherChannel(
+                                "onScreenshotTaken",
+                                mapOf("bytes" to byteArray, "playlistIndex" to playlistIndex ),
+                                from = from
+                            )
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            result.error("EXTRACTION_ERROR", e.message ?: "Frame extraction error", null)
+                        }
+                    } finally {
+                        extractor?.close()
+                    }
                 }
             }
 

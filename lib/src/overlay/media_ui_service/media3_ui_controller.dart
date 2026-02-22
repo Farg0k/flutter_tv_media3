@@ -861,6 +861,26 @@ class Media3UiController {
     return null;
   }
 
+  /// Requests a video thumbnail from the native side.
+  ///
+  /// [uri] The URI of the video.
+  /// [timeInSeconds] The time in seconds from which to extract the frame.
+  Future<Uint8List?> getVideoThumbnail(
+    String uri, {
+    double? timeInSeconds,
+  }) async {
+    final Map<String, dynamic> arguments = {'uri': uri};
+    if (timeInSeconds != null && timeInSeconds >= 0) {
+      arguments['timeInSeconds'] = timeInSeconds;
+    }
+    final Uint8List? result = await _invokeMethodGuarded(
+      _activityChannel,
+      'getThumbnail',
+      arguments,
+    );
+    return result;
+  }
+
   void _updateState(PlayerState newState) {
     if (_playerState != newState) {
       _playerState = newState;
