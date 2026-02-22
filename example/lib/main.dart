@@ -797,7 +797,7 @@ class _PreviewCard extends StatelessWidget {
                           : [],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   child: Stack(
                     children: [
                       // Mini Preview inside the card
