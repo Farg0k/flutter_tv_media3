@@ -100,6 +100,7 @@ import androidx.lifecycle.lifecycleScope
 class PlayerActivity : AppCompatActivity() {
 
     private lateinit var player: ExoPlayer
+    private var playerSettings: Map<String, Any>? = null
     private lateinit var trackSelector: DefaultTrackSelector
     private lateinit var playerView: PlayerView
     private lateinit var flutterEngine: FlutterEngine
@@ -342,8 +343,7 @@ class PlayerActivity : AppCompatActivity() {
 
         applySubtitleStyle(subtitleStyle)
 
-        val playerSettings: Map<String, Any>? =
-            intent.getBundleExtra("player_settings")?.let { bundle ->
+        playerSettings = intent.getBundleExtra("player_settings")?.let { bundle ->
                 listOfNotNull(
                     bundle.getInt("videoQuality", -1).takeIf { it != -1 }
                         ?.let { "videoQuality" to it },
@@ -856,6 +856,12 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             "getThumbnail" -> {
+                // Check if screenshots are enabled
+                if (playerSettings?.get("screenshotsEnable") as? Boolean != true) {
+                    result.error("SCREENSHOTS_DISABLED", "Screenshot functionality is disabled", null)
+                    return
+                }
+
                 val uri = call.argument<String>("uri")
                 val timeInSeconds = call.argument<Number>("timeInSeconds")?.toDouble()
 
@@ -1020,7 +1026,7 @@ class PlayerActivity : AppCompatActivity() {
 
             "savePlayerSettings" -> {
                 try {
-                    val playerSettings = call.arguments as? Map<String, Any>
+                    this.playerSettings = call.arguments as? Map<String, Any>
                     runOnUiThread {
                         applyTrackSelectionSettings(playerSettings)
                     }

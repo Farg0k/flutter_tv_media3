@@ -433,7 +433,6 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
   }
 
   Future<void> _showThumbnail(PlaylistMediaItem item) async {
-    print(item.url);
     showDialog(
       context: context,
       builder:

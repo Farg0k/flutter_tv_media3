@@ -570,9 +570,13 @@ class _OverlayScreenState extends State<OverlayScreen> {
 
   Future<void> _handleInfoPress() async {
     final now = DateTime.now();
+    final screenshotsEnable =
+        widget.controller.playerState.playerSettings.screenshotsEnable;
+
     if (_lastInfoPressTime == null ||
         now.difference(_lastInfoPressTime!) >
-            const Duration(milliseconds: 800)) {
+            const Duration(milliseconds: 800) ||
+        !screenshotsEnable) {
       _lastInfoPressTime = now;
       _openPanel(playerPanel: PlayerPanel.info);
     } else {

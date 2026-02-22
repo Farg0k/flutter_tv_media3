@@ -26,6 +26,7 @@ class PlayerSettings {
     this.stuckSuppressedDetectionTimeoutMs = 480000,
     this.paginationThreshold = 5,
     this.paginationEnable = false,
+    this.screenshotsEnable = false,
   });
 
   /// The desired video quality. The player will try to select a stream
@@ -82,6 +83,9 @@ class PlayerSettings {
   /// Whether pagination is enabled.
   final bool paginationEnable;
 
+  /// Whether screenshot functionality is enabled.
+  final bool screenshotsEnable;
+
   Map<String, dynamic> toMap() {
     return {
       'videoQuality': videoQuality.index,
@@ -99,6 +103,7 @@ class PlayerSettings {
       'stuckSuppressedDetectionTimeoutMs': stuckSuppressedDetectionTimeoutMs,
       'paginationThreshold': paginationThreshold,
       'paginationEnable': paginationEnable,
+      'screenshotsEnable': screenshotsEnable,
     };
   }
 
@@ -127,6 +132,7 @@ class PlayerSettings {
           map['stuckSuppressedDetectionTimeoutMs'] as int? ?? 480000,
       paginationThreshold: map['paginationThreshold'] as int? ?? 5,
       paginationEnable: map['paginationEnable'] as bool? ?? false,
+      screenshotsEnable: map['screenshotsEnable'] as bool? ?? false,
     );
   }
 
@@ -143,6 +149,7 @@ class PlayerSettings {
     int? stuckSuppressedDetectionTimeoutMs,
     int? paginationThreshold,
     bool? paginationEnable,
+    bool? screenshotsEnable,
     Locale? deviceLocale,
   }) {
     return PlayerSettings(
@@ -166,6 +173,7 @@ class PlayerSettings {
           this.stuckSuppressedDetectionTimeoutMs,
       paginationThreshold: paginationThreshold ?? this.paginationThreshold,
       paginationEnable: paginationEnable ?? this.paginationEnable,
+      screenshotsEnable: screenshotsEnable ?? this.screenshotsEnable,
       deviceLocale: deviceLocale ?? this.deviceLocale,
     );
   }
@@ -184,7 +192,8 @@ class PlayerSettings {
       stuckPlayingNotEndingTimeoutMs: $stuckPlayingNotEndingTimeoutMs,
       stuckSuppressedDetectionTimeoutMs: $stuckSuppressedDetectionTimeoutMs,
       paginationThreshold: $paginationThreshold,
-      paginationEnable: $paginationEnable
+      paginationEnable: $paginationEnable,
+      screenshotsEnable: $screenshotsEnable
     }''';
   }
 

@@ -205,7 +205,13 @@ class FtvMedia3PlayerController {
     if (saveSubtitleStyle != null) _saveSubtitleStyle = saveSubtitleStyle;
     if (saveClockSettings != null) _saveClockSettings = saveClockSettings;
     if (savePlayerSettings != null) _savePlayerSettings = savePlayerSettings;
-    if (onScreenshotTaken != null) _onScreenshotTaken = onScreenshotTaken;
+    if (onScreenshotTaken != null) {
+      _onScreenshotTaken = onScreenshotTaken;
+      if (_playerSettings != null) {
+        _playerSettings = _playerSettings!.copyWith(screenshotsEnable: true);
+        _updateState(_playerState.copyWith(playerSettings: _playerSettings));
+      }
+    }
     if (sleepTimerExec != null) _sleepTimerExec = sleepTimerExec;
     if (directLinkTimeout != null) _directLinkTimeout = directLinkTimeout;
     if (onLoadMore != null) {
@@ -893,11 +899,13 @@ class FtvMedia3PlayerController {
       _playerSettings = _playerSettings!.copyWith(
         paginationEnable: _onLoadMore != null,
         paginationThreshold: _paginationThreshold,
+        screenshotsEnable: _onScreenshotTaken != null,
       );
     } else {
       _playerSettings = PlayerSettings(
         paginationEnable: _onLoadMore != null,
         paginationThreshold: _paginationThreshold,
+        screenshotsEnable: _onScreenshotTaken != null,
       );
     }
 
