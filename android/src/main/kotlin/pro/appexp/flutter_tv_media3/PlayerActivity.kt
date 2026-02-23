@@ -856,6 +856,11 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             "getThumbnail" -> {
+                /**
+                 * Captures a screenshot (frame) from the currently playing media.
+                 * This is only allowed if 'screenshotsEnable' is true in playerSettings.
+                 * The captured frame is sent back via 'onScreenshotTaken' on the other channel.
+                 */
                 // Check if screenshots are enabled
                 if (playerSettings?.get("screenshotsEnable") as? Boolean != true) {
                     result.error("SCREENSHOTS_DISABLED", "Screenshot functionality is disabled", null)

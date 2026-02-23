@@ -1087,6 +1087,63 @@ To activate the subtitle search functionality, you must pass the following param
 *   **`MediaItemSubtitle`**: A class representing an external subtitle track, containing `url`, `label`, `language`, and an optional `mimeType` (e.g., `text/vtt`, `application/x-subrip`).
 
 
+### Screenshots and Thumbnails
+
+There are two primary ways to extract frames from media: user-initiated screenshots via the player UI and programmatic frame extraction for app-internal use (like thumbnails).
+
+#### 1. User-Initiated Screenshots (`onScreenshotTaken`)
+
+This allows the **end-user** to capture a frame while watching a video. This feature is disabled by default and is automatically enabled if you provide the `onScreenshotTaken` callback in `setConfig()`.
+
+*   **How it works in UI:** When enabled, the user can fast double press the **Info** button on the remote to open the info panel. The player will then automatically capture a frame and send it to your app.
+*   **Implementation:**
+    ```dart
+    controller.setConfig(
+      onScreenshotTaken: ({required bytes, required item}) async {
+        // 'bytes' contains the PNG image data
+        // 'item' is the PlaylistMediaItem currently playing
+        print('User took a screenshot of: ${item.title}');
+        // Logic to save the file or share it
+      },
+    );
+    ```
+
+#### 2. Programmatic Frame Extraction (`getVideoThumbnail`)
+
+This is intended for **internal application use**, such as generating thumbnails for a list of movies or previews, without opening the full player.
+
+*   **How it works:** You can call this method at any time for any media URI. It does not require the player to be active.
+*   **Implementation:**
+    ```dart
+    // Get default thumbnail (usually from the beginning of the video)
+    final Uint8List? thumb = await controller.getVideoThumbnail('https://example.com/video.mp4');
+
+    // Extract a specific frame (e.g., at 10.5 seconds)
+    final Uint8List? frame = await controller.getVideoThumbnail(
+      'https://example.com/video.mp4',
+      timeInSeconds: 10.5,
+    );
+    ```
+
+### Retrieving Media Metadata
+
+You can retrieve detailed information about a media file without actually playing it. This is useful for displaying technical info, duration, or available tracks in your UI.
+
+Use `getMediaMetadata(uri)` to get a full map of technical details:
+```dart
+final metadata = await controller.getMediaMetadata('https://example.com/video.mp4');
+
+if (metadata != null) {
+  print('Duration: ${metadata['durationSeconds']}s');
+  print('Total Tracks: ${metadata['totalTracks']}');
+  
+  final tracks = metadata['tracks'] as List;
+  for (var track in tracks) {
+    print('Track: ${track['trackType']}, Codec: ${track['codec']}');
+  }
+}
+```
+
 ## Auto Frame Rate (AFR)
 
 ### Important Notice

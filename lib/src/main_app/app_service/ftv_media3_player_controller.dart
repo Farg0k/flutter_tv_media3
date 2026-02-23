@@ -21,7 +21,12 @@ typedef SaveClockSettings =
 typedef SavePlayerSettings =
     Future<void> Function({required PlayerSettings playerSettings});
 
-/// A callback triggered when a screenshot is taken.
+/// A callback triggered when a screenshot (frame extraction) is taken.
+///
+/// This callback is primarily used when a user triggers a screenshot from the
+/// player's UI (e.g., via the info panel).
+/// It provides the [bytes] of the captured frame (PNG format) and the [item]
+/// from which the screenshot was taken.
 typedef OnScreenshotTaken =
     Future<void> Function({
       required Uint8List bytes,
@@ -929,6 +934,11 @@ class FtvMedia3PlayerController {
     }
   }
 
+  /// Fetches a thumbnail or a specific frame from a media URI.
+  ///
+  /// [uri] The URI of the media item.
+  /// [timeInSeconds] The time position in seconds for the frame. If null, a default thumbnail is extracted.
+  /// Returns a [Uint8List] containing the PNG image data, or null on error.
   Future<Uint8List?> getVideoThumbnail(
     String uri, {
     double? timeInSeconds,
@@ -945,6 +955,15 @@ class FtvMedia3PlayerController {
     return result;
   }
 
+  /// Retrieves comprehensive media metadata for a given [uri] without starting playback.
+  ///
+  /// This method uses the native `MetadataRetriever` to extract information such as:
+  /// - `durationSeconds`: Total duration of the media.
+  /// - `totalTracks`: Number of available tracks.
+  /// - `tracks`: A list of track information (video, audio, text) including mime types, codecs, resolution, etc.
+  /// - `tags`: Metadata tags (e.g., ID3, Vorbis) if available.
+  ///
+  /// Returns a map containing the extracted metadata, or null if retrieval fails.
   Future<Map<String, dynamic>?> getMediaMetadata(String uri) async {
     final dynamic result = await _invokeMethodGuarded(
       _pluginChannel,

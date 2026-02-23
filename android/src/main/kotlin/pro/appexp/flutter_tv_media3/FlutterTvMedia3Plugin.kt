@@ -213,6 +213,12 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
       result.success(null)
     } else if (call.method == "getThumbnail"){
+      /**
+       * Extracts a thumbnail or a specific frame from a media URI.
+       * Arguments:
+       * - uri: String (required)
+       * - timeInSeconds: Number (optional)
+       */
       val uri = call.argument<String>("uri")
       val timeInSeconds = call.argument<Number>("timeInSeconds")?.toDouble()
 
@@ -230,6 +236,12 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
         }
       }
     } else if (call.method == "getMetadata"){
+      /**
+       * Retrieves comprehensive media metadata for a given URI.
+       * Uses androidx.media3.inspector.MetadataRetriever.
+       * Arguments:
+       * - uri: String (required)
+       */
       val uri = call.argument<String>("uri")
       if (uri == null) {
         result.error("INVALID_ARGUMENT", "URI cannot be null", null)
