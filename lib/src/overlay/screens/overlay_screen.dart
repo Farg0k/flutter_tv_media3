@@ -192,7 +192,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
               }
               if (state.playerPanel == PlayerPanel.touchOverlay) {
                 bloc.add(const SetTouchMode(isTouch: true));
-                return TouchControlsOverlay(controller: widget.controller);
+                return TouchControlsOverlay(controller: widget.controller, takeScreenshot: _takeScreenshot,);
               }
               if (state.playerPanel == PlayerPanel.settings) {
                 return Container(
@@ -416,10 +416,6 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.info): _handleInfoPress,
       const SingleActivator(LogicalKeyboardKey.keyW): _handleInfoPress,
 
-      // const SingleActivator(LogicalKeyboardKey.info):
-      //     () => _openPanel(playerPanel: PlayerPanel.info),
-      // const SingleActivator(LogicalKeyboardKey.keyW):
-      //     () => _openPanel(playerPanel: PlayerPanel.info),
       const SingleActivator(LogicalKeyboardKey.enter): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.space): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.select): () => _playPause(),
