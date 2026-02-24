@@ -1,4 +1,6 @@
-package pro.appexp.flutter_tv_media3
+package pro.appexp.flutter_tv_media3.activity
+
+import pro.appexp.flutter_tv_media3.R
 
 import android.content.Context
 import android.media.AudioManager
@@ -24,13 +26,14 @@ import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
-import pro.appexp.flutter_tv_media3.audio.VolumeManager
+import pro.appexp.flutter_tv_media3.manager.FrameRateManager
+import pro.appexp.flutter_tv_media3.manager.audio.VolumeManager
 import pro.appexp.flutter_tv_media3.player.MediaSourceBuilder
 import pro.appexp.flutter_tv_media3.player.MetadataParser
 import pro.appexp.flutter_tv_media3.player.ExoPlayerFactory
 import pro.appexp.flutter_tv_media3.player.PlaylistManager
 import pro.appexp.flutter_tv_media3.player.TrackManager
-import pro.appexp.flutter_tv_media3.subtitle.SubtitleStyleManager
+import pro.appexp.flutter_tv_media3.manager.subtitle.SubtitleStyleManager
 
 /**
  * The main Activity responsible for video playback and displaying the UI.
@@ -199,6 +202,12 @@ class PlayerActivity : AppCompatActivity() {
         if (this::player.isInitialized) {
             if (this::playerListener.isInitialized) player.removeListener(playerListener)
             player.release()
+        }
+
+        supportFragmentManager.findFragmentById(R.id.media3_flutter_container)?.let { fragment ->
+            supportFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commitNowAllowingStateLoss()
         }
 
         // flutterAppEngine is intentionally not destroyed here — it is owned and cached

@@ -1,4 +1,4 @@
-package pro.appexp.flutter_tv_media3
+package pro.appexp.flutter_tv_media3.manager
 
 import android.os.Build
 import android.os.Handler

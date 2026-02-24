@@ -1,4 +1,4 @@
-package pro.appexp.flutter_tv_media3
+package pro.appexp.flutter_tv_media3.preview
 
 import android.content.Context
 import io.flutter.view.TextureRegistry

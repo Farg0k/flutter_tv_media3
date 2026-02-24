@@ -1,4 +1,5 @@
 package pro.appexp.flutter_tv_media3
+import pro.appexp.flutter_tv_media3.activity.PlayerActivity
 import android.os.Bundle
 import android.app.Activity
 import android.content.Context
@@ -17,7 +18,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import pro.appexp.flutter_tv_media3.PreviewMethodChannel
+import pro.appexp.flutter_tv_media3.preview.PreviewMethodChannel
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.inspector.MetadataRetriever
@@ -27,7 +28,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import pro.appexp.flutter_tv_media3.MediaUtils
+import pro.appexp.flutter_tv_media3.utils.MediaUtils
 /**
  * The main plugin class that handles communication between the main Flutter app
  * and the native Android side.
@@ -198,18 +199,24 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
         }
       }
 
-      overlayStatusChannel = MethodChannel(engine.dartExecutor.binaryMessenger, activityChannelUIName)
+      if (::overlayStatusChannel.isInitialized) {
+    overlayStatusChannel.setMethodCallHandler(null)
+}
+overlayStatusChannel = MethodChannel(engine.dartExecutor.binaryMessenger, activityChannelUIName)
 
       overlayStatusChannel.setMethodCallHandler { call, result ->
-        if (call.method == "onOverlayEntryPointCalled") {
-
-          currentActivity.startActivity(intent)
-          result.success(null)
-
+    if (call.method == "onOverlayEntryPointCalled") {
+        val act = activity
+        if (act != null) {
+            act.startActivity(intent)
+            result.success(null)
         } else {
-          result.notImplemented()
+            result.error("ACTIVITY_UNAVAILABLE", "Activity is null", null)
         }
-      }
+    } else {
+        result.notImplemented()
+    }
+}
 
       result.success(null)
     } else if (call.method == "getThumbnail"){
@@ -363,6 +370,9 @@ class FlutterTvMedia3Plugin: FlutterPlugin, MethodCallHandler, ActivityAware {
    */
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     appChannel.setMethodCallHandler(null)
+    if (::overlayStatusChannel.isInitialized) {
+        overlayStatusChannel.setMethodCallHandler(null)
+    }
     previewMethodChannel?.dispose()
     previewMethodChannel = null
     pluginScope.cancel()

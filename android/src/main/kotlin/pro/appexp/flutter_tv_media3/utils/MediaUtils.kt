@@ -1,4 +1,4 @@
-package pro.appexp.flutter_tv_media3
+package pro.appexp.flutter_tv_media3.utils
 
 import android.content.Context
 import android.graphics.Bitmap

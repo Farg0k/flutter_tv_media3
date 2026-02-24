@@ -1,4 +1,6 @@
-package pro.appexp.flutter_tv_media3
+package pro.appexp.flutter_tv_media3.activity
+
+import pro.appexp.flutter_tv_media3.utils.MediaUtils
 
 import android.util.Log
 import androidx.media3.common.C

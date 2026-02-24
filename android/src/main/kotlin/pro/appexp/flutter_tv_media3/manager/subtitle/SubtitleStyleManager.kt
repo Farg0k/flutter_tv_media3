@@ -1,4 +1,4 @@
-package pro.appexp.flutter_tv_media3.subtitle
+package pro.appexp.flutter_tv_media3.manager.subtitle
 
 import android.graphics.Color
 import android.graphics.Typeface

@@ -1,4 +1,4 @@
-package pro.appexp.flutter_tv_media3.audio
+package pro.appexp.flutter_tv_media3.manager.audio
 
 import android.content.BroadcastReceiver
 import android.content.Context
