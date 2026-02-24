@@ -26,24 +26,19 @@ class Media3PlayerScreen extends StatefulWidget {
   State<Media3PlayerScreen> createState() => _Media3PlayerScreenState();
 }
 
-class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
+class _Media3PlayerScreenState extends State<Media3PlayerScreen> with WidgetsBindingObserver {
   late final FtvMedia3PlayerController _controller;
   bool isClose = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = FtvMedia3PlayerController();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-    _controller.playerStateStream.listen((e) async {
-      if (e.activityReady == true && mounted == true && isClose == false) {
-        isClose = true;
-        Navigator.of(context).maybePop();
-      }
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(milliseconds: 600));
       try {
@@ -61,6 +56,7 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -68,6 +64,15 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> {
       DeviceOrientation.landscapeLeft,
     ]);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused && mounted && !isClose) {
+      isClose = true;
+      Navigator.of(context).maybePop();
+    }
   }
 
   void _showErrorSnackBar(BuildContext context, String message) {
