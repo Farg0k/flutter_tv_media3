@@ -52,6 +52,8 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
       placeholderImg:
           'https://peach.blender.org/wp-content/uploads/title_anouncement.jpg',
       media3PreviewConfig: const Media3PreviewConfig(
+        url:
+        'https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4',
         width: 320,
         height: 180,
         autoPlay: true,
