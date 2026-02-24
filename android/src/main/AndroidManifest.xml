@@ -6,7 +6,7 @@
 
     <application>
         <activity
-            android:name=".PlayerActivity"
+            android:name=".activity.PlayerActivity"
             android:screenOrientation="sensorLandscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:launchMode="singleTop"
