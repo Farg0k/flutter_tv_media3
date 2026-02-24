@@ -12,16 +12,39 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 private const val TAG = "TrackManager"
 
 /**
- * Responsible for reading current tracks and applying track selections.
+ * Responsible for reading current tracks, applying track selections,
+ * applying track selector settings (quality, languages, subtitles),
+ * and selecting the best URL from a resolution map.
  *
  * @param getPlayer        Lambda to retrieve the current ExoPlayer instance.
  * @param getTrackSelector Lambda to retrieve the DefaultTrackSelector instance.
+ * @param metadataParser   Used for quality string parsing in [selectUrlByQuality].
+ * @param onAfrStateChanged Callback invoked when isAfrEnabled changes (true = enabled).
  */
 @UnstableApi
 class TrackManager(
     private val getPlayer: () -> ExoPlayer,
-    private val getTrackSelector: () -> DefaultTrackSelector
+    private val getTrackSelector: () -> DefaultTrackSelector,
+    private val metadataParser: MetadataParser,
+    private val onAfrStateChanged: (enabled: Boolean) -> Unit
 ) {
+
+    // ─── Quality state ────────────────────────────────────────────────────────
+
+    var isAfrEnabled: Boolean = false
+        private set
+
+    var currentVideoQualityIndex: Int = 0
+        private set
+
+    var currentVideoWidth: Int = 0
+        private set
+
+    var currentVideoHeight: Int = 0
+        private set
+
+    var currentForceHighestBitrate: Boolean = true
+        private set
 
     /**
      * Returns a list of all tracks in a format suitable for passing to Flutter.
@@ -326,4 +349,94 @@ class TrackManager(
     private fun isPossiblyExternal(f: Format): Boolean =
         f.label == null && f.language == null &&
         f.id != null && f.id!!.matches(Regex("\\d+:"))
+
+    // ─── Track selector settings ──────────────────────────────────────────────
+
+    /**
+     * Applies player settings (quality, languages, AFR, subtitles) to [DefaultTrackSelector].
+     * Safe to call at any lifecycle stage — does not rely on [currentMappedTrackInfo].
+     *
+     * @param settings Settings map from Flutter (may be null to use current values).
+     */
+    fun applySettings(settings: Map<String, Any>?) {
+        val newAfrState = settings?.get("isAfrEnabled") as? Boolean ?: false
+        if (isAfrEnabled != newAfrState) onAfrStateChanged(newAfrState)
+        isAfrEnabled = newAfrState
+
+        val s = settings ?: emptyMap()
+        currentVideoQualityIndex   = (s["videoQuality"] as? Number)?.toInt() ?: currentVideoQualityIndex
+        currentVideoWidth          = (s["width"] as? Number)?.toInt() ?: currentVideoWidth
+        currentVideoHeight         = (s["height"] as? Number)?.toInt() ?: currentVideoHeight
+        currentForceHighestBitrate = s["forceHighestBitrate"] as? Boolean ?: currentForceHighestBitrate
+
+        val b = getTrackSelector().parameters.buildUpon()
+
+        // Video quality
+        when (currentVideoQualityIndex) {
+            0    -> b.clearVideoSizeConstraints()
+                     .setForceLowestBitrate(false)
+                     .setForceHighestSupportedBitrate(currentForceHighestBitrate)
+            4    -> b.clearVideoSizeConstraints()
+                     .setForceHighestSupportedBitrate(false)
+                     .setForceLowestBitrate(true)
+            else -> if (currentVideoWidth > 0 && currentVideoHeight > 0) {
+                b.setMaxVideoSize(currentVideoWidth, currentVideoHeight)
+                 .setForceLowestBitrate(false)
+                 .setForceHighestSupportedBitrate(currentForceHighestBitrate)
+            } else {
+                b.clearVideoSizeConstraints()
+                 .setForceLowestBitrate(false)
+                 .setForceHighestSupportedBitrate(currentForceHighestBitrate)
+            }
+        }
+
+        // Language preferences
+        (s["preferredAudioLanguages"] as? List<*>)?.let { langs ->
+            b.setPreferredAudioLanguages(*langs.mapNotNull { it as? String }.toTypedArray())
+        }
+        (s["preferredTextLanguages"] as? List<*>)?.let { langs ->
+            b.setPreferredTextLanguages(*langs.mapNotNull { it as? String }.toTypedArray())
+        }
+
+        // Subtitles — use declarative setTrackTypeDisabled so it works before media is loaded
+        val subtitlesEnabled = s["forcedAutoEnable"] as? Boolean ?: true
+        if (subtitlesEnabled) {
+            b.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+            b.setPreferredTextRoleFlags(C.ROLE_FLAG_MAIN or C.ROLE_FLAG_SUBTITLE)
+        } else {
+            b.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+        }
+
+        getTrackSelector().parameters = b.build()
+    }
+
+    /**
+     * Selects the best URL from [resolutionsMap] based on the current quality index.
+     *
+     * - Index 0 → highest quality
+     * - Index 4 → lowest quality
+     * - Otherwise → closest match to [currentVideoHeight]
+     *
+     * @param resolutionsMap Map of URL → quality label.
+     * @param defaultUrl     Fallback URL if no match is found.
+     */
+    fun selectUrlByQuality(resolutionsMap: Map<String, String>, defaultUrl: String): String {
+        if (resolutionsMap.isEmpty()) return defaultUrl
+        return when (currentVideoQualityIndex) {
+            0    -> resolutionsMap.entries
+                        .sortedByDescending { metadataParser.parseQuality(it.value, it.key) }
+                        .firstOrNull()?.key ?: defaultUrl
+            4    -> resolutionsMap.entries
+                        .sortedBy { metadataParser.parseQuality(it.value, it.key) }
+                        .firstOrNull()?.key ?: defaultUrl
+            else -> if (currentVideoHeight > 0) {
+                val sorted = resolutionsMap.entries
+                    .map { metadataParser.parseQuality(it.value, it.key) to it.key }
+                    .sortedBy { it.first }
+                sorted.firstOrNull { it.first >= currentVideoHeight }?.second
+                    ?: sorted.lastOrNull()?.second
+                    ?: defaultUrl
+            } else defaultUrl
+        }
+    }
 }
