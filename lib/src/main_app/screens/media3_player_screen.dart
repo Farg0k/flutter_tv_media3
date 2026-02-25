@@ -18,10 +18,12 @@ class Media3PlayerScreen extends StatefulWidget {
     this.playerLabel,
     required this.playlist,
     this.initialIndex = 0,
+    this.placeholderWidget,
   });
   final List<PlaylistMediaItem> playlist;
   final int initialIndex;
   final Widget? playerLabel;
+  final Widget? placeholderWidget;
   @override
   State<Media3PlayerScreen> createState() => _Media3PlayerScreenState();
 }
@@ -35,17 +37,11 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> with WidgetsBin
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = FtvMedia3PlayerController();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(milliseconds: 600));
       try {
-        await _controller.openNativePlayer(
-          playlist: widget.playlist,
-          initialIndex: widget.initialIndex,
-        );
+        await _controller.openNativePlayer(playlist: widget.playlist, initialIndex: widget.initialIndex);
       } catch (e) {
         if (mounted) {
           _showErrorSnackBar(context, e.toString());
@@ -82,9 +78,7 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> with WidgetsBin
           spacing: 12,
           children: [
             const Icon(Icons.error_outline, color: Colors.white),
-            Expanded(
-              child: Text(message, style: const TextStyle(color: Colors.white)),
-            ),
+            Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
           ],
         ),
         backgroundColor: AppTheme.errColor,
@@ -105,15 +99,14 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> with WidgetsBin
           return Stack(
             alignment: Alignment.center,
             children: [
+              if (widget.placeholderWidget != null) widget.placeholderWidget!,
               Center(
                 child:
                     widget.playerLabel ??
                     Text(
                       'FTVMedia3',
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.merge(AppTheme.boldTextStyle),
+                      style: Theme.of(context).textTheme.titleLarge?.merge(AppTheme.boldTextStyle),
                     ),
               ),
               Positioned(
@@ -125,9 +118,7 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen> with WidgetsBin
                     Text(
                       OverlayLocalizations.get('loading'),
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium?.merge(
-                        AppTheme.extraLightTextStyle,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.merge(AppTheme.extraLightTextStyle),
                     ),
                     LinearProgressIndicator(color: AppTheme.fullFocusColor),
                   ],
