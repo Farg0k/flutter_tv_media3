@@ -35,9 +35,7 @@
 ///
 /// For a detailed example, see the `example/lib/main.dart` file.
 library;
-
 export 'src/overlay/overlay_main.dart';
-
 export 'src/main_app/app_service/ftv_media3_player_controller.dart';
 export 'src/main_app/screens/media3_player_screen.dart';
 export 'src/overlay/screens/overlay_screen.dart';
@@ -58,8 +56,8 @@ export 'src/utils/string_utils.dart';
 export 'src/utils/debouncer_throttler.dart';
 export 'src/localization/overlay_localizations.dart';
 export 'src/const/iso_language_list.dart';
-import 'flutter_tv_media3.dart';
-export '/src/preview/media3_preview.dart';
+export 'src/preview/media3_preview.dart';
+import 'src/main_app/app_service/ftv_media3_player_controller.dart';
 
 /// The main class for accessing the media player controller.
 class FlutterTvMedia3 {
