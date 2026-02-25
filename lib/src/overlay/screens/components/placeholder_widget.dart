@@ -118,7 +118,8 @@ class _PlaceholderWidgetState extends State<PlaceholderWidget> {
                           ),
                         ),
                         LinearProgressIndicator(
-                          value: playerState.loadingProgress, color: AppTheme.fullFocusColor,
+                          value: playerState.loadingProgress,
+                          color: AppTheme.fullFocusColor,
                         ),
                       ],
                     ),

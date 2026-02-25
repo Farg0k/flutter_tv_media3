@@ -192,7 +192,10 @@ class _OverlayScreenState extends State<OverlayScreen> {
               }
               if (state.playerPanel == PlayerPanel.touchOverlay) {
                 bloc.add(const SetTouchMode(isTouch: true));
-                return TouchControlsOverlay(controller: widget.controller, takeScreenshot: _takeScreenshot,);
+                return TouchControlsOverlay(
+                  controller: widget.controller,
+                  takeScreenshot: _takeScreenshot,
+                );
               }
               if (state.playerPanel == PlayerPanel.settings) {
                 return Container(

@@ -35,6 +35,7 @@
 ///
 /// For a detailed example, see the `example/lib/main.dart` file.
 library;
+
 export 'src/overlay/overlay_main.dart';
 export 'src/main_app/app_service/ftv_media3_player_controller.dart';
 export 'src/main_app/screens/media3_player_screen.dart';
