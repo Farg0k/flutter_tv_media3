@@ -365,10 +365,47 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
   int _selectedIndex = 0;
   double _volume = 0.0;
   bool _isRepeat = true;
+  StreamSubscription? _playerStateSubscription;
+  final ScrollController _scrollController = ScrollController();
+  final List<FocusNode> _focusNodes = [];
+
+  void _initFocusNodes() {
+    for (var i = 0; i < items.length; i++) {
+      _focusNodes.add(FocusNode());
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    if (!_scrollController.hasClients) return;
+    const itemWidth = 260.0; // approximate width including padding
+    _scrollController.animateTo(
+      index * itemWidth,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
+    _initFocusNodes();
+
+    // Synchronize selected index with player's current item
+    _playerStateSubscription = playerController.playerStateStream.listen((state) {
+      if (state.playIndex != _selectedIndex &&
+          state.playIndex >= 0 &&
+          state.playIndex < items.length) {
+        if (mounted) {
+          setState(() {
+            _selectedIndex = state.playIndex;
+          });
+          // Ensure focus and scroll follow the new index
+          _focusNodes[_selectedIndex].requestFocus();
+          _scrollToIndex(_selectedIndex);
+        }
+      }
+    });
+
     // Initialize controller with some default settings
     playerController.setConfig(
       onScreenshotTaken: ({
@@ -412,6 +449,9 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
         // Update local state
         setState(() {
           items.addAll(newItems);
+          for (var i = 0; i < newItems.length; i++) {
+            _focusNodes.add(FocusNode());
+          }
         });
 
         debugPrint('PAGINATION: Returning ${newItems.length} items.');
@@ -422,6 +462,11 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
 
   @override
   void dispose() {
+    _playerStateSubscription?.cancel();
+    _scrollController.dispose();
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
     playerController.close();
     super.dispose();
   }
@@ -711,12 +756,14 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
                     SizedBox(
                       height: 180,
                       child: ListView.builder(
+                        controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           return _PreviewCard(
                             item: items[index],
                             isSelected: _selectedIndex == index,
+                            focusNode: _focusNodes[index],
                             onFocus: () {
                               setState(() {
                                 _selectedIndex = index;
@@ -741,12 +788,14 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
 class _PreviewCard extends StatelessWidget {
   final PlaylistMediaItem item;
   final bool isSelected;
+  final FocusNode focusNode;
   final VoidCallback onFocus;
   final VoidCallback onTap;
 
   const _PreviewCard({
     required this.item,
     required this.isSelected,
+    required this.focusNode,
     required this.onFocus,
     required this.onTap,
   });
@@ -756,6 +805,7 @@ class _PreviewCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 20.0),
       child: Focus(
+        focusNode: focusNode,
         onFocusChange: (hasFocus) {
           if (hasFocus) onFocus();
         },
