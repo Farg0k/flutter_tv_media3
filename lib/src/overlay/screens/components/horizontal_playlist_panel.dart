@@ -6,15 +6,14 @@ import 'package:flutter_tv_media3/src/overlay/bloc/overlay_ui_bloc.dart';
 import 'package:flutter_tv_media3/src/overlay/media_ui_service/media3_ui_controller.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:flutter_tv_media3/src/overlay/screens/components/widgets/marquee_title_widget.dart';
+import '../overlay_intents.dart';
 
 class HorizontalPlaylistPanel extends StatefulWidget {
   final Media3UiController controller;
-  final Map<ShortcutActivator, VoidCallback> generalBindings;
 
   const HorizontalPlaylistPanel({
     super.key,
     required this.controller,
-    required this.generalBindings,
   });
 
   @override
@@ -86,83 +85,28 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
     );
   }
 
-  void _handleKeyEvent(Function action) {
+  void _handleMove(int direction, List<PlaylistMediaItem> playlist) {
+    if (playlist.isEmpty) return;
     setState(() {
-      action();
+      _selectedIndex = (_selectedIndex + direction + playlist.length) % playlist.length;
+      _scrollToIndex(_selectedIndex);
     });
 
     final settings = widget.controller.playerState.playerSettings;
     if (settings.paginationEnable &&
-        widget.controller.playerState.playlist.length - _selectedIndex <=
-            settings.paginationThreshold) {
+        playlist.length - _selectedIndex <= settings.paginationThreshold) {
       widget.controller.onLoadMoreCalled();
     }
   }
 
-  Map<ShortcutActivator, VoidCallback> _getShortcuts(
-    List<PlaylistMediaItem> playlist,
-  ) {
-    final bindings = Map<ShortcutActivator, VoidCallback>.from(
-      widget.generalBindings,
-    );
-
-    bindings.addAll({
-      const SingleActivator(LogicalKeyboardKey.arrowLeft):
-          () => _handleKeyEvent(() {
-            if (playlist.isNotEmpty) {
-              _selectedIndex =
-                  (_selectedIndex - 1 + playlist.length) % playlist.length;
-              _scrollToIndex(_selectedIndex);
-            }
-          }),
-      const SingleActivator(LogicalKeyboardKey.arrowRight):
-          () => _handleKeyEvent(() {
-            if (playlist.isNotEmpty) {
-              _selectedIndex = (_selectedIndex + 1) % playlist.length;
-              _scrollToIndex(_selectedIndex);
-            }
-          }),
-      const SingleActivator(LogicalKeyboardKey.enter):
-          () => _handleKeyEvent(() async {
-            if (_selectedIndex < playlist.length) {
-              final bloc = context.read<OverlayUiBloc>();
-              await widget.controller.playSelectedIndex(index: _selectedIndex);
-              if (!mounted) return;
-              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-            }
-          }),
-      const SingleActivator(LogicalKeyboardKey.select):
-          () => _handleKeyEvent(() async {
-            if (_selectedIndex < playlist.length) {
-              final bloc = context.read<OverlayUiBloc>();
-              await widget.controller.playSelectedIndex(index: _selectedIndex);
-              if (!mounted) return;
-              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-            }
-          }),
-      const SingleActivator(LogicalKeyboardKey.space):
-          () => _handleKeyEvent(() async {
-            if (_selectedIndex < playlist.length) {
-              final bloc = context.read<OverlayUiBloc>();
-              await widget.controller.playSelectedIndex(index: _selectedIndex);
-              if (!mounted) return;
-              bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-            }
-          }),
-      // Pressing down again should close and play previous as requested
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () {
-        final bloc = context.read<OverlayUiBloc>();
-        bloc.add(const SetActivePanel(playerPanel: PlayerPanel.none));
-        widget.controller.playPrevious();
-      },
-      // Arrow up closes the panel
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () {
-        context.read<OverlayUiBloc>().add(
-          const SetActivePanel(playerPanel: PlayerPanel.none),
-        );
-      },
-    });
-    return bindings;
+  Future<void> _handleSelect(List<PlaylistMediaItem> playlist) async {
+    if (_selectedIndex < playlist.length) {
+      await widget.controller.playSelectedIndex(index: _selectedIndex);
+      if (!mounted) return;
+      context.read<OverlayUiBloc>().add(
+            const SetActivePanel(playerPanel: PlayerPanel.none),
+          );
+    }
   }
 
   @override
@@ -191,45 +135,83 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
             stream: widget.controller.playerStateStream,
             initialData: widget.controller.playerState,
             builder: (context, snapshot) {
-              final playerState =
-                  snapshot.data ?? widget.controller.playerState;
+              final playerState = snapshot.data ?? widget.controller.playerState;
               final playlist = playerState.playlist;
 
-              return CallbackShortcuts(
-                bindings: _getShortcuts(playlist),
-                child: Focus(
-                  focusNode: _focusNode,
-                  autofocus: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 32.0,
-                          top: 20.0,
-                          right: 32.0,
-                          bottom: 8.0,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Builder(
-                                builder: (context) {
-                                  final currentPlayIndex =
-                                      playerState.playIndex;
-                                  final playItem =
-                                      currentPlayIndex >= 0 &&
-                                              currentPlayIndex < playlist.length
-                                          ? playlist[currentPlayIndex]
-                                          : null;
+              return Shortcuts(
+                shortcuts: {
+                  const SingleActivator(LogicalKeyboardKey.arrowLeft): const PlaylistMoveIntent(-1),
+                  const SingleActivator(LogicalKeyboardKey.arrowRight): const PlaylistMoveIntent(1),
+                  const SingleActivator(LogicalKeyboardKey.enter): const PlaylistSelectIntent(),
+                  const SingleActivator(LogicalKeyboardKey.select): const PlaylistSelectIntent(),
+                  const SingleActivator(LogicalKeyboardKey.space): const PlaylistSelectIntent(),
+                  const SingleActivator(LogicalKeyboardKey.arrowUp): const TogglePanelIntent(PlayerPanel.none),
+                  const SingleActivator(LogicalKeyboardKey.arrowDown): const PlayPauseIntent(), // Changed from previous logic to match global PlayPause or custom behavior
+                },
+                child: Actions(
+                  actions: {
+                    PlaylistMoveIntent: CallbackAction<PlaylistMoveIntent>(
+                      onInvoke: (intent) => _handleMove(intent.direction, playlist),
+                    ),
+                    PlaylistSelectIntent: CallbackAction<PlaylistSelectIntent>(
+                      onInvoke: (_) => _handleSelect(playlist),
+                    ),
+                    // We don't need to define TogglePanelIntent or PlayPauseIntent here,
+                    // they will bubble up to OverlayScreen's Actions.
+                  },
+                  child: Focus(
+                    focusNode: _focusNode,
+                    autofocus: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 32.0,
+                            top: 20.0,
+                            right: 32.0,
+                            bottom: 8.0,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Builder(
+                                  builder: (context) {
+                                    final currentPlayIndex = playerState.playIndex;
+                                    final playItem = currentPlayIndex >= 0 &&
+                                            currentPlayIndex < playlist.length
+                                        ? playlist[currentPlayIndex]
+                                        : null;
 
-                                  if (playItem == null) {
+                                    if (playItem == null) {
+                                      return Text(
+                                        OverlayLocalizations.get('playlist'),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall
+                                            ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          shadows: [
+                                            const Shadow(
+                                              color: Colors.black,
+                                              blurRadius: 8,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    }
+
                                     return Text(
-                                      OverlayLocalizations.get('playlist'),
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.headlineSmall?.copyWith(
+                                      playItem.title ?? playItem.label!,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                         shadows: [
@@ -243,97 +225,78 @@ class _HorizontalPlaylistPanelState extends State<HorizontalPlaylistPanel> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     );
-                                  }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  "${playerState.playIndex + 1} / ${playlist.length}",
+                                  style: TextStyle(
+                                    color: AppTheme.backgroundColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            child: Scrollbar(
+                              controller: _scrollController,
+                              child: ListView.builder(
+                                controller: _scrollController,
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24.0,
+                                  vertical: 12.0,
+                                ),
+                                itemCount: playlist.length,
+                                itemBuilder: (context, index) {
+                                  final item = playlist[index];
+                                  final isSelected = index == _selectedIndex;
+                                  final isActive = index == playerState.playIndex;
 
-                                  return Text(
-                                    playItem.title ?? playItem.label!,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.headlineSmall?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      shadows: [
-                                        const Shadow(
-                                          color: Colors.black,
-                                          blurRadius: 8,
-                                          offset: Offset(0, 2),
-                                        ),
-                                      ],
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    child: HorizontalPlaylistItem(
+                                      item: item,
+                                      index: index,
+                                      isSelected: isSelected,
+                                      isActive: isActive,
+                                      onTap: () {
+                                        widget.controller.playSelectedIndex(
+                                          index: index,
+                                        );
+                                        context.read<OverlayUiBloc>().add(
+                                          const SetActivePanel(
+                                            playerPanel: PlayerPanel.none,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   );
                                 },
                               ),
                             ),
-                            const SizedBox(width: 20),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                "${playerState.playIndex + 1} / ${playlist.length}",
-                                style: TextStyle(
-                                  color: AppTheme.backgroundColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Scrollbar(
-                            controller: _scrollController,
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24.0,
-                                vertical: 12.0,
-                              ),
-                              itemCount: playlist.length,
-                              itemBuilder: (context, index) {
-                                final item = playlist[index];
-                                final isSelected = index == _selectedIndex;
-                                final isActive = index == playerState.playIndex;
-
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0,
-                                  ),
-                                  child: HorizontalPlaylistItem(
-                                    item: item,
-                                    index: index,
-                                    isSelected: isSelected,
-                                    isActive: isActive,
-                                    onTap: () {
-                                      widget.controller.playSelectedIndex(
-                                        index: index,
-                                      );
-                                      context.read<OverlayUiBloc>().add(
-                                        const SetActivePanel(
-                                          playerPanel: PlayerPanel.none,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
