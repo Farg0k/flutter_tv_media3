@@ -424,6 +424,8 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.select): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.mediaPlayPause):
           () => _playPause(),
+      const SingleActivator(LogicalKeyboardKey.mediaPause):
+          () => _playPause(),
 
       const SingleActivator(LogicalKeyboardKey.digit0):
           () => _goToVideoPercentage(percentage: 0),
@@ -448,12 +450,20 @@ class _OverlayScreenState extends State<OverlayScreen> {
 
       const SingleActivator(LogicalKeyboardKey.arrowUp):
           () => widget.controller.playNext(),
+      const SingleActivator(LogicalKeyboardKey.mediaTrackNext):
+          () => widget.controller.playNext(),
+      const SingleActivator(LogicalKeyboardKey.mediaTrackPrevious):
+          () => widget.controller.playPrevious(),
       const SingleActivator(LogicalKeyboardKey.arrowDown):
           () => _handleArrowDown(),
 
       const SingleActivator(LogicalKeyboardKey.arrowLeft):
           () => _arrowRewind(action: -10),
       const SingleActivator(LogicalKeyboardKey.arrowRight):
+          () => _arrowRewind(action: 10),
+      const SingleActivator(LogicalKeyboardKey.mediaRewind):
+          () => _arrowRewind(action: -10),
+      const SingleActivator(LogicalKeyboardKey.mediaFastForward):
           () => _arrowRewind(action: 10),
       const SingleActivator(LogicalKeyboardKey.pageUp):
           () => _arrowRewind(action: 600),
