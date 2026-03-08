@@ -391,7 +391,9 @@ class _PreviewDemoScreenState extends State<PreviewDemoScreen> {
     _initFocusNodes();
 
     // Synchronize selected index with player's current item
-    _playerStateSubscription = playerController.playerStateStream.listen((state) {
+    _playerStateSubscription = playerController.playerStateStream.listen((
+      state,
+    ) {
       if (state.playIndex != _selectedIndex &&
           state.playIndex >= 0 &&
           state.playIndex < items.length) {

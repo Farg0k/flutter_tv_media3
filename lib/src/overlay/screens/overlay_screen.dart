@@ -424,8 +424,7 @@ class _OverlayScreenState extends State<OverlayScreen> {
       const SingleActivator(LogicalKeyboardKey.select): () => _playPause(),
       const SingleActivator(LogicalKeyboardKey.mediaPlayPause):
           () => _playPause(),
-      const SingleActivator(LogicalKeyboardKey.mediaPause):
-          () => _playPause(),
+      const SingleActivator(LogicalKeyboardKey.mediaPause): () => _playPause(),
 
       const SingleActivator(LogicalKeyboardKey.digit0):
           () => _goToVideoPercentage(percentage: 0),
