@@ -114,6 +114,11 @@ class Media3PreviewPlayer extends StatefulWidget {
   /// This is applied using [ClipRRect] around the video texture and overlays.
   final BorderRadiusGeometry? borderRadius;
 
+  /// An optional widget to display on top of the preview.
+  ///
+  /// This can be used for text overlays, dimming, or custom controls.
+  final Widget? child;
+
   /// Creates a [Media3PreviewPlayer] widget.
   const Media3PreviewPlayer({
     super.key,
@@ -133,6 +138,7 @@ class Media3PreviewPlayer extends StatefulWidget {
     this.startTimeSeconds,
     this.endTimeSeconds,
     this.borderRadius,
+    this.child,
   });
 
   @override
@@ -411,6 +417,7 @@ class _Media3PreviewPlayerState extends State<Media3PreviewPlayer>
                 placeholder: widget.placeholder,
                 errorWidget: widget.errorWidget,
               ),
+              if (widget.child != null) widget.child!,
             ],
           ),
         ),
