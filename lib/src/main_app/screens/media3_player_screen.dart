@@ -133,7 +133,10 @@ class _Media3PlayerScreenState extends State<Media3PlayerScreen>
                         AppTheme.extraLightTextStyle,
                       ),
                     ),
-                    LinearProgressIndicator(color: AppTheme.fullFocusColor),
+                    LinearProgressIndicator(
+                      color: AppTheme.fullFocusColor,
+                      backgroundColor: Colors.white,
+                    ),
                   ],
                 ),
               ),
