@@ -136,7 +136,7 @@ class InfoPanel extends StatelessWidget {
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                spacing: 8,
+                                spacing: 4,
                                 children: [
                                   Row(
                                     crossAxisAlignment:
@@ -190,6 +190,19 @@ class InfoPanel extends StatelessWidget {
                                       style: Theme.of(
                                         context,
                                       ).textTheme.titleMedium?.copyWith(
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  if (playItem.label != null &&
+                                      playItem.subTitle != playItem.label)
+                                    Text(
+                                      playItem.label!,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
                                       ),
